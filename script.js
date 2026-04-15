@@ -1,0 +1,115 @@
+(function () {
+  'use strict';
+
+  const stack = document.getElementById('stack');
+  const stackInfo = document.getElementById('stack-info');
+
+  if (stack && stackInfo) {
+    stack.addEventListener('click', function (event) {
+      const button = event.target.closest('.layer');
+      if (!button) return;
+
+      stack.querySelectorAll('.layer').forEach(function (layer) {
+        layer.classList.remove('active');
+      });
+
+      button.classList.add('active');
+      stackInfo.textContent = button.dataset.info || '';
+    });
+  }
+
+  function renderKnowledgeGraph() {
+    const container = document.getElementById('knowledge-graph');
+    if (!container || typeof window.vis === 'undefined') return;
+
+    const nodes = new window.vis.DataSet([
+      { id: 1, label: 'Reasoning Systems', color: '#5b8cff' },
+      { id: 2, label: 'AI Decision Making', color: '#c9a84c' },
+      { id: 3, label: 'Solo Founder Strategy', color: '#5b8cff' },
+      { id: 4, label: 'Research Thinking', color: '#c9a84c' },
+      { id: 5, label: 'Zayvora Architecture', color: '#5b8cff' }
+    ]);
+
+    const edges = new window.vis.DataSet([
+      { from: 1, to: 2 },
+      { from: 1, to: 4 },
+      { from: 2, to: 5 },
+      { from: 3, to: 4 },
+      { from: 4, to: 5 }
+    ]);
+
+    const options = {
+      autoResize: true,
+      physics: { stabilization: true },
+      nodes: {
+        shape: 'dot',
+        size: 14,
+        font: { color: '#e5e8f0', face: 'Inter', size: 14 },
+        borderWidth: 1
+      },
+      edges: {
+        color: '#2a2f3a',
+        width: 1.2,
+        smooth: { type: 'dynamic' }
+      },
+      interaction: {
+        hover: true,
+        tooltipDelay: 120
+      }
+    };
+
+    // eslint-disable-next-line no-new
+    new window.vis.Network(container, { nodes: nodes, edges: edges }, options);
+  }
+
+  async function loadGitHubRepos() {
+    const container = document.getElementById('repos');
+    if (!container) return;
+
+    container.textContent = 'Loading repositories…';
+
+    try {
+      const response = await fetch('https://api.github.com/orgs/via-decide/repos');
+      if (!response.ok) {
+        throw new Error('GitHub response error: ' + response.status);
+      }
+
+      const data = await response.json();
+      const repos = Array.isArray(data) ? data.slice(0, 6) : [];
+
+      container.textContent = '';
+
+      repos.forEach(function (repo) {
+        const card = document.createElement('article');
+        card.className = 'repo';
+
+        const title = document.createElement('h4');
+        title.textContent = repo.name;
+
+        const description = document.createElement('p');
+        description.textContent = repo.description || 'No description available.';
+
+        const link = document.createElement('a');
+        link.href = repo.html_url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.textContent = 'Open Repo';
+
+        card.appendChild(title);
+        card.appendChild(description);
+        card.appendChild(link);
+        container.appendChild(card);
+      });
+
+      if (!repos.length) {
+        container.textContent = 'No repositories found.';
+      }
+    } catch (error) {
+      container.textContent = 'Unable to load GitHub activity right now.';
+      console.error(error);
+    }
+  }
+
+  renderKnowledgeGraph();
+  loadGitHubRepos();
+})();
