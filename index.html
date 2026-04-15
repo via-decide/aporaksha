@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aporaksha — Systems Interface</title>
+    <meta
+      name="description"
+      content="Aporaksha systems interface for reasoning workflows, modules, and research."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <script defer src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <script defer src="./script.js"></script>
+  </head>
+  <body>
+    <header class="hero section">
+      <p class="eyebrow">Systems Interface</p>
+      <h1>Aporaksha</h1>
+      <p class="subtitle">Systems for Human Reasoning</p>
+      <div class="hero-links">
+        <a class="btn primary" href="./workspace">Open Workspace</a>
+        <a class="btn" href="./research">Research</a>
+        <a class="btn" href="https://github.com/via-decide" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="section" aria-labelledby="stack-title">
+        <div class="section-head">
+          <h2 id="stack-title">Aporaksha Stack Diagram</h2>
+          <p>Click each layer to inspect the interface architecture.</p>
+        </div>
+        <div class="stack" id="stack">
+          <button class="layer active" data-info="User interface and workspace shell.">Interface</button>
+          <button class="layer" data-info="Mars workspace environment and execution zone.">Mars Workspace</button>
+          <button class="layer" data-info="Zayvora reasoning engine for iterative cognition.">Zayvora Engine</button>
+          <button class="layer" data-info="Knowledge graph, research memory, and retrieval systems.">Knowledge Layer</button>
+          <button class="layer" data-info="Security controls, mirrors, and audit infrastructure.">Security Layer</button>
+        </div>
+        <p id="stack-info" class="surface">User interface and workspace shell.</p>
+      </section>
+
+      <section class="section" aria-labelledby="loop-title">
+        <div class="section-head">
+          <h2 id="loop-title">Zayvora Reasoning Loop</h2>
+          <p>Reasoning is staged, recursive, and continuously verified.</p>
+        </div>
+        <div class="reasoning-loop" aria-label="Zayvora reasoning loop visualization">
+          <span style="--i: 0">DECOMPOSE</span>
+          <span style="--i: 1">RETRIEVE</span>
+          <span style="--i: 2">SYNTHESIZE</span>
+          <span style="--i: 3">CALCULATE</span>
+          <span style="--i: 4">VERIFY</span>
+          <span style="--i: 5">REVISE</span>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="modules-title">
+        <div class="section-head">
+          <h2 id="modules-title">Ecosystem Modules</h2>
+          <p>Operational components across the Aporaksha ecosystem.</p>
+        </div>
+        <div class="modules-grid">
+          <article class="module">
+            <h3>Zayvora</h3>
+            <p>Reasoning engine for decision intelligence.</p>
+            <a href="./zayvora">Open</a>
+          </article>
+          <article class="module">
+            <h3>Mars</h3>
+            <p>Workspace environment for structured execution.</p>
+            <a href="./workspace">Open</a>
+          </article>
+          <article class="module">
+            <h3>SkillHex</h3>
+            <p>Capability graph for modular skills and tooling.</p>
+            <a href="./skillhex">Open</a>
+          </article>
+          <article class="module">
+            <h3>Orchade</h3>
+            <p>Orchestration layer for coordinated reasoning pipelines.</p>
+            <a href="./orchade">Open</a>
+          </article>
+          <article class="module">
+            <h3>Games</h3>
+            <p>Applied simulations for strategic and cognitive training.</p>
+            <a href="./games">Open</a>
+          </article>
+          <article class="module">
+            <h3>Passport</h3>
+            <p>Identity and progression surface across system modules.</p>
+            <a href="./passport">Open</a>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="graph-title">
+        <div class="section-head">
+          <h2 id="graph-title">Knowledge Graph</h2>
+          <p>Research nodes and thematic links in the reasoning network.</p>
+        </div>
+        <div id="knowledge-graph" class="surface graph" role="img" aria-label="Knowledge graph visualization"></div>
+      </section>
+
+      <section class="section" aria-labelledby="github-title">
+        <div class="section-head">
+          <h2 id="github-title">Live GitHub Activity</h2>
+          <p>Latest repositories from the <code>via-decide</code> organization.</p>
+        </div>
+        <div id="repos" class="repo-grid" aria-live="polite"></div>
+      </section>
+
+      <section class="section" aria-labelledby="research-title">
+        <div class="section-head">
+          <h2 id="research-title">Research / Articles</h2>
+          <p>Latest writing from <code>via-decide/Newslatters-articles</code>.</p>
+        </div>
+        <div id="research-list" class="research-list">
+          <article class="surface research-item">
+            <h3>The Difference Between Answering and Reasoning</h3>
+            <a href="https://github.com/via-decide/Newslatters-articles" target="_blank" rel="noopener noreferrer">Read Article</a>
+          </article>
+          <article class="surface research-item">
+            <h3>Research Tools vs Research Thinking</h3>
+            <a href="https://github.com/via-decide/Newslatters-articles" target="_blank" rel="noopener noreferrer">Read Article</a>
+          </article>
+          <article class="surface research-item">
+            <h3>The Zayvora Architecture</h3>
+            <a href="https://github.com/via-decide/Newslatters-articles" target="_blank" rel="noopener noreferrer">Read Article</a>
+          </article>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
