@@ -1,6 +1,15 @@
 (function () {
   'use strict';
 
+  const MODULE_ROUTES = {
+    zayvora: 'https://daxini.xyz',
+    mars: 'https://daxini.xyz/workspace',
+    skillhex: 'https://daxini.xyz/skillhex',
+    orchade: 'https://logichub.app',
+    games: 'https://via-decide.github.io/Game-',
+    passport: 'https://daxini.space'
+  };
+
   const stack = document.getElementById('stack');
   const stackInfo = document.getElementById('stack-info');
 
@@ -110,6 +119,25 @@
     }
   }
 
+  function wireModuleNavigation() {
+    document.querySelectorAll('[data-module]').forEach(function (moduleCard) {
+      const moduleName = moduleCard.dataset.module;
+      const url = MODULE_ROUTES[moduleName];
+      const openLink = moduleCard.querySelector('.module-open');
+      if (!url || !openLink) return;
+
+      openLink.href = url;
+      openLink.target = '_blank';
+      openLink.rel = 'noopener noreferrer';
+
+      openLink.addEventListener('click', function (event) {
+        event.preventDefault();
+        window.open(url, '_blank', 'noopener,noreferrer');
+      });
+    });
+  }
+
   renderKnowledgeGraph();
   loadGitHubRepos();
+  wireModuleNavigation();
 })();
