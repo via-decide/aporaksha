@@ -261,3 +261,40 @@ h1 {
     grid-template-columns: 1fr;
   }
 }
+
+.site-footer {
+  padding: 2rem 1.25rem;
+  border-top: 1px solid var(--border);
+  margin-top: 2rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.footer-content {
+  max-width: 1080px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.footer-content p {
+  margin: 0;
+}
+
+.footer-links {
+  display: flex;
+  gap: 1rem;
+}
+
+.footer-links a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 180ms ease;
+}
+
+.footer-links a:hover {
+  color: var(--text);
+}

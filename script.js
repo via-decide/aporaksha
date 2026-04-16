@@ -1,15 +1,6 @@
 (function () {
   'use strict';
 
-  const MODULE_ROUTES = {
-    zayvora: 'https://daxini.xyz',
-    mars: 'https://daxini.xyz/workspace',
-    skillhex: 'https://daxini.xyz/skillhex',
-    orchade: 'https://logichub.app',
-    games: 'https://via-decide.github.io/Game-',
-    passport: 'https://daxini.space'
-  };
-
   const stack = document.getElementById('stack');
   const stackInfo = document.getElementById('stack-info');
 
@@ -57,7 +48,7 @@
         borderWidth: 1
       },
       edges: {
-        color: '#2a2f3a',
+        color: 'rgba(91, 140, 255, 0.4)',
         width: 1.2,
         smooth: { type: 'dynamic' }
       },
@@ -78,7 +69,7 @@
     container.textContent = 'Loading repositories…';
 
     try {
-      const response = await fetch('https://api.github.com/orgs/via-decide/repos');
+      const response = await fetch('https://api.github.com/users/via-decide/repos?sort=updated&per_page=6');
       if (!response.ok) {
         throw new Error('GitHub response error: ' + response.status);
       }
@@ -119,25 +110,14 @@
     }
   }
 
-  function wireModuleNavigation() {
-    document.querySelectorAll('[data-module]').forEach(function (moduleCard) {
-      const moduleName = moduleCard.dataset.module;
-      const url = MODULE_ROUTES[moduleName];
-      const openLink = moduleCard.querySelector('.module-open');
-      if (!url || !openLink) return;
-
-      openLink.href = url;
-      openLink.target = '_blank';
-      openLink.rel = 'noopener noreferrer';
-
-      openLink.addEventListener('click', function (event) {
-        event.preventDefault();
-        window.open(url, '_blank', 'noopener,noreferrer');
-      });
-    });
+  function waitForVisAndRender() {
+    if (typeof window.vis !== 'undefined') {
+      renderKnowledgeGraph();
+    } else {
+      setTimeout(waitForVisAndRender, 100);
+    }
   }
 
-  renderKnowledgeGraph();
+  waitForVisAndRender();
   loadGitHubRepos();
-  wireModuleNavigation();
 })();
