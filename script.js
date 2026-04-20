@@ -48,7 +48,7 @@
         borderWidth: 1
       },
       edges: {
-        color: '#2a2f3a',
+        color: 'rgba(91, 140, 255, 0.4)',
         width: 1.2,
         smooth: { type: 'dynamic' }
       },
@@ -69,7 +69,7 @@
     container.textContent = 'Loading repositories…';
 
     try {
-      const response = await fetch('https://api.github.com/orgs/via-decide/repos');
+      const response = await fetch('https://api.github.com/users/via-decide/repos?sort=updated&per_page=6');
       if (!response.ok) {
         throw new Error('GitHub response error: ' + response.status);
       }
@@ -110,6 +110,61 @@
     }
   }
 
-  renderKnowledgeGraph();
+  function waitForVisAndRender() {
+    if (typeof window.vis !== 'undefined') {
+      renderKnowledgeGraph();
+    } else {
+      setTimeout(waitForVisAndRender, 100);
+    }
+  }
+
+  waitForVisAndRender();
   loadGitHubRepos();
+
+  function setText(id, text) {
+    var element = document.getElementById(id);
+    if (!element) return;
+    element.textContent = text;
+  }
+
+  async function loadSecurityTelemetry() {
+    if (!window.HanumanTelemetryAdapter || typeof window.HanumanTelemetryAdapter.getTelemetrySummary !== 'function') {
+      return;
+    }
+
+    var summary = await window.HanumanTelemetryAdapter.getTelemetrySummary();
+    setText('security-status', summary.status || 'Protected');
+    setText('security-summary', summary.attack_summary || 'No active threats detected');
+    setText('security-scan', summary.scanned_at || new Date().toISOString());
+  }
+
+  function getGatewayHandle() {
+    var seed = Date.now().toString(36).slice(-6);
+    return 'gateway_' + seed;
+  }
+
+  function bindPassportEntry() {
+    var button = document.getElementById('open-passport-button');
+    if (!button) return;
+
+    button.addEventListener('click', async function () {
+      if (!window.CorePassportAdapter || !window.EcosystemRouter) {
+        window.location.href = './passport/profile.html';
+        return;
+      }
+
+      var session = await window.CorePassportAdapter.createOrBindSession(getGatewayHandle());
+      if (!session) {
+        window.location.href = './passport/profile.html';
+        return;
+      }
+
+      if (window.EcosystemRouter && typeof window.EcosystemRouter.routeTo === 'function') {
+        window.EcosystemRouter.routeTo('daxini_workspace');
+      }
+    });
+  }
+
+  bindPassportEntry();
+  loadSecurityTelemetry();
 })();
