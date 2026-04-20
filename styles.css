@@ -225,20 +225,53 @@ h1 {
 }
 
 .activity-feed li {
-  display: flex;
-  gap: 0.75rem;
   border-bottom: 1px solid var(--border);
-  padding: 0.7rem 0;
+  padding: 0.8rem 0;
 }
 
 .activity-feed li:last-child {
   border-bottom: 0;
 }
 
-.activity-time {
+.activity-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 0.35rem;
+}
+
+.activity-badge {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(201, 168, 76, 0.5);
+  background: rgba(201, 168, 76, 0.1);
   color: var(--gold);
+  border-radius: 999px;
+  padding: 0.16rem 0.55rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+}
+
+.activity-time {
+  color: var(--muted);
   font-family: 'JetBrains Mono', monospace;
-  min-width: 3rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.activity-title,
+.activity-detail {
+  margin: 0;
+}
+
+.activity-title {
+  font-weight: 600;
+}
+
+.activity-detail {
+  color: var(--muted);
+  margin-top: 0.12rem;
 }
 
 .flow {
