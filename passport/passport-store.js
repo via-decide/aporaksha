@@ -57,6 +57,13 @@
     }) || null;
   }
 
+  function findPassportByNfcChipId(nfcChipId) {
+    var registry = loadRegistry();
+    return registry.passports.find(function (passport) {
+      return passport.nfc_chip_id === nfcChipId || passport.nfc_id === nfcChipId;
+    }) || null;
+  }
+
   function updateActivity(passportId, amount) {
     var registry = loadRegistry();
     var increment = Number.isFinite(amount) ? amount : 1;
@@ -77,6 +84,7 @@
     createPassport: createPassport,
     findPassportByHandle: findPassportByHandle,
     findPassportById: findPassportById,
+    findPassportByNfcChipId: findPassportByNfcChipId,
     loadRegistry: loadRegistry,
     saveRegistry: saveRegistry,
     updateActivity: updateActivity

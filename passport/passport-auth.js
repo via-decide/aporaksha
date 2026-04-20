@@ -63,6 +63,35 @@
     return global.ZayvoraPassportStore.findPassportByHandle(identifier);
   }
 
+  function loginWithNfcChipId(nfcChipId) {
+    if (!global.ZayvoraPassportStore || typeof global.ZayvoraPassportStore.findPassportByNfcChipId !== 'function') {
+      return null;
+    }
+
+    if (!nfcChipId || typeof nfcChipId !== 'string') return null;
+
+    var passport = global.ZayvoraPassportStore.findPassportByNfcChipId(nfcChipId.trim());
+    if (!passport) return null;
+    return bindSession(passport);
+  }
+
+  function getNfcProfile(nfcChipId) {
+    if (!global.ZayvoraPassportStore || typeof global.ZayvoraPassportStore.findPassportByNfcChipId !== 'function') {
+      return null;
+    }
+
+    var passport = global.ZayvoraPassportStore.findPassportByNfcChipId((nfcChipId || '').trim());
+    if (!passport) return null;
+
+    return {
+      passport_id: passport.passport_id,
+      handle: passport.handle,
+      skills: Array.isArray(passport.skills) ? passport.skills : [],
+      reputation: Number.isFinite(passport.reputation) ? passport.reputation : 0,
+      assets: Array.isArray(passport.assets) ? passport.assets : []
+    };
+  }
+
   function isTrustedOrigin(origin) {
     return TRUSTED_ORIGINS.indexOf(origin) !== -1;
   }
@@ -81,7 +110,9 @@
     createPassport: createPassport,
     getSession: getSession,
     isTrustedOrigin: isTrustedOrigin,
+    loginWithNfcChipId: loginWithNfcChipId,
     lookupPassport: lookupPassport,
+    getNfcProfile: getNfcProfile,
     validateSessionForOrigin: validateSessionForOrigin
   };
 })(window);

@@ -29,7 +29,7 @@
       reputation: Number.isFinite(payload.reputation) ? payload.reputation : 0,
       assets: normalizeAssets(payload.assets),
       wallet_address: payload.wallet_address || null,
-      nfc_id: payload.nfc_id || null
+      nfc_chip_id: payload.nfc_chip_id || payload.nfc_id || null
     };
   }
 
