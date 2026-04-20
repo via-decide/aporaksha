@@ -118,9 +118,6 @@
     }
   }
 
-  waitForVisAndRender();
-  loadGitHubRepos();
-
   function setText(id, text) {
     var element = document.getElementById(id);
     if (!element) return;
@@ -147,24 +144,34 @@
     var button = document.getElementById('open-passport-button');
     if (!button) return;
 
-    button.addEventListener('click', async function () {
-      if (!window.CorePassportAdapter || !window.EcosystemRouter) {
-        window.location.href = './passport/profile.html';
-        return;
+    button.addEventListener('click', async function (event) {
+      event.preventDefault();
+
+      if (window.CorePassportAdapter && typeof window.CorePassportAdapter.createOrBindSession === 'function') {
+        await window.CorePassportAdapter.createOrBindSession(getGatewayHandle());
       }
 
-      var session = await window.CorePassportAdapter.createOrBindSession(getGatewayHandle());
-      if (!session) {
-        window.location.href = './passport/profile.html';
-        return;
-      }
-
-      if (window.EcosystemRouter && typeof window.EcosystemRouter.routeTo === 'function') {
-        window.EcosystemRouter.routeTo('daxini_workspace');
-      }
+      window.location.href = '/passport';
     });
   }
 
+  function renderGatewayModules() {
+    if (window.EcosystemGrid && typeof window.EcosystemGrid.render === 'function') {
+      window.EcosystemGrid.render('ecosystem-module-grid');
+    }
+
+    if (window.CapabilitiesGrid && typeof window.CapabilitiesGrid.render === 'function') {
+      window.CapabilitiesGrid.render('capabilities-grid');
+    }
+
+    if (window.ActivityFeed && typeof window.ActivityFeed.render === 'function') {
+      window.ActivityFeed.render('activity-feed');
+    }
+  }
+
+  waitForVisAndRender();
+  loadGitHubRepos();
   bindPassportEntry();
   loadSecurityTelemetry();
+  renderGatewayModules();
 })();
