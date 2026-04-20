@@ -6,10 +6,10 @@
     <title>Aporaksha — Ecosystem Gateway</title>
     <meta
       name="description"
-      content="Aporaksha ecosystem gateway to route into Workspace, app building, marketplace, simulations, security, and VIA."
+      content="Aporaksha connects AI reasoning, creation tools, simulations, marketplaces, and security infrastructure into one builder ecosystem."
     />
     <meta property="og:title" content="Aporaksha — Ecosystem Gateway" />
-    <meta property="og:description" content="Route into the live VIA ecosystem in one click." />
+    <meta property="og:description" content="Build, publish, and own digital systems from one entry point." />
     <meta property="og:type" content="website" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪐</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -31,136 +31,79 @@
     <script defer src="./passport/store/passport-cache.js"></script>
     <script defer src="./passport/store/passport-loader.js"></script>
     <script defer src="./security/hanuman-telemetry-adapter.js"></script>
+    <script defer src="./components/ecosystem/ecosystem-card.js"></script>
+    <script defer src="./components/ecosystem/ecosystem-grid.js"></script>
+    <script defer src="./components/capabilities/capabilities-grid.js"></script>
+    <script defer src="./components/activity/activity-feed.js"></script>
     <script defer src="./script.js"></script>
-    <!-- Vercel Web Analytics -->
-    <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
-    <script>
-      window.va = window.va || function () {
-        (window.vaq = window.vaq || []).push(arguments);
-      };
-    </script>
-    <script defer src="/_vercel/insights/script.js"></script>
   </head>
   <body>
     <nav class="top-nav" aria-label="Primary">
-      <a href="#gateway-home">Gateway Home</a>
-      <a href="./passport/profile.html">Passport</a>
-      <a href="./ecosystem/index.html">Ecosystem</a>
-      <a href="#domains">Domains</a>
-      <a href="#identity">Sign-In Value</a>
-      <a href="#ecosystem-map">Ecosystem Map</a>
-      <a href="https://github.com/via-decide" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a href="https://daxini.xyz" target="_blank" rel="noopener noreferrer">Workspace</a>
+      <a href="https://logichub.app" target="_blank" rel="noopener noreferrer">Build</a>
+      <a href="https://daxini.space" target="_blank" rel="noopener noreferrer">Marketplace</a>
+      <a href="https://hanuman.solutions" target="_blank" rel="noopener noreferrer">Security</a>
+      <a href="/passport">Passport</a>
     </nav>
 
     <header class="hero section" id="gateway-home">
-      <p class="eyebrow">Ecosystem Router</p>
-      <h1>APORAKSHA</h1>
-      <p class="subtitle">The operating entry point to the VIA stack.</p>
-      <p class="subtitle">Go from gateway to live product in one click and understand what each destination does right now.</p>
+      <p class="eyebrow">Aporaksha Ecosystem Gateway</p>
+      <h1>Build, publish, and own digital systems.</h1>
+      <p class="subtitle">Aporaksha connects AI reasoning, creation tools, simulations, marketplaces, and security infrastructure into one builder ecosystem.</p>
       <div class="hero-links">
-        <a class="btn primary" href="#actions">Choose Destination</a>
-        <button class="btn" id="open-passport-button" type="button">Open Passport</button>
-        <a class="btn" href="#domains">Open Domain Tiles</a>
+        <a class="btn primary" href="https://daxini.xyz" target="_blank" rel="noopener noreferrer">Open Workspace</a>
+        <a class="btn" href="https://daxini.space" target="_blank" rel="noopener noreferrer">Explore Marketplace</a>
+        <a class="btn" id="open-passport-button" href="/passport">Create Passport</a>
       </div>
     </header>
 
     <main>
-      <section class="section" id="actions" aria-labelledby="action-title">
+      <section class="section" id="ecosystem-modules" aria-labelledby="modules-title">
         <div class="section-head">
-          <h2 id="action-title">Ecosystem Gateway</h2>
-          <p>Pick a route and open the destination instantly.</p>
+          <h2 id="modules-title">Ecosystem Modules</h2>
+          <p>Everything in the platform, connected from one launch point.</p>
         </div>
-        <div class="action-grid">
-          <a class="action-card" href="./passport/profile.html">
-            <h3>Passport</h3>
-            <p>Open identity profile, reputation, skills, assets, and activity score.</p>
-          </a>
-          <a class="action-card" href="https://daxini.xyz/workspace" target="_blank" rel="noopener noreferrer">
-            <h3>Workspace</h3>
-            <p>Launch Daxini workspace for active tasks and execution runs.</p>
-          </a>
-          <a class="action-card" href="https://daxini.xyz" target="_blank" rel="noopener noreferrer">
-            <h3>Build Tools</h3>
-            <p>Open core VIA build surface to design and ship app logic.</p>
-          </a>
-          <a class="action-card" href="https://daxini.space" target="_blank" rel="noopener noreferrer">
-            <h3>Marketplace</h3>
-            <p>Browse and install modules, profiles, and ecosystem assets.</p>
-          </a>
-          <a class="action-card" href="https://via-decide.github.io/Game-" target="_blank" rel="noopener noreferrer">
-            <h3>Play Simulations</h3>
-            <p>Enter live simulation environments for scenario training.</p>
-          </a>
-          <a class="action-card" href="https://hanuman.solutions" target="_blank" rel="noopener noreferrer">
-            <h3>Security</h3>
-            <p>Inspect trust, audits, and protection controls.</p>
-          </a>
-          <a class="action-card" href="https://viadecide.com" target="_blank" rel="noopener noreferrer">
-            <h3>Visit VIA</h3>
-            <p>Go to the VIA ecosystem home and public-facing stack entry.</p>
-          </a>
-          <a class="action-card" href="./ecosystem/index.html">
-            <h3>Ecosystem Directory</h3>
-            <p>View all connected systems with purpose, links, and activity indicators.</p>
-          </a>
-        </div>
-      </section>
-
-      <section class="section" id="domains" aria-labelledby="domains-title">
-        <div class="section-head">
-          <h2 id="domains-title">Domain Tiles</h2>
-          <p>Each destination includes the product, current capability, and live status.</p>
-        </div>
-        <div class="modules-grid">
-          <article class="module">
-            <h3>Daxini Workspace</h3>
-            <p>Run, resume, and manage active workspace tasks.</p>
-            <p class="module-status online">Status: Online</p>
-            <a class="module-open" href="https://daxini.xyz/workspace" target="_blank" rel="noopener noreferrer">Open</a>
-          </article>
-          <article class="module">
-            <h3>Zayvora Builder</h3>
-            <p>Create and iterate application logic for VIA products.</p>
-            <p class="module-status online">Status: Online</p>
-            <a class="module-open" href="https://daxini.xyz" target="_blank" rel="noopener noreferrer">Open</a>
-          </article>
-          <article class="module">
-            <h3>Daxini Marketplace</h3>
-            <p>Find installable tools and profile-linked modules.</p>
-            <p class="module-status experimental">Status: Expanding</p>
-            <a class="module-open" href="https://daxini.space" target="_blank" rel="noopener noreferrer">Open</a>
-          </article>
-          <article class="module">
-            <h3>Simulation Hub</h3>
-            <p>Play strategy and learning simulations in the VIA game stack.</p>
-            <p class="module-status online">Status: Online</p>
-            <a class="module-open" href="https://via-decide.github.io/Game-" target="_blank" rel="noopener noreferrer">Open</a>
-          </article>
-          <article class="module">
-            <h3>Hanuman Security</h3>
-            <p>Review security posture, assurance, and infrastructure controls.</p>
-            <p class="module-status online">Status: Online</p>
-            <a class="module-open" href="https://hanuman.solutions" target="_blank" rel="noopener noreferrer">Open</a>
-          </article>
-          <article class="module">
-            <h3>VIA Portal</h3>
-            <p>Enter the broader VIA destination map and ecosystem navigation.</p>
-            <p class="module-status online">Status: Online</p>
-            <a class="module-open" href="https://viadecide.com" target="_blank" rel="noopener noreferrer">Open</a>
-          </article>
-        </div>
+        <div class="modules-grid scroll-grid" id="ecosystem-module-grid"></div>
       </section>
 
       <section class="section" id="identity" aria-labelledby="identity-title">
         <div class="section-head">
-          <h2 id="identity-title">Why sign in?</h2>
-          <p>Identity enables continuity and publishing across the ecosystem.</p>
+          <h2 id="identity-title">Zayvora Passport</h2>
+          <p>The sovereign identity layer across the ecosystem. Your passport carries skills, reputation, assets, and activity score wherever you build or publish.</p>
         </div>
-        <div class="identity-grid">
-          <article class="surface identity-card"><h3>Continue tasks</h3><p>Resume previous runs and active workflows without restart.</p></article>
-          <article class="surface identity-card"><h3>Publish apps</h3><p>Ship and update app outputs across connected VIA surfaces.</p></article>
-          <article class="surface identity-card"><h3>Save profile</h3><p>Persist settings, role context, and preferred routes.</p></article>
-          <article class="surface identity-card"><h3>Install tools</h3><p>Add new modules and utilities from the marketplace.</p></article>
+        <div class="identity-grid passport-fields">
+          <article class="surface identity-card"><h3>skills</h3></article>
+          <article class="surface identity-card"><h3>reputation</h3></article>
+          <article class="surface identity-card"><h3>assets</h3></article>
+          <article class="surface identity-card"><h3>activity score</h3></article>
+        </div>
+        <div class="hero-links identity-actions">
+          <a class="btn primary" href="/passport">Create Passport</a>
+          <a class="btn" href="/passport">View Passport</a>
+        </div>
+      </section>
+
+      <section class="section" id="capabilities" aria-labelledby="capabilities-title">
+        <div class="section-head">
+          <h2 id="capabilities-title">What You Can Do Here</h2>
+        </div>
+        <div class="identity-grid" id="capabilities-grid"></div>
+      </section>
+
+      <section class="section" id="activity" aria-labelledby="activity-title">
+        <div class="section-head">
+          <h2 id="activity-title">Ecosystem Activity Feed</h2>
+        </div>
+        <ul class="surface activity-feed" id="activity-feed"></ul>
+      </section>
+
+      <section class="section" id="economy" aria-labelledby="economy-title">
+        <div class="section-head">
+          <h2 id="economy-title">Creator Economy Loop</h2>
+        </div>
+        <div class="surface">
+          <p class="flow">Create → Publish → Earn</p>
+          <p>Build tools with Logichub, publish on Daxini.space, and earn as users install and run your work.</p>
         </div>
       </section>
 
@@ -191,12 +134,20 @@
       </section>
     </main>
 
-    <footer class="site-footer">
+    <footer class="site-footer" id="footer-map">
       <div class="footer-content">
-        <p>&copy; 2026 Via-Decide. All rights reserved.</p>
+        <div>
+          <p><strong>Ecosystem Architecture</strong></p>
+          <p>Aporaksha → Identity Gateway</p>
+          <p>Daxini.xyz → Workspace</p>
+          <p>Logichub → Builder Platform</p>
+          <p>Daxini.space → Marketplace</p>
+          <p>Hanuman → Security</p>
+          <p>ViaDecide → Organization</p>
+        </div>
         <div class="footer-links">
           <a href="https://github.com/via-decide" target="_blank" rel="noopener noreferrer">GitHub</a>
-          <a href="https://daxini.xyz" target="_blank" rel="noopener noreferrer">Zayvora</a>
+          <a href="https://viadecide.com" target="_blank" rel="noopener noreferrer">ViaDecide</a>
         </div>
       </div>
     </footer>

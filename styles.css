@@ -103,7 +103,7 @@ main,
 }
 
 h1 {
-  font-size: clamp(2.6rem, 8vw, 5rem);
+  font-size: clamp(2.2rem, 6vw, 4.2rem);
 }
 
 .hero-links {
@@ -155,20 +155,8 @@ h1 {
   gap: 0.9rem;
 }
 
-.action-grid {
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-}
-
-.action-card {
-  display: grid;
-  gap: 0.5rem;
-  padding: 1rem;
-  text-decoration: none;
-  color: var(--text);
-}
-
 .modules-grid {
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
 }
 
 .module,
@@ -178,7 +166,7 @@ h1 {
 }
 
 .identity-grid {
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
 }
 
 .module h3,
@@ -193,6 +181,11 @@ h1 {
   margin: 0;
 }
 
+.module-icon {
+  font-size: 1.35rem;
+  margin-bottom: 0.25rem;
+}
+
 .module-open {
   display: inline-block;
   margin-top: 0.55rem;
@@ -201,19 +194,6 @@ h1 {
   padding: 0.35rem 0.7rem;
   text-decoration: none;
   color: var(--text);
-}
-
-.module-status {
-  margin-top: 0.25rem;
-  font-size: 0.88rem;
-}
-
-.module-status.online {
-  color: #8fd694;
-}
-
-.module-status.experimental {
-  color: var(--gold);
 }
 
 .stack {
@@ -238,6 +218,35 @@ h1 {
   background: rgba(91, 140, 255, 0.12);
 }
 
+.activity-feed {
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem 1rem;
+}
+
+.activity-feed li {
+  display: flex;
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--border);
+  padding: 0.7rem 0;
+}
+
+.activity-feed li:last-child {
+  border-bottom: 0;
+}
+
+.activity-time {
+  color: var(--gold);
+  font-family: 'JetBrains Mono', monospace;
+  min-width: 3rem;
+}
+
+.flow {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--gold);
+  font-size: 1.05rem;
+}
+
 .site-footer {
   padding: 2rem 1.25rem;
   border-top: 1px solid var(--border);
@@ -251,27 +260,40 @@ h1 {
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
   gap: 1rem;
 }
 
 .footer-content p {
-  margin: 0;
+  margin: 0 0 0.2rem;
 }
 
-.footer-links {
-  display: flex;
-  gap: 1rem;
-}
-
-@media (max-width: 560px) {
+@media (max-width: 760px) {
   .hero {
-    min-height: 56vh;
+    min-height: auto;
+    padding: 2rem 1rem;
   }
 
-  .action-grid,
-  .modules-grid,
+  .hero-links {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  .modules-grid {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 0.45rem;
+  }
+
+  .modules-grid .module {
+    min-width: 78%;
+  }
+
   .identity-grid {
     grid-template-columns: 1fr;
   }
