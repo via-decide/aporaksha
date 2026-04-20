@@ -33,8 +33,39 @@ code {
   color: var(--gold);
 }
 
+
+
 a {
   color: var(--accent);
+}
+
+.top-nav {
+  max-width: 1080px;
+  margin: 0.75rem auto 0;
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  position: sticky;
+  top: 0;
+  z-index: 12;
+  background: rgba(11, 12, 15, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+}
+
+.top-nav a {
+  text-decoration: none;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.9rem;
+}
+
+.top-nav a:hover {
+  border-color: var(--gold);
 }
 
 main,
@@ -171,35 +202,51 @@ h1 {
   }
 }
 
+.action-grid,
 .modules-grid,
+.discovery-grid,
 .repo-grid,
 .research-list {
   display: grid;
   gap: 0.9rem;
 }
 
+.action-grid {
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+
 .modules-grid {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
+.discovery-grid {
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.action-card,
 .module,
 .repo,
-.research-item {
+.research-item,
+.discovery-card {
   border: 1px solid var(--border);
   background: var(--surface);
   border-radius: 12px;
   padding: 1rem;
 }
 
+.action-card h3,
 .module h3,
 .repo h4,
-.research-item h3 {
+.research-item h3,
+.discovery-card h3 {
   margin-bottom: 0.55rem;
 }
 
+.action-card a,
 .module a,
 .repo a,
-.research-item a {
+.research-item a,
+.discovery-card a {
   display: inline-block;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -224,6 +271,27 @@ h1 {
 
 .module-status.online {
   color: #8fd694;
+}
+
+
+.action-card,
+.discovery-card {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.action-card p,
+.module p,
+.discovery-card p {
+  margin: 0;
+}
+
+.action-icon {
+  font-size: 1.4rem;
+}
+
+.architecture-subhead {
+  margin-top: 1.2rem;
 }
 
 .module-status.experimental {
@@ -257,7 +325,9 @@ h1 {
 
   .reasoning-loop,
   .repo-grid,
-  .modules-grid {
+  .modules-grid,
+  .action-grid,
+  .discovery-grid {
     grid-template-columns: 1fr;
   }
 }

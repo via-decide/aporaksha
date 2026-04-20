@@ -23,59 +23,79 @@
     <script defer src="./script.js"></script>
     <!-- Vercel Web Analytics -->
     <script>
-      window.va = window.va || function () { 
-        (window.vaq = window.vaq || []).push(arguments); 
+      window.va = window.va || function () {
+        (window.vaq = window.vaq || []).push(arguments);
       };
     </script>
     <script defer src="/_vercel/insights/script.js"></script>
   </head>
   <body>
+    <nav class="top-nav" aria-label="Primary">
+      <a href="https://daxini.xyz/workspace" target="_blank" rel="noopener noreferrer">Workspace</a>
+      <a href="https://github.com/via-decide/Newsletters-articles" target="_blank" rel="noopener noreferrer">Research</a>
+      <a href="#action-panel">Tools</a>
+      <a href="https://via-decide.github.io/Game-" target="_blank" rel="noopener noreferrer">Games</a>
+      <a href="https://hanuman.solutions" target="_blank" rel="noopener noreferrer">Security</a>
+      <a href="#research-title">Articles</a>
+      <a href="https://github.com/via-decide" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </nav>
+
     <header class="hero section">
-      <p class="eyebrow">Systems Interface</p>
-      <h1>Aporaksha</h1>
-      <p class="subtitle">Systems for Human Reasoning</p>
+      <p class="eyebrow">Gateway Router</p>
+      <h1>APORAKSHA</h1>
+      <p class="subtitle">Operating System for Human Reasoning</p>
+      <p class="subtitle">Access research tools, AI reasoning systems, simulations, and secure infrastructure.</p>
       <div class="hero-links">
         <a class="btn primary" href="https://daxini.xyz/workspace" target="_blank" rel="noopener noreferrer">Open Workspace</a>
-        <a class="btn" href="https://github.com/via-decide/Newsletters-articles" target="_blank" rel="noopener noreferrer">Research</a>
-        <a class="btn" href="https://github.com/via-decide" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a class="btn" href="#action-panel">Explore Tools</a>
+        <a class="btn" href="#architecture-title">View Architecture</a>
       </div>
     </header>
 
     <main>
-      <section class="section" aria-labelledby="stack-title">
+      <section class="section" id="action-panel" aria-labelledby="action-title">
         <div class="section-head">
-          <h2 id="stack-title">Aporaksha Stack Diagram</h2>
-          <p>Click each layer to inspect the interface architecture.</p>
+          <h2 id="action-title">What do you want to do today?</h2>
+          <p>Choose a path and reach your destination in minimal steps.</p>
         </div>
-        <div class="stack" id="stack">
-          <button class="layer active" data-info="User interface and workspace shell.">Interface</button>
-          <button class="layer" data-info="Mars workspace environment and execution zone.">Mars Workspace</button>
-          <button class="layer" data-info="Zayvora reasoning engine for iterative cognition.">Zayvora Engine</button>
-          <button class="layer" data-info="Knowledge graph, research memory, and retrieval systems.">Knowledge Layer</button>
-          <button class="layer" data-info="Security controls, mirrors, and audit infrastructure.">Security Layer</button>
-        </div>
-        <p id="stack-info" class="surface">User interface and workspace shell.</p>
-      </section>
-
-      <section class="section" aria-labelledby="loop-title">
-        <div class="section-head">
-          <h2 id="loop-title">Zayvora Reasoning Loop</h2>
-          <p>Reasoning is staged, recursive, and continuously verified.</p>
-        </div>
-        <div class="reasoning-loop" aria-label="Zayvora reasoning loop visualization">
-          <span style="--i: 0">DECOMPOSE</span>
-          <span style="--i: 1">RETRIEVE</span>
-          <span style="--i: 2">SYNTHESIZE</span>
-          <span style="--i: 3">CALCULATE</span>
-          <span style="--i: 4">VERIFY</span>
-          <span style="--i: 5">REVISE</span>
+        <div class="action-grid">
+          <article class="action-card">
+            <p class="action-icon" aria-hidden="true">🔬</p>
+            <h3>Research</h3>
+            <p>Open NEX research tools for evidence capture, reading, and analysis.</p>
+            <a class="module-open" href="https://github.com/via-decide/Newsletters-articles" target="_blank" rel="noopener noreferrer">Open NEX</a>
+          </article>
+          <article class="action-card">
+            <p class="action-icon" aria-hidden="true">✍️</p>
+            <h3>Create</h3>
+            <p>Launch Daxini workspace to write, synthesize, and execute structured outputs.</p>
+            <a class="module-open" href="https://daxini.xyz/workspace" target="_blank" rel="noopener noreferrer">Open Daxini</a>
+          </article>
+          <article class="action-card">
+            <p class="action-icon" aria-hidden="true">🧭</p>
+            <h3>Plan Systems</h3>
+            <p>Use Logichub to model decisions, dependencies, and system strategy.</p>
+            <a class="module-open" href="https://logichub.app" target="_blank" rel="noopener noreferrer">Open Logichub</a>
+          </article>
+          <article class="action-card">
+            <p class="action-icon" aria-hidden="true">🛰️</p>
+            <h3>Play Simulations</h3>
+            <p>Enter Mars and Orchade for simulation-driven learning and execution drills.</p>
+            <a class="module-open" href="https://via-decide.github.io/Game-" target="_blank" rel="noopener noreferrer">Open Simulations</a>
+          </article>
+          <article class="action-card">
+            <p class="action-icon" aria-hidden="true">🧩</p>
+            <h3>Explore Skills</h3>
+            <p>Navigate SkillHex to discover and activate modular skills.</p>
+            <a class="module-open" href="https://daxini.xyz/skillhex" target="_blank" rel="noopener noreferrer">Open SkillHex</a>
+          </article>
         </div>
       </section>
 
       <section class="section" aria-labelledby="modules-title">
         <div class="section-head">
-          <h2 id="modules-title">Ecosystem Modules</h2>
-          <p>Operational components across the Aporaksha ecosystem.</p>
+          <h2 id="modules-title">Ecosystem Module Grid</h2>
+          <p>Clickable module tiles for every major system node.</p>
         </div>
         <div class="modules-grid">
           <article class="module" data-module="zayvora">
@@ -86,13 +106,13 @@
           </article>
           <article class="module" data-module="mars">
             <h3>Mars</h3>
-            <p>Workspace environment for structured execution.</p>
+            <p>Workspace and execution environment for structured runs.</p>
             <p class="module-status online">● Online</p>
             <a class="module-open" href="https://daxini.xyz/workspace" target="_blank" rel="noopener noreferrer">Open</a>
           </article>
           <article class="module" data-module="skillhex">
             <h3>SkillHex</h3>
-            <p>Capability graph for modular skills and tooling.</p>
+            <p>Capability graph for modular skills and tools.</p>
             <p class="module-status experimental">● Experimental</p>
             <a class="module-open" href="https://daxini.xyz/skillhex" target="_blank" rel="noopener noreferrer">Open</a>
           </article>
@@ -114,12 +134,59 @@
             <p class="module-status online">● Online</p>
             <a class="module-open" href="https://daxini.space" target="_blank" rel="noopener noreferrer">Open</a>
           </article>
+          <article class="module" data-module="security">
+            <h3>Security (Hanuman)</h3>
+            <p>Trust, audits, and secure infrastructure controls.</p>
+            <p class="module-status online">● Online</p>
+            <a class="module-open" href="https://hanuman.solutions" target="_blank" rel="noopener noreferrer">Open</a>
+          </article>
         </div>
       </section>
 
-      <section class="section" aria-labelledby="graph-title">
+      <section class="section" aria-labelledby="loop-title">
         <div class="section-head">
-          <h2 id="graph-title">Knowledge Graph</h2>
+          <h2 id="loop-title">Zayvora Reasoning Loop</h2>
+          <p>How reasoning works inside the system.</p>
+        </div>
+        <div class="reasoning-loop" aria-label="Zayvora reasoning loop visualization">
+          <span style="--i: 0">DECOMPOSE</span>
+          <span style="--i: 1">RETRIEVE</span>
+          <span style="--i: 2">SYNTHESIZE</span>
+          <span style="--i: 3">CALCULATE</span>
+          <span style="--i: 4">VERIFY</span>
+          <span style="--i: 5">REVISE</span>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="discovery-title">
+        <div class="section-head">
+          <h2 id="discovery-title">Explore the Ecosystem</h2>
+          <p>Fast routes to core websites and product surfaces.</p>
+        </div>
+        <div class="discovery-grid">
+          <article class="surface discovery-card"><h3>Logichub.app</h3><a href="https://logichub.app" target="_blank" rel="noopener noreferrer">Open</a></article>
+          <article class="surface discovery-card"><h3>Daxini.xyz</h3><a href="https://daxini.xyz" target="_blank" rel="noopener noreferrer">Open</a></article>
+          <article class="surface discovery-card"><h3>Daxini.space</h3><a href="https://daxini.space" target="_blank" rel="noopener noreferrer">Open</a></article>
+          <article class="surface discovery-card"><h3>Hanuman.solutions</h3><a href="https://hanuman.solutions" target="_blank" rel="noopener noreferrer">Open</a></article>
+          <article class="surface discovery-card"><h3>ViaDecide.com</h3><a href="https://viadecide.com" target="_blank" rel="noopener noreferrer">Open</a></article>
+        </div>
+      </section>
+
+      <section class="section" id="architecture-title" aria-labelledby="stack-title">
+        <div class="section-head">
+          <h2 id="stack-title">Architecture & Knowledge</h2>
+          <p>Secondary deep-dive sections for system architecture and research graph context.</p>
+        </div>
+        <div class="stack" id="stack">
+          <button class="layer active" data-info="User interface and workspace shell.">Interface</button>
+          <button class="layer" data-info="Mars workspace environment and execution zone.">Mars Workspace</button>
+          <button class="layer" data-info="Zayvora reasoning engine for iterative cognition.">Zayvora Engine</button>
+          <button class="layer" data-info="Knowledge graph, research memory, and retrieval systems.">Knowledge Layer</button>
+          <button class="layer" data-info="Security controls, mirrors, and audit infrastructure.">Security Layer</button>
+        </div>
+        <p id="stack-info" class="surface">User interface and workspace shell.</p>
+        <div class="section-head architecture-subhead">
+          <h3 id="graph-title">Knowledge Graph</h3>
           <p>Research nodes and thematic links in the reasoning network.</p>
         </div>
         <div id="knowledge-graph" class="surface graph" role="img" aria-label="Knowledge graph visualization"></div>
