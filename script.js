@@ -151,7 +151,7 @@
         await window.CorePassportAdapter.createOrBindSession(getGatewayHandle());
       }
 
-      window.location.href = '/passport';
+      window.location.href = './passport/';
     });
   }
 
