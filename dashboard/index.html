@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aporaksha Dashboard</title>
+    <link rel="stylesheet" href="../styles.css" />
+    <script defer src="../passport/passport-id-generator.js"></script>
+    <script defer src="../passport/passport-model.js"></script>
+    <script defer src="../passport/passport-store.js"></script>
+    <script defer src="../passport/passport-auth.js"></script>
+    <script defer src="../core/passport-adapter.js"></script>
+    <script defer src="../core/router-adapter.js"></script>
+    <script defer src="../core/security-adapter.js"></script>
+    <script defer src="../core/ecosystem-router.js"></script>
+    <script defer src="../security/hanuman-telemetry-adapter.js"></script>
+    <script defer src="../components/system-status/system-status.js"></script>
+    <script defer src="./dashboard.js"></script>
+    <style>
+      .dashboard-shell { max-width: 1080px; margin: 0 auto; padding: 1rem 1.25rem 3rem; }
+      .kpi-grid { display: grid; gap: 0.9rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+      .status-pill { margin-top: 0.5rem; display: inline-block; padding: 0.2rem 0.55rem; border-radius: 999px; font-size: 0.8rem; text-transform: uppercase; }
+      .status-online { background: rgba(81, 214, 138, 0.18); color: #51d68a; }
+      .status-degraded { background: rgba(233, 174, 75, 0.18); color: #e9ae4b; }
+      #quick-launch { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+    </style>
+  </head>
+  <body>
+    <nav class="top-nav" aria-label="Primary">
+      <a href="../index.html">Home</a>
+      <a href="https://daxini.xyz" target="_blank" rel="noopener noreferrer">Workspace</a>
+      <a href="https://logichub.app" target="_blank" rel="noopener noreferrer">Build</a>
+      <a href="https://daxini.space" target="_blank" rel="noopener noreferrer">Marketplace</a>
+      <a href="https://hanuman.solutions" target="_blank" rel="noopener noreferrer">Security</a>
+      <a href="../passport/">Passport</a>
+    </nav>
+
+    <main class="dashboard-shell">
+      <section class="section" style="border-top: 0; padding-top: 1rem;">
+        <p class="eyebrow">Aporaksha Ecosystem OS</p>
+        <h1>Live Ecosystem Dashboard</h1>
+        <p class="subtitle">Track activity, monitor trust status, and route instantly into workspace, builder, marketplace, security, and passport systems.</p>
+      </section>
+
+      <section class="section" aria-labelledby="quick-title">
+        <div class="section-head"><h2 id="quick-title">Quick System Launch</h2></div>
+        <div id="quick-launch"></div>
+      </section>
+
+      <section class="section" aria-labelledby="status-title">
+        <div class="section-head"><h2 id="status-title">System Status Panel</h2></div>
+        <div class="modules-grid" id="system-status-grid"></div>
+      </section>
+
+      <section class="section" aria-labelledby="telemetry-title">
+        <div class="section-head"><h2 id="telemetry-title">Control Center Telemetry</h2></div>
+        <div class="kpi-grid">
+          <article class="surface"><h3>Workspace Access</h3><p id="workspace-access">Routed through Daxini and Passport session context.</p></article>
+          <article class="surface"><h3>Builder Tools</h3><p id="builder-tools">Logichub route available for app creation workflows.</p></article>
+          <article class="surface"><h3>Marketplace Activity</h3><p id="marketplace-activity">Loading recent publish activity…</p></article>
+          <article class="surface"><h3>Security Telemetry</h3><p id="security-telemetry">Loading Hanuman telemetry…</p></article>
+          <article class="surface"><h3>Passport Identity</h3><p id="passport-identity">Checking active passport session…</p></article>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="activity-title">
+        <div class="section-head"><h2 id="activity-title">Live Activity Stream</h2></div>
+        <ul class="surface activity-feed" id="activity-stream"></ul>
+      </section>
+    </main>
+  </body>
+</html>
