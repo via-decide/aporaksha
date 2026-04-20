@@ -120,4 +120,51 @@
 
   waitForVisAndRender();
   loadGitHubRepos();
+
+  function setText(id, text) {
+    var element = document.getElementById(id);
+    if (!element) return;
+    element.textContent = text;
+  }
+
+  async function loadSecurityTelemetry() {
+    if (!window.HanumanTelemetryAdapter || typeof window.HanumanTelemetryAdapter.getTelemetrySummary !== 'function') {
+      return;
+    }
+
+    var summary = await window.HanumanTelemetryAdapter.getTelemetrySummary();
+    setText('security-status', summary.status || 'Protected');
+    setText('security-summary', summary.attack_summary || 'No active threats detected');
+    setText('security-scan', summary.scanned_at || new Date().toISOString());
+  }
+
+  function getGatewayHandle() {
+    var seed = Date.now().toString(36).slice(-6);
+    return 'gateway_' + seed;
+  }
+
+  function bindPassportEntry() {
+    var button = document.getElementById('open-passport-button');
+    if (!button) return;
+
+    button.addEventListener('click', async function () {
+      if (!window.CorePassportAdapter || !window.EcosystemRouter) {
+        window.location.href = './passport/profile.html';
+        return;
+      }
+
+      var session = await window.CorePassportAdapter.createOrBindSession(getGatewayHandle());
+      if (!session) {
+        window.location.href = './passport/profile.html';
+        return;
+      }
+
+      if (window.EcosystemRouter && typeof window.EcosystemRouter.routeTo === 'function') {
+        window.EcosystemRouter.routeTo('daxini_workspace');
+      }
+    });
+  }
+
+  bindPassportEntry();
+  loadSecurityTelemetry();
 })();
