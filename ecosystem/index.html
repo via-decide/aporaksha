@@ -7,9 +7,11 @@
     <link rel="stylesheet" href="../styles.css" />
     <script defer src="../core/router-adapter.js"></script>
     <script defer src="../core/ecosystem-router.js"></script>
+    <script defer src="../components/global-navbar/global-navbar.js"></script>
     <script defer src="./dashboard.js"></script>
   </head>
-  <body>
+  <body data-system="dashboard">
+    <div id="global-navbar-root"></div>
     <main class="section" style="max-width: 980px; margin: 0 auto; padding: 2rem 1.25rem;">
       <h1>Ecosystem Directory</h1>
       <p class="subtitle">Navigate across Zayvora systems from a single gateway surface.</p>

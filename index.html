@@ -35,17 +35,11 @@
     <script defer src="./components/ecosystem/ecosystem-grid.js"></script>
     <script defer src="./components/capabilities/capabilities-grid.js"></script>
     <script defer src="./components/activity/activity-feed.js"></script>
+    <script defer src="./components/global-navbar/global-navbar.js"></script>
     <script defer src="./script.js"></script>
   </head>
-  <body>
-    <nav class="top-nav" aria-label="Primary">
-      <a href="https://daxini.xyz" target="_blank" rel="noopener noreferrer">Workspace</a>
-      <a href="https://logichub.app" target="_blank" rel="noopener noreferrer">Build</a>
-      <a href="https://daxini.space" target="_blank" rel="noopener noreferrer">Marketplace</a>
-      <a href="https://hanuman.solutions" target="_blank" rel="noopener noreferrer">Security</a>
-      <a href="./dashboard/">Dashboard</a>
-      <a href="./passport/">Passport</a>
-    </nav>
+  <body data-system="dashboard">
+    <div id="global-navbar-root"></div>
 
     <header class="hero section" id="gateway-home">
       <p class="eyebrow">Aporaksha Ecosystem Gateway</p>
