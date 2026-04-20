@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Zayvora Passport Profile</title>
+    <link rel="stylesheet" href="../styles.css" />
+    <script defer src="./passport-id-generator.js"></script>
+    <script defer src="./passport-model.js"></script>
+    <script defer src="./passport-store.js"></script>
+    <script defer src="./passport-auth.js"></script>
+    <script defer src="../core/passport-adapter.js"></script>
+    <script defer src="./store/passport-cache.js"></script>
+    <script defer src="./store/passport-loader.js"></script>
+    <script defer src="./nfc/nfc-passport-reader.js"></script>
+    <script defer src="./passport-view.js"></script>
+  </head>
+  <body>
+    <main class="section" style="max-width: 860px; margin: 0 auto; padding: 2rem 1.25rem;">
+      <h1>Zayvora Passport</h1>
+      <p class="subtitle">Identity profile for the ecosystem gateway.</p>
+
+      <section class="surface" style="margin-top: 1rem;">
+        <h2>Passport Identity</h2>
+        <p><strong>Passport ID:</strong> <span id="passport-id">Loading…</span></p>
+        <p><strong>Handle:</strong> <span id="passport-handle">Loading…</span></p>
+        <p><strong>Reputation:</strong> <span id="passport-reputation">Loading…</span></p>
+        <p><strong>Skills:</strong> <span id="passport-skills">Loading…</span></p>
+        <p><strong>Assets:</strong> <span id="passport-assets">Loading…</span></p>
+        <p><strong>Activity Score:</strong> <span id="passport-activity">Loading…</span></p>
+      </section>
+
+      <section class="surface" style="margin-top: 1rem;">
+        <h2>NFC Login (Ready)</h2>
+        <p>Optional Web NFC scan for passport lookup.</p>
+        <button class="btn primary" id="nfc-login-button" type="button">Read NFC Passport</button>
+        <p id="nfc-status" class="subtitle" style="margin-top: 0.75rem;">Ready.</p>
+      </section>
+
+      <p style="margin-top: 1rem;"><a href="../index.html">← Back to Gateway</a></p>
+    </main>
+  </body>
+</html>

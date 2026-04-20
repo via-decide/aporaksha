@@ -20,6 +20,17 @@
     />
     <link rel="stylesheet" href="./styles.css" />
     <script defer src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <script defer src="./passport/passport-id-generator.js"></script>
+    <script defer src="./passport/passport-model.js"></script>
+    <script defer src="./passport/passport-store.js"></script>
+    <script defer src="./passport/passport-auth.js"></script>
+    <script defer src="./core/passport-adapter.js"></script>
+    <script defer src="./core/router-adapter.js"></script>
+    <script defer src="./core/security-adapter.js"></script>
+    <script defer src="./core/ecosystem-router.js"></script>
+    <script defer src="./passport/store/passport-cache.js"></script>
+    <script defer src="./passport/store/passport-loader.js"></script>
+    <script defer src="./security/hanuman-telemetry-adapter.js"></script>
     <script defer src="./script.js"></script>
     <!-- Vercel Web Analytics -->
     <script>
@@ -32,6 +43,8 @@
   <body>
     <nav class="top-nav" aria-label="Primary">
       <a href="#gateway-home">Gateway Home</a>
+      <a href="./passport/profile.html">Passport</a>
+      <a href="./ecosystem/index.html">Ecosystem</a>
       <a href="#domains">Domains</a>
       <a href="#identity">Sign-In Value</a>
       <a href="#ecosystem-map">Ecosystem Map</a>
@@ -45,6 +58,7 @@
       <p class="subtitle">Go from gateway to live product in one click and understand what each destination does right now.</p>
       <div class="hero-links">
         <a class="btn primary" href="#actions">Choose Destination</a>
+        <button class="btn" id="open-passport-button" type="button">Open Passport</button>
         <a class="btn" href="#domains">Open Domain Tiles</a>
       </div>
     </header>
@@ -52,20 +66,24 @@
     <main>
       <section class="section" id="actions" aria-labelledby="action-title">
         <div class="section-head">
-          <h2 id="action-title">What do you want to do?</h2>
+          <h2 id="action-title">Ecosystem Gateway</h2>
           <p>Pick a route and open the destination instantly.</p>
         </div>
         <div class="action-grid">
+          <a class="action-card" href="./passport/profile.html">
+            <h3>Passport</h3>
+            <p>Open identity profile, reputation, skills, assets, and activity score.</p>
+          </a>
           <a class="action-card" href="https://daxini.xyz/workspace" target="_blank" rel="noopener noreferrer">
-            <h3>Use Workspace</h3>
+            <h3>Workspace</h3>
             <p>Launch Daxini workspace for active tasks and execution runs.</p>
           </a>
           <a class="action-card" href="https://daxini.xyz" target="_blank" rel="noopener noreferrer">
-            <h3>Build an App</h3>
+            <h3>Build Tools</h3>
             <p>Open core VIA build surface to design and ship app logic.</p>
           </a>
           <a class="action-card" href="https://daxini.space" target="_blank" rel="noopener noreferrer">
-            <h3>Explore Marketplace</h3>
+            <h3>Marketplace</h3>
             <p>Browse and install modules, profiles, and ecosystem assets.</p>
           </a>
           <a class="action-card" href="https://via-decide.github.io/Game-" target="_blank" rel="noopener noreferrer">
@@ -73,12 +91,16 @@
             <p>Enter live simulation environments for scenario training.</p>
           </a>
           <a class="action-card" href="https://hanuman.solutions" target="_blank" rel="noopener noreferrer">
-            <h3>View Security</h3>
+            <h3>Security</h3>
             <p>Inspect trust, audits, and protection controls.</p>
           </a>
           <a class="action-card" href="https://viadecide.com" target="_blank" rel="noopener noreferrer">
             <h3>Visit VIA</h3>
             <p>Go to the VIA ecosystem home and public-facing stack entry.</p>
+          </a>
+          <a class="action-card" href="./ecosystem/index.html">
+            <h3>Ecosystem Directory</h3>
+            <p>View all connected systems with purpose, links, and activity indicators.</p>
           </a>
         </div>
       </section>
@@ -153,6 +175,18 @@
           <button class="layer" data-info="Security and identity maintain trust and persistent progression.">Trust Layer</button>
         </div>
         <p id="stack-info" class="surface">Aporaksha routes users into active ecosystem destinations.</p>
+      </section>
+
+      <section class="section" id="security" aria-labelledby="security-title">
+        <div class="section-head">
+          <h2 id="security-title">Security</h2>
+          <p>Hanuman telemetry summary for gateway trust status.</p>
+        </div>
+        <div class="surface">
+          <p><strong>Status:</strong> <span id="security-status">Loading…</span></p>
+          <p><strong>Attack Summary:</strong> <span id="security-summary">Loading…</span></p>
+          <p><strong>Last Scan:</strong> <span id="security-scan">Loading…</span></p>
+        </div>
       </section>
     </main>
 
