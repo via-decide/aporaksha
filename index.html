@@ -57,7 +57,22 @@
         <a class="btn" id="open-passport-button" href="./passport/">Create Passport</a>
       </div>
       <div class="surface" id="nfc-tracking" style="margin-top:1rem;display:none;"></div>
-    </header>
+    
+  <span id="nav-auth-block"></span>
+  <script>
+    (function () {
+      var s = null;
+      try { s = localStorage.getItem('aporaksha_session'); } catch(e) {}
+      var el = document.currentScript && document.currentScript.previousElementSibling;
+      if (!el) return;
+      if (s) {
+        el.innerHTML = '<a href="/logout" style="color:inherit;text-decoration:none;font-size:0.9rem;">Logout</a>';
+      } else {
+        el.innerHTML = '<a href="/login" style="color:inherit;text-decoration:none;font-size:0.9rem;">Login</a>';
+      }
+    })();
+  </script>
+</header>
 
     <main>
       <section class="section" id="ecosystem-modules" aria-labelledby="modules-title">
@@ -130,8 +145,8 @@
           <p>Choose a payment option after reviewing the ecosystem value proposition.</p>
         </div>
         <div class="hero-links">
-          <button class="btn" id="pay-booking-btn" type="button">PAY NOW — Book NFC Card ₹500</button>
-          <button class="btn" id="pay-full-btn" type="button">PAY NOW — Buy Full ₹2999</button>
+          
+          
         </div>
       </section>
 
@@ -160,7 +175,45 @@
           <p><strong>Last Scan:</strong> <span id="security-scan">Loading…</span></p>
         </div>
       </section>
-    </main>
+    
+<section id="pricing" style="
+  padding: 3rem 1.5rem;
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
+  border-top: 1px solid #1a1a1a;
+">
+  <h2 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.4rem; color: #f0f0f0;">
+    Get Your NFC Card
+  </h2>
+  <p style="font-size: 0.85rem; color: #666; margin-bottom: 1.5rem;">
+    Carry your Zayvora Passport in the physical world.
+  </p>
+  <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+    <a href="/pay/nfc" style="
+      background: #ff671f;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 0.7rem 1.4rem;
+      border-radius: 6px;
+      display: inline-block;
+    ">Book NFC Card — &#8377;500</a>
+    <a href="/pay/full" style="
+      background: transparent;
+      color: #ff671f;
+      border: 1px solid #ff671f;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 0.7rem 1.4rem;
+      border-radius: 6px;
+      display: inline-block;
+    ">Buy Full Access — &#8377;2999</a>
+  </div>
+</section>
+</main>
 
     <footer class="site-footer" id="footer-map">
       <div class="footer-content">

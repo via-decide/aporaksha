@@ -5,7 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Aporaksha Dashboard</title>
     <link rel="stylesheet" href="../styles.css" />
-    <script defer src="../passport/passport-id-generator.js"></script>
+    <script defer src="../passport/passport-id-generator.js">
+  (function () {
+    var s = null;
+    try { s = localStorage.getItem('aporaksha_session'); } catch(e) {}
+    if (!s) {
+      document.body.innerHTML =
+        '<div style="min-height:100vh;display:flex;flex-direction:column;' +
+        'align-items:center;justify-content:center;background:#0a0a0a;' +
+        'color:#f0f0f0;font-family:system-ui,sans-serif;gap:1rem;' +
+        'text-align:center;padding:2rem;">' +
+          '<span style="font-size:2rem;">&#128274;</span>' +
+          '<h2 style="font-weight:600;font-size:1.2rem;">Login required</h2>' +
+          '<p style="color:#888;font-size:0.9rem;">Log in to access the dashboard.</p>' +
+          '<a href="/login?redirect=/dashboard/" style="background:#ff671f;color:#fff;' +
+          'padding:0.65rem 1.5rem;border-radius:6px;text-decoration:none;' +
+          'font-weight:600;font-size:0.9rem;">Login</a>' +
+          '<a href="/" style="color:#555;font-size:0.8rem;text-decoration:none;">&#8592; Back</a>' +
+        '</div>';
+      return;
+    }
+  })();
+
+  function _fetchSafe(url, onSuccess, elId) {
+    var el = elId ? document.getElementById(elId) : null;
+    var timeout = new Promise(function(_, reject) {
+      setTimeout(function() { reject(new Error('timeout')); }, 6000);
+    });
+    Promise.race([fetch(url), timeout])
+      .then(function(r) { return r.json(); })
+      .then(function(data) { onSuccess(data); })
+      .catch(function() {
+        if (el) {
+          el.innerHTML =
+            '<span style="color:#666;font-size:0.85rem;">Unavailable — ' +
+            '<a href="" onclick="location.reload();return false;" ' +
+            'style="color:#ff671f;">retry</a></span>';
+        }
+      });
+  }
+</script>
     <script defer src="../passport/passport-model.js"></script>
     <script defer src="../passport/passport-store.js"></script>
     <script defer src="../passport/passport-auth.js"></script>
@@ -51,9 +90,9 @@
         <div class="kpi-grid">
           <article class="surface"><h3>Workspace Access</h3><p id="workspace-access">Routed through Daxini and Passport session context.</p></article>
           <article class="surface"><h3>Builder Tools</h3><p id="builder-tools">Logichub route available for app creation workflows.</p></article>
-          <article class="surface"><h3>Marketplace Activity</h3><p id="marketplace-activity">Loading recent publish activity…</p></article>
-          <article class="surface"><h3>Security Telemetry</h3><p id="security-telemetry">Loading Hanuman telemetry…</p></article>
-          <article class="surface"><h3>Passport Identity</h3><p id="passport-identity">Checking active passport session…</p></article>
+          <article class="surface"><h3>Marketplace Activity</h3><p id="marketplace-activity"><span id="dash-marketplace" style="color:#666;font-size:0.85rem;">Loading…</span></p></article>
+          <article class="surface"><h3>Security Telemetry</h3><p id="security-telemetry"><span id="dash-security" style="color:#666;font-size:0.85rem;">Loading…</span></p></article>
+          <article class="surface"><h3>Passport Identity</h3><p id="passport-identity"><span id="dash-passport" style="color:#666;font-size:0.85rem;">Loading…</span></p></article>
         </div>
       </section>
 
