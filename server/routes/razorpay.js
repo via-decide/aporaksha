@@ -6,17 +6,11 @@ const { Pool } = require('pg');
 
 const router = express.Router();
 const { authMiddleware } = require('../../auth/middleware');
+const { checkProductAccess } = require('../../auth/check-product-access');
 const orders = new Map();
 const processedPayments = new Set();
-const userPayments = new Map();
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-
-const PAYMENT_TYPES = Object.freeze({
-  booking: { amount: 50000 },
-  full: { amount: 299900 },
-  remaining: { amount: 249900 },
-});
 
 const paymentRateLimit = rateLimit({ windowMs: 60 * 1000, max: 10, standardHeaders: true, legacyHeaders: false });
 
@@ -42,11 +36,11 @@ router.post('/payments/create-order', paymentRateLimit, authMiddleware, async (r
     });
 
     await pool.query(
-      'INSERT INTO payment_orders (user_id, product_id, razorpay_order_id, amount) VALUES ($1, $2, $3, $4)',
-      [userId, product.id, order.id, product.price]
+      'INSERT INTO payment_orders (user_id, product_id, razorpay_order_id, amount, status) VALUES ($1, $2, $3, $4, $5)',
+      [userId, product.id, order.id, product.price, 'PENDING']
     );
 
-    orders.set(order.id, { type: 'product', amount: order.amount, userId, status: 'pending', createdAt: Date.now() });
+    orders.set(order.id, { amount: order.amount, userId, productId: product.id, status: 'PENDING', createdAt: Date.now() });
     return res.json({ orderId: order.id, amount: product.price, currency: 'INR' });
   } catch (error) {
     console.error('Razorpay order creation failed', error);
@@ -57,13 +51,11 @@ router.post('/payments/create-order', paymentRateLimit, authMiddleware, async (r
 router.post('/verify-payment', paymentRateLimit, authMiddleware, async (req, res) => {
   const startedAt = Date.now();
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, type } = req.body || {};
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body || {};
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) return res.status(400).json({ success: false, message: 'Missing required payment fields.' });
 
     const knownOrder = orders.get(razorpay_order_id);
     if (!knownOrder) return res.status(400).json({ success: false, message: 'Unknown order.' });
-    if (PAYMENT_TYPES[knownOrder.type] && knownOrder.amount !== PAYMENT_TYPES[knownOrder.type].amount) return res.status(400).json({ success: false, message: 'Order amount mismatch.' });
-    if (type !== knownOrder.type) return res.status(400).json({ success: false, message: 'Order type mismatch.' });
     if (req.userId !== knownOrder.userId) return res.status(403).json({ success: false, message: 'Forbidden' });
     if (processedPayments.has(razorpay_payment_id)) return res.status(400).json({ error: 'Duplicate payment' });
 
@@ -73,18 +65,61 @@ router.post('/verify-payment', paymentRateLimit, authMiddleware, async (req, res
     if (Date.now() - startedAt > 5000) return res.status(408).json({ error: 'Verification timeout' });
 
     processedPayments.add(razorpay_payment_id);
-    knownOrder.status = 'paid';
 
-    const userState = userPayments.get(knownOrder.userId) || { booked: false, paidFull: false };
-    if (knownOrder.type === 'booking') userState.booked = true;
-    if (knownOrder.type === 'full' || knownOrder.type === 'remaining') userState.paidFull = true;
-    userPayments.set(knownOrder.userId, userState);
+    await pool.query('BEGIN');
+    await pool.query(
+      `UPDATE payment_orders
+       SET razorpay_payment_id = $1, status = 'SUCCESS', paid_at = NOW(), failed_at = NULL
+       WHERE razorpay_order_id = $2 AND user_id = $3`,
+      [razorpay_payment_id, razorpay_order_id, knownOrder.userId]
+    );
 
-    return res.json({ success: true, paymentState: { booked: userState.booked, paidFull: userState.paidFull } });
+    await pool.query(
+      `INSERT INTO user_products (user_id, product_id, purchased_at)
+       VALUES ($1, $2, NOW())
+       ON CONFLICT (user_id, product_id)
+       DO UPDATE SET purchased_at = EXCLUDED.purchased_at, expires_at = NULL`,
+      [knownOrder.userId, knownOrder.productId]
+    );
+    await pool.query('COMMIT');
+
+    knownOrder.status = 'SUCCESS';
+    return res.json({ success: true });
   } catch (error) {
+    await pool.query('ROLLBACK');
     console.error('Razorpay verification failed', error);
     return res.status(500).json({ error: 'Payment processing failed' });
   }
+});
+
+router.get('/purchases', authMiddleware, async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT
+         po.razorpay_order_id AS "orderId",
+         po.product_id AS "productId",
+         p.name AS "productName",
+         po.amount,
+         po.status,
+         po.paid_at AS "paidAt",
+         up.purchased_at AS "purchasedAt"
+       FROM payment_orders po
+       LEFT JOIN user_products up ON po.product_id = up.product_id AND po.user_id = up.user_id
+       JOIN products p ON po.product_id = p.id
+       WHERE po.user_id = $1 AND po.status = 'SUCCESS'
+       ORDER BY po.paid_at DESC`,
+      [req.userId]
+    );
+
+    return res.json({ purchases: rows });
+  } catch (error) {
+    console.error('Failed to fetch purchases', error);
+    return res.status(500).json({ error: 'Failed to fetch purchases' });
+  }
+});
+
+router.get('/products/:productId/data', authMiddleware, checkProductAccess, async (req, res) => {
+  return res.json({ productId: req.params.productId, access: true });
 });
 
 module.exports = router;
