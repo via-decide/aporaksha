@@ -1,12 +1,150 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="refresh" content="0; url=./profile.html" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Redirecting to Passport</title>
-  </head>
-  <body>
-    <p>Redirecting to <a href="./profile.html">Passport profile</a>…</p>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zayvora Passport — Aporaksha</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0a0a0a;
+      color: #f0f0f0;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .passport-card {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 12px;
+      padding: 2.5rem;
+      max-width: 480px;
+      width: 100%;
+    }
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #ff671f;
+      margin-bottom: 0.5rem;
+    }
+    p.sub {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 2rem;
+    }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      color: #aaa;
+      margin-bottom: 0.4rem;
+    }
+    input {
+      width: 100%;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 6px;
+      color: #f0f0f0;
+      font-size: 0.95rem;
+      padding: 0.65rem 0.85rem;
+      margin-bottom: 1.2rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus { border-color: #ff671f; }
+    button {
+      width: 100%;
+      background: #ff671f;
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      padding: 0.75rem;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    button:hover { opacity: 0.88; }
+    #msg {
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      color: #aaa;
+      text-align: center;
+      min-height: 1.2rem;
+    }
+    .back {
+      margin-top: 1.5rem;
+      text-align: center;
+      font-size: 0.85rem;
+    }
+    .back a { color: #ff671f; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="passport-card">
+    <h1>Create Passport</h1>
+    <p class="sub">Your sovereign identity across the Aporaksha ecosystem.</p>
+
+    <label for="name">Display Name</label>
+    <input type="text" id="name" placeholder="e.g. Dharam Daxini" autocomplete="off" />
+
+    <label for="email">Email</label>
+    <input type="email" id="email" placeholder="you@example.com" autocomplete="off" />
+
+    <label for="password">Password</label>
+    <input type="password" id="password" placeholder="Min. 8 characters" />
+
+    <button id="create-btn">Create Passport</button>
+    <div id="msg"></div>
+
+    <div class="back"><a href="/">← Back to Aporaksha</a></div>
+  </div>
+
+  <script>
+    const btn = document.getElementById('create-btn');
+    const msg = document.getElementById('msg');
+
+    btn.addEventListener('click', () => {
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (!name || !email || !password) {
+        msg.textContent = 'All fields are required.';
+        return;
+      }
+      if (password.length < 8) {
+        msg.textContent = 'Password must be at least 8 characters.';
+        return;
+      }
+
+      btn.disabled = true;
+      msg.textContent = 'Creating passport…';
+
+      // Replace the fetch below with your actual API endpoint
+      fetch('/api/passport/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password })
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (data.ok) {
+            msg.textContent = 'Passport created. Redirecting…';
+            setTimeout(() => { window.location.href = '/dashboard/'; }, 1200);
+          } else {
+            msg.textContent = data.error || 'Creation failed. Try again.';
+            btn.disabled = false;
+          }
+        })
+        .catch(() => {
+          msg.textContent = 'Network error. Please try again.';
+          btn.disabled = false;
+        });
+    });
+  </script>
+</body>
 </html>
