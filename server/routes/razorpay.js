@@ -1,8 +1,18 @@
 const express = require('express');
 const crypto = require('crypto');
 const Razorpay = require('razorpay');
+const rateLimit = require('express-rate-limit');
 
 const router = express.Router();
+const orders = new Map();
+const processedPayments = new Set();
+
+const paymentRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 function getRazorpayInstance() {
   return new Razorpay({
@@ -11,12 +21,12 @@ function getRazorpayInstance() {
   });
 }
 
-router.post('/create-order', async (req, res) => {
+router.post('/create-order', paymentRateLimit, async (req, res) => {
   try {
     const amount = Number(req.body && req.body.amount);
 
-    if (!Number.isFinite(amount)) {
-      return res.status(400).json({ success: false, message: 'Amount is required.' });
+    if (!Number.isInteger(amount) || amount < 100 || amount > 10000000) {
+      return res.status(400).json({ success: false, message: 'Invalid amount.' });
     }
 
     if (amount < 100) {
@@ -29,6 +39,8 @@ router.post('/create-order', async (req, res) => {
       currency: 'INR',
       receipt: 'aporaksha_' + Date.now(),
     });
+    orders.set(order.id, { amount: order.amount, createdAt: Date.now() });
+    console.info('Payment order created:', order.id);
 
     return res.json({
       order_id: order.id,
@@ -36,21 +48,38 @@ router.post('/create-order', async (req, res) => {
       currency: order.currency,
     });
   } catch (error) {
-    console.error('Razorpay order creation failed:', error);
-    return res.status(500).json({ success: false, message: 'Unable to create order.' });
+    console.error('Razorpay order creation failed');
+    return res.status(500).json({ error: 'Payment processing failed' });
   }
 });
 
-router.post('/verify-payment', async (req, res) => {
+router.post('/verify-payment', paymentRateLimit, async (req, res) => {
+  const startedAt = Date.now();
   try {
     const {
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
+      amount,
     } = req.body || {};
+
+    console.info('Payment verification attempt:', razorpay_order_id || 'missing_order');
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return res.status(400).json({ success: false, message: 'Missing required payment fields.' });
+    }
+
+    const knownOrder = orders.get(razorpay_order_id);
+    if (!knownOrder) {
+      return res.status(400).json({ success: false, message: 'Unknown order.' });
+    }
+
+    if (amount !== undefined && Number(amount) !== knownOrder.amount) {
+      return res.status(400).json({ success: false, message: 'Order amount mismatch.' });
+    }
+
+    if (processedPayments.has(razorpay_payment_id)) {
+      return res.status(400).json({ error: 'Duplicate payment' });
     }
 
     const body = razorpay_order_id + '|' + razorpay_payment_id;
@@ -60,13 +89,21 @@ router.post('/verify-payment', async (req, res) => {
       .digest('hex');
 
     if (expected !== razorpay_signature) {
+      console.warn('Payment signature verification failed for order:', razorpay_order_id);
       return res.status(400).json({ success: false });
     }
 
+    if (Date.now() - startedAt > 5000) {
+      return res.status(408).json({ error: 'Verification timeout' });
+    }
+
+    processedPayments.add(razorpay_payment_id);
+    console.info('Payment verified:', razorpay_payment_id);
+
     return res.json({ success: true });
   } catch (error) {
-    console.error('Razorpay verification failed:', error);
-    return res.status(500).json({ success: false, message: 'Unable to verify payment.' });
+    console.error('Razorpay verification failed');
+    return res.status(500).json({ error: 'Payment processing failed' });
   }
 });
 

@@ -207,11 +207,14 @@
           currency: order.currency,
           order_id: order.order_id,
           handler: async function (response) {
-            await fetch('./api/verify-payment', {
+            var verifyResponse = await fetch('./api/verify-payment', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(response)
             });
+            if (!verifyResponse.ok) {
+              throw new Error('Payment verification failed');
+            }
           },
           modal: {
             ondismiss: function () {
@@ -223,7 +226,7 @@
         var rzp = new Razorpay(options);
 
         rzp.on('payment.failed', function (failure) {
-          console.error(failure.error);
+          console.warn('Payment failed:', failure && failure.error && failure.error.reason ? failure.error.reason : 'unknown');
         });
 
         rzp.open();
