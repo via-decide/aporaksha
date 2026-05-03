@@ -4,6 +4,7 @@ const Razorpay = require('razorpay');
 const rateLimit = require('express-rate-limit');
 
 const router = express.Router();
+const { requireAuth } = require('../../auth/middleware');
 const orders = new Map();
 const processedPayments = new Set();
 const userPayments = new Map();
@@ -27,7 +28,7 @@ function getRazorpayInstance() {
   });
 }
 
-router.post('/create-order', paymentRateLimit, async (req, res) => {
+router.post('/create-order', paymentRateLimit, requireAuth, async (req, res) => {
   try {
     const type = req.body && req.body.type;
     const pricing = PAYMENT_TYPES[type];
@@ -36,7 +37,7 @@ router.post('/create-order', paymentRateLimit, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid payment type.' });
     }
 
-    const userId = (req.body && req.body.userId) || 'guest';
+    const userId = req.user.id;
     const userState = userPayments.get(userId) || { booked: false, paidFull: false };
 
     if (type === 'booking' && userState.booked) {
@@ -70,7 +71,7 @@ router.post('/create-order', paymentRateLimit, async (req, res) => {
   }
 });
 
-router.post('/verify-payment', paymentRateLimit, async (req, res) => {
+router.post('/verify-payment', paymentRateLimit, requireAuth, async (req, res) => {
   const startedAt = Date.now();
   try {
     const {
@@ -78,7 +79,6 @@ router.post('/verify-payment', paymentRateLimit, async (req, res) => {
       razorpay_payment_id,
       razorpay_signature,
       type,
-      userId = 'guest',
     } = req.body || {};
 
     console.info('Payment verification attempt:', razorpay_order_id || 'missing_order');
@@ -100,8 +100,8 @@ router.post('/verify-payment', paymentRateLimit, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Order type mismatch.' });
     }
 
-    if (userId !== knownOrder.userId) {
-      return res.status(400).json({ success: false, message: 'Order user mismatch.' });
+    if (req.user.id !== knownOrder.userId) {
+      return res.status(403).json({ success: false, message: 'Forbidden' });
     }
 
     if (processedPayments.has(razorpay_payment_id)) {

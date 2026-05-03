@@ -3,11 +3,13 @@ const express = require('express');
 require('dotenv').config();
 
 const razorpayRoutes = require('./routes/razorpay');
+const authRoutes = require('../auth/login');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use('/api', authRoutes);
 app.use('/api', razorpayRoutes);
 
 app.get('/api/razorpay-config', (req, res) => {

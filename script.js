@@ -170,6 +170,51 @@
   }
 
 
+
+  function getAuthToken() {
+    return localStorage.getItem('zayvora_token') || '';
+  }
+
+  function authHeaders() {
+    var token = getAuthToken();
+    return token ? { Authorization: 'Bearer ' + token } : {};
+  }
+
+  function bindLoginFlow() {
+    var button = document.getElementById('login-btn');
+    var logout = document.getElementById('logout-btn');
+    var status = document.getElementById('auth-status');
+    if (!button || !status || !logout) return;
+
+    function renderStatus() {
+      var hasToken = !!getAuthToken();
+      status.textContent = hasToken ? 'Logged in' : 'Not logged in';
+      logout.style.display = hasToken ? 'inline-flex' : 'none';
+    }
+
+    button.onclick = async function () {
+      var email = window.prompt('Enter email (or cancel and use phone):', '');
+      var phone = email ? '' : window.prompt('Enter phone:', '');
+      var payload = email ? { email: email } : { phone: phone };
+      var res = await fetch('./api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Login failed');
+      var data = await res.json();
+      localStorage.setItem('zayvora_token', data.token);
+      renderStatus();
+    };
+
+    logout.onclick = async function () {
+      localStorage.removeItem('zayvora_token');
+      await fetch('./api/logout', { method: 'POST' });
+      renderStatus();
+    };
+
+    renderStatus();
+  }
   async function loadRazorpayKeyId() {
     try {
       var response = await fetch('./api/razorpay-config');
@@ -188,10 +233,14 @@
 
     button.onclick = async function () {
       try {
+        if (!getAuthToken()) {
+          window.alert('Please login before making payment.');
+          return;
+        }
         var res = await fetch('./api/create-order', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: paymentType, userId: getGatewayHandle() })
+          headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
+          body: JSON.stringify({ type: paymentType })
         });
 
         if (!res.ok) {
@@ -209,13 +258,12 @@
           handler: async function (response) {
             var verifyResponse = await fetch('./api/verify-payment', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
               body: JSON.stringify({
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
-                type: paymentType,
-                userId: getGatewayHandle()
+                type: paymentType
               })
             });
             if (!verifyResponse.ok) {
@@ -247,6 +295,7 @@
   bindPassportEntry();
   loadSecurityTelemetry();
   renderGatewayModules();
+  bindLoginFlow();
   bindPaymentButton('pay-booking-btn', 'booking');
   bindPaymentButton('pay-full-btn', 'full');
 })();
