@@ -182,8 +182,8 @@
     }
   }
 
-  function bindPaymentButton() {
-    var button = document.getElementById('pay-btn');
+  function bindPaymentButton(buttonId, paymentType) {
+    var button = document.getElementById(buttonId);
     if (!button) return;
 
     button.onclick = async function () {
@@ -191,7 +191,7 @@
         var res = await fetch('./api/create-order', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount: 50000 })
+          body: JSON.stringify({ type: paymentType, userId: getGatewayHandle() })
         });
 
         if (!res.ok) {
@@ -210,7 +210,13 @@
             var verifyResponse = await fetch('./api/verify-payment', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(response)
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                type: paymentType,
+                userId: getGatewayHandle()
+              })
             });
             if (!verifyResponse.ok) {
               throw new Error('Payment verification failed');
@@ -241,5 +247,6 @@
   bindPassportEntry();
   loadSecurityTelemetry();
   renderGatewayModules();
-  bindPaymentButton();
+  bindPaymentButton('pay-booking-btn', 'booking');
+  bindPaymentButton('pay-full-btn', 'full');
 })();
