@@ -227,6 +227,63 @@
     }
   }
 
+  function getTrackedOrders() {
+    try {
+      var raw = localStorage.getItem('nfc_orders');
+      var parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      return [];
+    }
+  }
+
+  function saveTrackedOrder(order) {
+    var orders = getTrackedOrders();
+    orders.unshift(order);
+    localStorage.setItem('nfc_orders', JSON.stringify(orders.slice(0, 20)));
+  }
+
+  function renderLiveTracking() {
+    var root = document.getElementById('nfc-tracking');
+    if (!root) return;
+    var order = getTrackedOrders()[0];
+    if (!order || order.type !== 'nfc') {
+      root.style.display = 'none';
+      return;
+    }
+    var detail = order.nfcType === 'booking' ? 'Booked ✅ · Remaining ₹2499' : 'Fully Paid ✅ · Ready for dispatch';
+    root.style.display = 'block';
+    root.innerHTML = '<strong>NFC Card Order</strong><div>' + detail + '</div><div>Order ID: ' + order.id + '</div>';
+  }
+
+  function createOrderAfterPayment(paymentType, razorpayOrderId) {
+    var total = paymentType === 'booking' ? 500 : (paymentType === 'full' ? 2999 : 2499);
+    var now = new Date();
+    saveTrackedOrder({
+      id: razorpayOrderId || ('local_' + now.getTime()),
+      items: [{ type: 'nfc', name: 'NFC Card', price: total, qty: 1 }],
+      total: total,
+      payment: 'razorpay',
+      status: 'confirmed',
+      type: 'nfc',
+      nfcType: paymentType === 'booking' ? 'booking' : 'full',
+      timestamp: now.toISOString(),
+      updates: [{ at: now.toISOString(), text: 'Payment verified' }]
+    });
+    renderLiveTracking();
+  }
+
+  function bindPayRemainingButton() {
+    var fullBtn = document.getElementById('pay-full-btn');
+    if (!fullBtn || !fullBtn.parentNode || document.getElementById('pay-remaining-btn')) return;
+    var button = document.createElement('button');
+    button.className = 'btn';
+    button.id = 'pay-remaining-btn';
+    button.type = 'button';
+    button.textContent = 'PAY REMAINING ₹2499';
+    fullBtn.parentNode.appendChild(button);
+  }
+
   function bindPaymentButton(buttonId, paymentType) {
     var button = document.getElementById(buttonId);
     if (!button) return;
@@ -269,6 +326,7 @@
             if (!verifyResponse.ok) {
               throw new Error('Payment verification failed');
             }
+            createOrderAfterPayment(paymentType, response.razorpay_order_id);
           },
           modal: {
             ondismiss: function () {
@@ -299,6 +357,9 @@
   loadSecurityTelemetry();
   renderGatewayModules();
   bindLoginFlow();
+  bindPayRemainingButton();
   bindPaymentButton('pay-booking-btn', 'booking');
   bindPaymentButton('pay-full-btn', 'full');
+  bindPaymentButton('pay-remaining-btn', 'remaining');
+  renderLiveTracking();
 })();

@@ -64,6 +64,26 @@
     setText('security-telemetry', summary.status + ' · ' + summary.attack_summary);
   }
 
+  function renderNfcOrderState() {
+    var node = document.getElementById('nfc-dashboard-state');
+    if (!node) return;
+    try {
+      var orders = JSON.parse(localStorage.getItem('nfc_orders') || '[]');
+      var latest = Array.isArray(orders) && orders.length ? orders[0] : null;
+      if (!latest || latest.type !== 'nfc') {
+        node.textContent = 'No NFC orders yet.';
+        return;
+      }
+      if (latest.nfcType === 'booking') {
+        node.innerHTML = 'NFC booking confirmed. <a class="btn" href="../index.html">Pay Remaining ₹2499</a>';
+      } else {
+        node.textContent = 'NFC card fully paid. Ready for dispatch.';
+      }
+    } catch (error) {
+      node.textContent = 'Unable to read NFC order state.';
+    }
+  }
+
   function renderSystemStatusPanel() {
     if (!global.SystemStatusPanel || typeof global.SystemStatusPanel.render !== 'function') return;
 
@@ -102,5 +122,6 @@
     loadMarketplaceActivity();
     loadSecurityTelemetry();
     loadPassportIdentity();
+    renderNfcOrderState();
   });
 })(window);
