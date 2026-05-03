@@ -37,6 +37,9 @@
     <script defer src="./components/activity/activity-feed.js"></script>
     <script defer src="./components/global-navbar/global-navbar.js"></script>
     <script defer src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+      window.RAZORPAY_KEY_ID = "rzp_test_SkuL8wb20Jvjm7";
+    </script>
     <script defer src="./script.js"></script>
   </head>
   <body data-system="dashboard">
@@ -54,8 +57,8 @@
         <button class="btn" id="logout-btn" type="button" style="display:none;">Logout</button>
         <span id="auth-status" class="btn" aria-live="polite">Not logged in</span>
         <a class="btn" id="open-passport-button" href="./passport/">Create Passport</a>
-        <button class="btn" id="pay-booking-btn" type="button">Book NFC Card — ₹500</button>
-        <button class="btn" id="pay-full-btn" type="button">Buy Full — ₹2999</button>
+        <button class="btn" id="pay-booking-btn" type="button">PAY NOW — Book NFC Card ₹500</button>
+        <button class="btn" id="pay-full-btn" type="button">PAY NOW — Buy Full ₹2999</button>
       </div>
     </header>
 

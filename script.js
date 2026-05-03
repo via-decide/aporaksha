@@ -248,7 +248,7 @@
         }
 
         var order = await res.json();
-        var keyId = await loadRazorpayKeyId();
+        var keyId = window.RAZORPAY_KEY_ID || await loadRazorpayKeyId();
 
         var options = {
           key: keyId,
@@ -286,6 +286,9 @@
         rzp.open();
       } catch (error) {
         console.error('Payment flow failed:', error);
+        if (window.confirm('Payment service unavailable. Continue with demo checkout?')) {
+          window.alert('Demo checkout complete.');
+        }
       }
     };
   }
