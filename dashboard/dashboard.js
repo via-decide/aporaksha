@@ -14,9 +14,28 @@
     if (node) node.textContent = text;
   }
 
+  function isAuthenticated() {
+    return !!localStorage.getItem('zayvora_token');
+  }
+
+  function withTimeout(promise, ms) {
+    return Promise.race([
+      promise,
+      new Promise(function (_, reject) {
+        setTimeout(function () { reject(new Error('timeout')); }, ms);
+      })
+    ]);
+  }
+
+  function renderUnavailable(id) {
+    var node = document.getElementById(id);
+    if (!node) return;
+    node.innerHTML = 'Unavailable — <a href="" onclick="window.location.reload(); return false;">retry</a>';
+  }
+
   async function loadMarketplaceActivity() {
     try {
-      var response = await fetch('https://api.github.com/orgs/via-decide/events?per_page=6');
+      var response = await withTimeout(fetch('https://api.github.com/orgs/via-decide/events?per_page=6'), 5000);
       if (!response.ok) throw new Error('GitHub status ' + response.status);
       var data = await response.json();
       var installs = data.filter(function (event) { return event.type === 'PushEvent'; }).length;
@@ -29,8 +48,8 @@
         return '<li><span class="activity-time">' + event.type + '</span>' + (event.repo ? event.repo.name : 'unknown') + '</li>';
       }).join('');
     } catch (error) {
-      setText('marketplace-activity', 'GitHub event stream unavailable right now.');
-      setText('activity-stream', 'Activity feed unavailable.');
+      renderUnavailable('marketplace-activity');
+      renderUnavailable('activity-stream');
       console.error(error);
     }
   }
@@ -46,12 +65,16 @@
     }
 
     if (global.CorePassportAdapter && typeof global.CorePassportAdapter.createOrBindSession === 'function') {
-      var created = await global.CorePassportAdapter.createOrBindSession('dashboard-user');
-      setText('passport-identity', created && created.passport_id ? 'Bound passport: ' + created.passport_id : 'Passport bind pending');
+      try {
+        var created = await withTimeout(global.CorePassportAdapter.createOrBindSession('dashboard-user'), 5000);
+        setText('passport-identity', created && created.passport_id ? 'Bound passport: ' + created.passport_id : 'Passport bind pending');
+      } catch (error) {
+        renderUnavailable('passport-identity');
+      }
       return;
     }
 
-    setText('passport-identity', 'Passport layer offline');
+    renderUnavailable('passport-identity');
   }
 
   async function loadSecurityTelemetry() {
@@ -60,8 +83,12 @@
       return;
     }
 
-    var summary = await global.HanumanTelemetryAdapter.getTelemetrySummary();
-    setText('security-telemetry', summary.status + ' · ' + summary.attack_summary);
+    try {
+      var summary = await withTimeout(global.HanumanTelemetryAdapter.getTelemetrySummary(), 5000);
+      setText('security-telemetry', summary.status + ' · ' + summary.attack_summary);
+    } catch (error) {
+      renderUnavailable('security-telemetry');
+    }
   }
 
   function renderOrders() {
@@ -129,6 +156,11 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
+    if (!isAuthenticated()) {
+      global.location.href = '../index.html?login=required&redirect=dashboard';
+      return;
+    }
+
     bindQuickLaunch();
     renderSystemStatusPanel();
     loadMarketplaceActivity();
