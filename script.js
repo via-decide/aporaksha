@@ -181,18 +181,21 @@
   }
 
   function bindLoginFlow() {
-    var button = document.getElementById('login-btn');
-    var logout = document.getElementById('logout-btn');
-    var status = document.getElementById('auth-status');
-    if (!button || !status || !logout) return;
+    var navAuth = document.getElementById('nav-auth');
+    if (!navAuth) return;
 
     function renderStatus() {
       var hasToken = !!getAuthToken();
-      status.textContent = hasToken ? 'Logged in' : 'Not logged in';
-      logout.style.display = hasToken ? 'inline-flex' : 'none';
+      navAuth.innerHTML = hasToken
+        ? '<button class="btn" id="logout-btn" type="button">Logout</button>'
+        : '<button class="btn" id="login-btn" type="button">Login</button>' ;
+      bindActions();
     }
 
-    button.onclick = async function () {
+    function bindActions() {
+      var button = document.getElementById('login-btn');
+      var logout = document.getElementById('logout-btn');
+      if (button) button.onclick = async function () {
       var email = window.prompt('Enter email (or cancel and use phone):', '');
       var phone = email ? '' : window.prompt('Enter phone:', '');
       var payload = email ? { email: email } : { phone: phone };
@@ -207,11 +210,12 @@
       renderStatus();
     };
 
-    logout.onclick = async function () {
-      localStorage.removeItem('zayvora_token');
-      await fetch('./api/logout', { method: 'POST' });
-      renderStatus();
-    };
+      if (logout) logout.onclick = async function () {
+        localStorage.removeItem('zayvora_token');
+        await fetch('./api/logout', { method: 'POST' });
+        renderStatus();
+      };
+    }
 
     renderStatus();
   }
