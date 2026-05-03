@@ -31,10 +31,11 @@ function getRazorpayInstance() {
 router.post('/create-order', paymentRateLimit, requireAuth, async (req, res) => {
   try {
     const type = req.body && req.body.type;
+    const requestedAmount = Number(req.body && req.body.amount);
     const pricing = PAYMENT_TYPES[type];
 
-    if (!pricing) {
-      return res.status(400).json({ success: false, message: 'Invalid payment type.' });
+    if (!pricing && (!Number.isFinite(requestedAmount) || requestedAmount < 100)) {
+      return res.status(400).json({ success: false, message: 'Invalid payment details.' });
     }
 
     const userId = req.user.id;
@@ -44,7 +45,7 @@ router.post('/create-order', paymentRateLimit, requireAuth, async (req, res) => 
       return res.status(409).json({ success: false, message: 'NFC card already booked for this user.' });
     }
 
-    const amount = pricing.amount;
+    const amount = pricing ? pricing.amount : Math.floor(requestedAmount);
 
     const instance = getRazorpayInstance();
     const order = await instance.orders.create({
@@ -53,11 +54,11 @@ router.post('/create-order', paymentRateLimit, requireAuth, async (req, res) => 
       receipt: 'aporaksha_' + Date.now(),
       notes: {
         product: 'nfc_card',
-        type,
+        type: type || 'custom',
         userId,
       },
     });
-    orders.set(order.id, { type, amount: order.amount, userId, status: 'pending', createdAt: Date.now() });
+    orders.set(order.id, { type: type || 'custom', amount: order.amount, userId, status: 'pending', createdAt: Date.now() });
     console.info('Payment order created:', order.id);
 
     return res.json({
@@ -92,11 +93,11 @@ router.post('/verify-payment', paymentRateLimit, requireAuth, async (req, res) =
       return res.status(400).json({ success: false, message: 'Unknown order.' });
     }
 
-    if (knownOrder.amount !== PAYMENT_TYPES[knownOrder.type].amount) {
+    if (PAYMENT_TYPES[knownOrder.type] && knownOrder.amount !== PAYMENT_TYPES[knownOrder.type].amount) {
       return res.status(400).json({ success: false, message: 'Order amount mismatch.' });
     }
 
-    if (type !== knownOrder.type) {
+    if (knownOrder.type !== 'custom' && type !== knownOrder.type) {
       return res.status(400).json({ success: false, message: 'Order type mismatch.' });
     }
 
