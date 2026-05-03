@@ -1,0 +1,11 @@
+# Secure NFC Identity System (Architecture)
+- **Identity primitive:** NFC stores only `https://daxini.xyz/nfc/{uid}` where `uid="NFC-"+crypto.randomUUID()` from post-payment backend flow; `uid` is non-guessable and bound to `order_id,payment_id,user_id,status,profile_id`.
+- **Trust boundaries:** NFC URL is public read-gateway; profile writes are private and require authenticated owner session; frontend never enforces security alone.
+- **Public flow (`GET /nfc/:uid`):** validate UID format+existence → require `status=active` → resolve `profile_id` → return sanitized public profile DTO (no internal IDs/DB keys).
+- **Owner flow (`POST /nfc/:uid/update-profile`):** verify bearer JWT (`user_id,nfc_uid,exp`) → ensure token `user_id` owns UID and `nfc_uid===uid` → validate payload → write profile.
+- **Data model:** `nfc_identities(uid PK, order_id, payment_id, user_id, status, profile_id, created_at)` + `profiles(profile_id PK, uid FK UNIQUE, name, bio, links_json, updated_at)` + optional `nfc_tap_logs(uid,timestamp,ip,user_agent_hash)`.
+- **Payment bind:** Razorpay webhook verifies signature/idempotency then inserts active UID record; profile creation is deferred until dashboard setup.
+- **Security controls:** per-UID/IP rate limits, replay-safe webhook handling, strict authZ owner checks, audit logs, optional signed URL `?sig=HMAC(uid|ts)` with TTL.
+- **Failure prevention:** block guessable IDs, block unauth writes, block direct profile bypass routes, block exposure of `user_id/profile_id` in public payloads.
+- **Frontend contract:** pay ₹2999 → dashboard shows “Setup NFC Profile” → save profile via auth endpoint → NFC tap renders `/nfc/{uid}` public view.
+- **Operational metrics:** activation rate, tap-to-profile success, unauthorized write attempts, clone/tamper anomalies by UID.
