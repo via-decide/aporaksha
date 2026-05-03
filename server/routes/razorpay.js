@@ -12,6 +12,7 @@ const userPayments = new Map();
 const PAYMENT_TYPES = Object.freeze({
   booking: { amount: 50000 },
   full: { amount: 299900 },
+  remaining: { amount: 249900 },
 });
 
 const paymentRateLimit = rateLimit({
@@ -34,8 +35,16 @@ router.post('/create-order', paymentRateLimit, requireAuth, async (req, res) => 
     const requestedAmount = Number(req.body && req.body.amount);
     const pricing = PAYMENT_TYPES[type];
 
-    if (!pricing && (!Number.isFinite(requestedAmount) || requestedAmount < 100)) {
-      return res.status(400).json({ success: false, message: 'Invalid payment details.' });
+    if (!pricing) {
+      return res.status(400).json({ success: false, message: 'Invalid payment type.' });
+    }
+
+    if (Number.isFinite(requestedAmount) && requestedAmount !== pricing.amount) {
+      return res.status(400).json({ success: false, message: 'Amount mismatch for payment type.' });
+    }
+
+    if (type === 'remaining' && !userState.booked) {
+      return res.status(409).json({ success: false, message: 'Booking required before paying remaining amount.' });
     }
 
     const userId = req.user.id;
@@ -45,20 +54,16 @@ router.post('/create-order', paymentRateLimit, requireAuth, async (req, res) => 
       return res.status(409).json({ success: false, message: 'NFC card already booked for this user.' });
     }
 
-    const amount = pricing ? pricing.amount : Math.floor(requestedAmount);
+    const amount = pricing.amount;
 
     const instance = getRazorpayInstance();
     const order = await instance.orders.create({
       amount,
       currency: 'INR',
       receipt: 'aporaksha_' + Date.now(),
-      notes: {
-        product: 'nfc_card',
-        type: type || 'custom',
-        userId,
-      },
+      notes: { product: 'nfc_card', type, userId },
     });
-    orders.set(order.id, { type: type || 'custom', amount: order.amount, userId, status: 'pending', createdAt: Date.now() });
+    orders.set(order.id, { type, amount: order.amount, userId, status: 'pending', createdAt: Date.now() });
     console.info('Payment order created:', order.id);
 
     return res.json({
@@ -97,7 +102,7 @@ router.post('/verify-payment', paymentRateLimit, requireAuth, async (req, res) =
       return res.status(400).json({ success: false, message: 'Order amount mismatch.' });
     }
 
-    if (knownOrder.type !== 'custom' && type !== knownOrder.type) {
+    if (type !== knownOrder.type) {
       return res.status(400).json({ success: false, message: 'Order type mismatch.' });
     }
 
@@ -129,7 +134,7 @@ router.post('/verify-payment', paymentRateLimit, requireAuth, async (req, res) =
 
     const userState = userPayments.get(knownOrder.userId) || { booked: false, paidFull: false };
     if (knownOrder.type === 'booking') userState.booked = true;
-    if (knownOrder.type === 'full') userState.paidFull = true;
+    if (knownOrder.type === 'full' || knownOrder.type === 'remaining') userState.paidFull = true;
     userPayments.set(knownOrder.userId, userState);
 
     console.info('Payment verified:', razorpay_payment_id);
