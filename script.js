@@ -243,6 +243,72 @@
     localStorage.setItem('nfc_orders', JSON.stringify(orders.slice(0, 20)));
   }
 
+
+
+  function ensureReminderState(order) {
+    if (!order || order.type !== 'nfc' || order.nfcType !== 'booking') return order;
+    if (!order.reminder || typeof order.reminder !== 'object') {
+      order.reminder = { enabled: true, lastSent: null, count: 0 };
+      return order;
+    }
+    if (order.reminder.enabled !== true) order.reminder.enabled = true;
+    if (!Object.prototype.hasOwnProperty.call(order.reminder, 'lastSent')) order.reminder.lastSent = null;
+    if (typeof order.reminder.count !== 'number') order.reminder.count = 0;
+    return order;
+  }
+
+  function loadOrders() {
+    var orders = getTrackedOrders();
+    var changed = false;
+    orders.forEach(function (order) {
+      var before = JSON.stringify(order && order.reminder ? order.reminder : null);
+      ensureReminderState(order);
+      var after = JSON.stringify(order && order.reminder ? order.reminder : null);
+      if (before !== after) changed = true;
+    });
+    if (changed) {
+      localStorage.setItem('nfc_orders', JSON.stringify(orders.slice(0, 20)));
+    }
+    return orders;
+  }
+
+  function saveOrders(orders) {
+    localStorage.setItem('nfc_orders', JSON.stringify((orders || []).slice(0, 20)));
+  }
+
+  function triggerReminder(order) {
+    window.alert('⚠️ Complete your NFC payment ₹2499');
+    setTimeout(function () {
+      if (window.confirm('Pay remaining ₹2499 for NFC Card?')) {
+        var button = document.getElementById('pay-remaining-btn');
+        if (button) button.click();
+      }
+    }, 500);
+  }
+
+  function runReminderEngine() {
+    var orders = loadOrders();
+    var now = Date.now();
+
+    orders.forEach(function (order) {
+      if (!order || order.type !== 'nfc') return;
+      if (order.nfcType !== 'booking') return;
+      ensureReminderState(order);
+      if (order.reminder.enabled !== true) return;
+      if (order.reminder.count >= 3) return;
+
+      var last = order.reminder.lastSent ? new Date(order.reminder.lastSent).getTime() : 0;
+      var hoursPassed = (now - last) / (1000 * 60 * 60);
+
+      if (hoursPassed > 24) {
+        triggerReminder(order);
+        order.reminder.lastSent = new Date().toISOString();
+        order.reminder.count += 1;
+        saveOrders(orders);
+      }
+    });
+  }
+
   function renderLiveTracking() {
     var root = document.getElementById('nfc-tracking');
     if (!root) return;
@@ -267,6 +333,7 @@
       status: 'confirmed',
       type: 'nfc',
       nfcType: paymentType === 'booking' ? 'booking' : 'full',
+      reminder: paymentType === 'booking' ? { enabled: true, lastSent: null, count: 0 } : null,
       timestamp: now.toISOString(),
       updates: [{ at: now.toISOString(), text: 'Payment verified' }]
     });
@@ -362,4 +429,6 @@
   bindPaymentButton('pay-full-btn', 'full');
   bindPaymentButton('pay-remaining-btn', 'remaining');
   renderLiveTracking();
+  runReminderEngine();
+  setInterval(runReminderEngine, 60000);
 })();
