@@ -169,9 +169,74 @@
     }
   }
 
+
+  async function loadRazorpayKeyId() {
+    try {
+      var response = await fetch('./api/razorpay-config');
+      if (!response.ok) throw new Error('Config fetch failed');
+      var data = await response.json();
+      return data.keyId || '';
+    } catch (error) {
+      console.error('Unable to load Razorpay key id:', error);
+      return '';
+    }
+  }
+
+  function bindPaymentButton() {
+    var button = document.getElementById('pay-btn');
+    if (!button) return;
+
+    button.onclick = async function () {
+      try {
+        var res = await fetch('./api/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: 50000 })
+        });
+
+        if (!res.ok) {
+          throw new Error('Order creation failed');
+        }
+
+        var order = await res.json();
+        var keyId = await loadRazorpayKeyId();
+
+        var options = {
+          key: keyId,
+          amount: order.amount,
+          currency: order.currency,
+          order_id: order.order_id,
+          handler: async function (response) {
+            await fetch('./api/verify-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(response)
+            });
+          },
+          modal: {
+            ondismiss: function () {
+              console.log('User closed payment');
+            }
+          }
+        };
+
+        var rzp = new Razorpay(options);
+
+        rzp.on('payment.failed', function (failure) {
+          console.error(failure.error);
+        });
+
+        rzp.open();
+      } catch (error) {
+        console.error('Payment flow failed:', error);
+      }
+    };
+  }
+
   waitForVisAndRender();
   loadGitHubRepos();
   bindPassportEntry();
   loadSecurityTelemetry();
   renderGatewayModules();
+  bindPaymentButton();
 })();
