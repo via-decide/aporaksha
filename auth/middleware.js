@@ -1,20 +1,24 @@
-const { verify } = require('./token');
+const { verifyAccessToken } = require('./token');
 
-function requireAuth(req, res, next) {
-  const auth = req.headers.authorization || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-  const payload = verify(token);
+function authMiddleware(req, res, next) {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'No token' });
 
-  if (!payload || !payload.sub) {
-    return res.status(401).json({ success: false, message: 'Unauthorized' });
+  const verification = verifyAccessToken(token);
+
+  if (!verification.valid) {
+    if (verification.reason === 'expired') {
+      return res.status(401).json({ error: 'Token expired, refresh' });
+    }
+    return res.status(401).json({ error: 'Invalid token' });
   }
 
-  req.user = {
-    id: payload.sub,
-    email: payload.email || '',
-  };
+  if (verification.payload.type !== 'access') {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
 
+  req.userId = verification.payload.userId;
   return next();
 }
 
-module.exports = { requireAuth };
+module.exports = { authMiddleware };
