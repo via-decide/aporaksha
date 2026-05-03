@@ -7,6 +7,7 @@ const { Pool } = require('pg');
 const router = express.Router();
 const { authMiddleware } = require('../../auth/middleware');
 const { checkProductAccess } = require('../../auth/check-product-access');
+const { validate, validators, escapeHtml } = require('../middleware/input-validation');
 const orders = new Map();
 const processedPayments = new Set();
 
@@ -18,7 +19,7 @@ function getRazorpayInstance() {
   return new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET });
 }
 
-router.post('/payments/create-order', paymentRateLimit, authMiddleware, async (req, res) => {
+router.post('/payments/create-order', paymentRateLimit, authMiddleware, [validators.productIdBody], validate, async (req, res) => {
   try {
     const { productId } = req.body || {};
     const userId = req.userId;
@@ -48,7 +49,7 @@ router.post('/payments/create-order', paymentRateLimit, authMiddleware, async (r
   }
 });
 
-router.post('/verify-payment', paymentRateLimit, authMiddleware, async (req, res) => {
+router.post('/verify-payment', paymentRateLimit, authMiddleware, [validators.razorpayOrderId, validators.razorpayPaymentId, validators.razorpaySignature], validate, async (req, res) => {
   const startedAt = Date.now();
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body || {};
@@ -111,15 +112,15 @@ router.get('/purchases', authMiddleware, async (req, res) => {
       [req.userId]
     );
 
-    return res.json({ purchases: rows });
+    return res.json({ purchases: rows.map((row) => ({ ...row, productName: escapeHtml(row.productName) })) });
   } catch (error) {
     console.error('Failed to fetch purchases', error);
     return res.status(500).json({ error: 'Failed to fetch purchases' });
   }
 });
 
-router.get('/products/:productId/data', authMiddleware, checkProductAccess, async (req, res) => {
-  return res.json({ productId: req.params.productId, access: true });
+router.get('/products/:productId/data', authMiddleware, [validators.productIdParam], validate, checkProductAccess, async (req, res) => {
+  return res.json({ productId: escapeHtml(req.params.productId), access: true });
 });
 
 module.exports = router;

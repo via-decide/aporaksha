@@ -2,6 +2,7 @@ const express = require('express');
 const crypto = require('crypto');
 const { issueTokenPair, verifyAccessToken, verifyRefreshToken } = require('./token');
 const { revokeToken, isTokenRevoked } = require('./token-blacklist');
+const { validate, validators, escapeHtml } = require('../server/middleware/input-validation');
 
 const router = express.Router();
 const users = new Map();
@@ -32,7 +33,7 @@ function generateRecoveryCodes() {
   return Array.from({ length: 6 }, () => crypto.randomBytes(6).toString('base64url').slice(0, 8).toUpperCase());
 }
 
-router.post('/auth/signup', (req, res) => {
+router.post('/auth/signup', [validators.email, validators.password], validate, (req, res) => {
   const { email, password } = req.body || {};
   const identity = normalizeIdentity(email);
 
@@ -60,10 +61,10 @@ router.post('/auth/signup', (req, res) => {
 
   users.set(identity, user);
 
-  return res.status(201).json({ success: true, userId: user.id, email: user.email, recoveryCodes });
+  return res.status(201).json({ success: true, userId: user.id, email: escapeHtml(user.email), recoveryCodes });
 });
 
-router.post('/auth/login', (req, res) => {
+router.post('/auth/login', [validators.email, validators.password], validate, (req, res) => {
   const { email, password } = req.body || {};
   const identity = normalizeIdentity(email);
 
@@ -79,7 +80,7 @@ router.post('/auth/login', (req, res) => {
   return res.json(issueTokenPair(user));
 });
 
-router.post('/auth/refresh', (req, res) => {
+router.post('/auth/refresh', [validators.refreshToken], validate, (req, res) => {
   const { refreshToken } = req.body || {};
 
   if (isTokenRevoked(refreshToken)) {
@@ -99,7 +100,7 @@ router.post('/auth/refresh', (req, res) => {
   return res.json(issueTokenPair(user));
 });
 
-router.post('/auth/logout', (req, res) => {
+router.post('/auth/logout', [validators.refreshToken], validate, (req, res) => {
   const accessToken = req.headers.authorization?.split(' ')[1];
   const { refreshToken } = req.body || {};
 
