@@ -6,6 +6,12 @@ const rateLimit = require('express-rate-limit');
 const router = express.Router();
 const orders = new Map();
 const processedPayments = new Set();
+const userPayments = new Map();
+
+const PAYMENT_TYPES = Object.freeze({
+  booking: { amount: 50000 },
+  full: { amount: 299900 },
+});
 
 const paymentRateLimit = rateLimit({
   windowMs: 60 * 1000,
@@ -23,23 +29,34 @@ function getRazorpayInstance() {
 
 router.post('/create-order', paymentRateLimit, async (req, res) => {
   try {
-    const amount = Number(req.body && req.body.amount);
+    const type = req.body && req.body.type;
+    const pricing = PAYMENT_TYPES[type];
 
-    if (!Number.isInteger(amount) || amount < 100 || amount > 10000000) {
-      return res.status(400).json({ success: false, message: 'Invalid amount.' });
+    if (!pricing) {
+      return res.status(400).json({ success: false, message: 'Invalid payment type.' });
     }
 
-    if (amount < 100) {
-      return res.status(400).json({ success: false, message: 'Amount must be at least 100.' });
+    const userId = (req.body && req.body.userId) || 'guest';
+    const userState = userPayments.get(userId) || { booked: false, paidFull: false };
+
+    if (type === 'booking' && userState.booked) {
+      return res.status(409).json({ success: false, message: 'NFC card already booked for this user.' });
     }
+
+    const amount = pricing.amount;
 
     const instance = getRazorpayInstance();
     const order = await instance.orders.create({
       amount,
       currency: 'INR',
       receipt: 'aporaksha_' + Date.now(),
+      notes: {
+        product: 'nfc_card',
+        type,
+        userId,
+      },
     });
-    orders.set(order.id, { amount: order.amount, createdAt: Date.now() });
+    orders.set(order.id, { type, amount: order.amount, userId, status: 'pending', createdAt: Date.now() });
     console.info('Payment order created:', order.id);
 
     return res.json({
@@ -60,7 +77,8 @@ router.post('/verify-payment', paymentRateLimit, async (req, res) => {
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
-      amount,
+      type,
+      userId = 'guest',
     } = req.body || {};
 
     console.info('Payment verification attempt:', razorpay_order_id || 'missing_order');
@@ -74,8 +92,16 @@ router.post('/verify-payment', paymentRateLimit, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Unknown order.' });
     }
 
-    if (amount !== undefined && Number(amount) !== knownOrder.amount) {
+    if (knownOrder.amount !== PAYMENT_TYPES[knownOrder.type].amount) {
       return res.status(400).json({ success: false, message: 'Order amount mismatch.' });
+    }
+
+    if (type !== knownOrder.type) {
+      return res.status(400).json({ success: false, message: 'Order type mismatch.' });
+    }
+
+    if (userId !== knownOrder.userId) {
+      return res.status(400).json({ success: false, message: 'Order user mismatch.' });
     }
 
     if (processedPayments.has(razorpay_payment_id)) {
@@ -98,9 +124,25 @@ router.post('/verify-payment', paymentRateLimit, async (req, res) => {
     }
 
     processedPayments.add(razorpay_payment_id);
+    knownOrder.status = 'paid';
+
+    const userState = userPayments.get(knownOrder.userId) || { booked: false, paidFull: false };
+    if (knownOrder.type === 'booking') userState.booked = true;
+    if (knownOrder.type === 'full') userState.paidFull = true;
+    userPayments.set(knownOrder.userId, userState);
+
     console.info('Payment verified:', razorpay_payment_id);
 
-    return res.json({ success: true });
+    return res.json({
+      success: true,
+      paymentState: {
+        booked: userState.booked,
+        paidFull: userState.paidFull,
+      },
+      message: knownOrder.type === 'booking'
+        ? 'Card booked. Pay remaining ₹2499 before delivery'
+        : 'NFC card payment completed in full',
+    });
   } catch (error) {
     console.error('Razorpay verification failed');
     return res.status(500).json({ error: 'Payment processing failed' });
