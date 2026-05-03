@@ -1,6 +1,7 @@
 const express = require('express');
 const crypto = require('crypto');
-const { issueTokenPair, verifyRefreshToken } = require('./token');
+const { issueTokenPair, verifyAccessToken, verifyRefreshToken } = require('./token');
+const { revokeToken, isTokenRevoked } = require('./token-blacklist');
 
 const router = express.Router();
 const users = new Map();
@@ -81,6 +82,10 @@ router.post('/auth/login', (req, res) => {
 router.post('/auth/refresh', (req, res) => {
   const { refreshToken } = req.body || {};
 
+  if (isTokenRevoked(refreshToken)) {
+    return res.status(401).json({ error: 'Token revoked' });
+  }
+
   const verification = verifyRefreshToken(refreshToken);
   if (!verification.valid || verification.payload?.type !== 'refresh') {
     return res.status(401).json({ error: 'Invalid token' });
@@ -94,8 +99,32 @@ router.post('/auth/refresh', (req, res) => {
   return res.json(issueTokenPair(user));
 });
 
-router.post('/logout', (_req, res) => {
-  return res.json({ success: true });
+router.post('/auth/logout', (req, res) => {
+  const accessToken = req.headers.authorization?.split(' ')[1];
+  const { refreshToken } = req.body || {};
+
+  if (!accessToken || !refreshToken) {
+    return res.status(400).json({ error: 'Access and refresh tokens are required' });
+  }
+
+  if (isTokenRevoked(accessToken) || isTokenRevoked(refreshToken)) {
+    return res.status(401).json({ error: 'Token revoked' });
+  }
+
+  const accessVerification = verifyAccessToken(accessToken);
+  if (!accessVerification.valid || accessVerification.payload?.type !== 'access') {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+
+  const refreshVerification = verifyRefreshToken(refreshToken);
+  if (!refreshVerification.valid || refreshVerification.payload?.type !== 'refresh') {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+
+  revokeToken(accessToken, accessVerification.payload.exp);
+  revokeToken(refreshToken, refreshVerification.payload.exp);
+
+  return res.json({ status: 'logged out' });
 });
 
 module.exports = router;
