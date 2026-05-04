@@ -241,13 +241,13 @@
 <body>
 
   <nav class="topbar">
-    <a href="/">
+    <a href="../index.html">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M9 11L5 7l4-4"/>
       </svg>
       Back
     </a>
-    <a href="/" class="topbar-logo">Aporaksha</a>
+    <a href="../index.html" class="topbar-logo">Aporaksha</a>
   </nav>
 
   <div class="card">
@@ -276,7 +276,7 @@
     <div id="msg"></div>
 
     <div class="card-footer">
-      Already have a passport? <a href="/login">Log in</a>
+      Already have a passport? <a href="./">Log in</a>
     </div>
 
     <div class="trust">
@@ -316,7 +316,7 @@
       btn.disabled = true;
       setMsg('Creating passport…');
 
-      fetch('/api/passport/create', {
+      fetch('../api/passport/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: name, email: email, password: password })
@@ -326,7 +326,7 @@
           if (data.ok) {
             setMsg('Passport created! Redirecting…', 'success');
             setTimeout(function () {
-              window.location.href = '/dashboard/';
+              window.location.href = '../dashboard/';
             }, 1200);
           } else {
             setMsg(data.error || 'Creation failed. Please try again.', 'error');
