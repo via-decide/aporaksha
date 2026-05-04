@@ -4,147 +4,346 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Zayvora Passport — Aporaksha</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg:       #0a0a0a;
+      --surface:  #111111;
+      --border:   #1e1e1e;
+      --text:     #f0f0f0;
+      --muted:    #888888;
+      --accent:   #ff671f;
+      --radius:   10px;
+      --font:     'DM Sans', system-ui, sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
     body {
-      background: #0a0a0a;
-      color: #f0f0f0;
-      font-family: 'DM Sans', system-ui, sans-serif;
-      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 15px;
+      line-height: 1.6;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 2rem;
+      min-height: 100vh;
+      padding: 1.5rem;
     }
-    .passport-card {
-      background: #111;
-      border: 1px solid #222;
-      border-radius: 12px;
-      padding: 2.5rem;
-      max-width: 480px;
-      width: 100%;
+
+    /* ── Top bar ── */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 52px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 1.5rem;
+      z-index: 100;
     }
-    h1 {
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: #ff671f;
-      margin-bottom: 0.5rem;
+
+    .topbar a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: color 0.15s;
     }
-    p.sub {
+
+    .topbar a:hover { color: var(--text); }
+
+    .topbar-logo {
+      margin-left: auto;
       font-size: 0.9rem;
-      color: #888;
+      font-weight: 600;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 420px;
+      margin-top: 52px;
+    }
+
+    .card-header {
       margin-bottom: 2rem;
     }
+
+    .passport-icon {
+      width: 40px;
+      height: 40px;
+      background: rgba(255, 103, 31, 0.12);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.3rem;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    /* ── Form ── */
+    .field {
+      margin-bottom: 1.1rem;
+    }
+
     label {
       display: block;
-      font-size: 0.8rem;
-      color: #aaa;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
       margin-bottom: 0.4rem;
     }
+
     input {
       width: 100%;
-      background: #1a1a1a;
-      border: 1px solid #333;
+      background: var(--bg);
+      border: 1px solid var(--border);
       border-radius: 6px;
-      color: #f0f0f0;
-      font-size: 0.95rem;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.9rem;
       padding: 0.65rem 0.85rem;
-      margin-bottom: 1.2rem;
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      -webkit-appearance: none;
     }
-    input:focus { border-color: #ff671f; }
-    button {
+
+    input::placeholder { color: #444; }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(255, 103, 31, 0.1);
+    }
+
+    /* ── Button ── */
+    .btn-primary {
       width: 100%;
-      background: #ff671f;
+      background: var(--accent);
       color: #fff;
-      font-size: 0.95rem;
+      font-family: var(--font);
+      font-size: 0.9rem;
       font-weight: 600;
       border: none;
       border-radius: 6px;
       padding: 0.75rem;
       cursor: pointer;
-      transition: opacity 0.2s;
+      margin-top: 0.5rem;
+      transition: opacity 0.15s, transform 0.1s;
+      letter-spacing: 0.01em;
     }
-    button:hover { opacity: 0.88; }
+
+    .btn-primary:hover:not(:disabled) {
+      opacity: 0.88;
+    }
+
+    .btn-primary:active:not(:disabled) {
+      transform: scale(0.99);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    /* ── Message ── */
     #msg {
-      margin-top: 1rem;
-      font-size: 0.85rem;
-      color: #aaa;
+      margin-top: 0.9rem;
+      font-size: 0.82rem;
       text-align: center;
-      min-height: 1.2rem;
+      min-height: 1.1rem;
+      color: var(--muted);
     }
-    .back {
+
+    #msg.error  { color: #ff4d4d; }
+    #msg.success { color: #4dff91; }
+
+    /* ── Divider + login link ── */
+    .card-footer {
       margin-top: 1.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
       text-align: center;
-      font-size: 0.85rem;
+      font-size: 0.83rem;
+      color: var(--muted);
     }
-    .back a { color: #ff671f; text-decoration: none; }
+
+    .card-footer a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .card-footer a:hover { text-decoration: underline; }
+
+    /* ── Trust badges ── */
+    .trust {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+      justify-content: center;
+    }
+
+    .badge {
+      font-size: 0.72rem;
+      color: #555;
+      background: #141414;
+      border: 1px solid #1e1e1e;
+      border-radius: 100px;
+      padding: 0.25rem 0.65rem;
+    }
+
+    /* ── Mobile ── */
+    @media (max-width: 480px) {
+      .card { padding: 1.75rem 1.25rem; }
+      h1 { font-size: 1.25rem; }
+    }
   </style>
 </head>
 <body>
-  <div class="passport-card">
-    <h1>Create Passport</h1>
-    <p class="sub">Your sovereign identity across the Aporaksha ecosystem.</p>
 
-    <label for="name">Display Name</label>
-    <input type="text" id="name" placeholder="e.g. Dharam Daxini" autocomplete="off" />
+  <nav class="topbar">
+    <a href="/">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 11L5 7l4-4"/>
+      </svg>
+      Back
+    </a>
+    <a href="/" class="topbar-logo">Aporaksha</a>
+  </nav>
 
-    <label for="email">Email</label>
-    <input type="email" id="email" placeholder="you@example.com" autocomplete="off" />
+  <div class="card">
+    <div class="card-header">
+      <div class="passport-icon">🪪</div>
+      <h1>Create Passport</h1>
+      <p class="subtitle">Your sovereign identity across the ecosystem. Skills, reputation, and assets follow you everywhere.</p>
+    </div>
 
-    <label for="password">Password</label>
-    <input type="password" id="password" placeholder="Min. 8 characters" />
+    <div class="field">
+      <label for="name">Display Name</label>
+      <input type="text" id="name" placeholder="e.g. Dharam Daxini" autocomplete="off" />
+    </div>
 
-    <button id="create-btn">Create Passport</button>
+    <div class="field">
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="you@example.com" autocomplete="off" />
+    </div>
+
+    <div class="field">
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="Minimum 8 characters" />
+    </div>
+
+    <button class="btn-primary" id="create-btn">Create Passport</button>
     <div id="msg"></div>
 
-    <div class="back"><a href="/">← Back to Aporaksha</a></div>
+    <div class="card-footer">
+      Already have a passport? <a href="/login">Log in</a>
+    </div>
+
+    <div class="trust">
+      <span class="badge">✦ Sovereign identity</span>
+      <span class="badge">✦ No third-party auth</span>
+      <span class="badge">✦ Aporaksha Stack</span>
+    </div>
   </div>
 
   <script>
     const btn = document.getElementById('create-btn');
     const msg = document.getElementById('msg');
 
-    btn.addEventListener('click', () => {
-      const name = document.getElementById('name').value.trim();
-      const email = document.getElementById('email').value.trim();
+    function setMsg(text, type) {
+      msg.textContent = text;
+      msg.className = type || '';
+    }
+
+    btn.addEventListener('click', function () {
+      const name     = document.getElementById('name').value.trim();
+      const email    = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
 
       if (!name || !email || !password) {
-        msg.textContent = 'All fields are required.';
+        setMsg('All fields are required.', 'error');
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setMsg('Enter a valid email address.', 'error');
         return;
       }
       if (password.length < 8) {
-        msg.textContent = 'Password must be at least 8 characters.';
+        setMsg('Password must be at least 8 characters.', 'error');
         return;
       }
 
       btn.disabled = true;
-      msg.textContent = 'Creating passport…';
+      setMsg('Creating passport…');
 
-      // Replace the fetch below with your actual API endpoint
       fetch('/api/passport/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password })
+        body: JSON.stringify({ name: name, email: email, password: password })
       })
-        .then(r => r.json())
-        .then(data => {
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
           if (data.ok) {
-            msg.textContent = 'Passport created. Redirecting…';
-            setTimeout(() => { window.location.href = '/dashboard/'; }, 1200);
+            setMsg('Passport created! Redirecting…', 'success');
+            setTimeout(function () {
+              window.location.href = '/dashboard/';
+            }, 1200);
           } else {
-            msg.textContent = data.error || 'Creation failed. Try again.';
+            setMsg(data.error || 'Creation failed. Please try again.', 'error');
             btn.disabled = false;
           }
         })
-        .catch(() => {
-          msg.textContent = 'Network error. Please try again.';
+        .catch(function () {
+          setMsg('Network error. Please try again.', 'error');
           btn.disabled = false;
         });
     });
+
+    // Allow Enter key to submit
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !btn.disabled) btn.click();
+    });
   </script>
+
 </body>
 </html>
