@@ -196,18 +196,20 @@
       var button = document.getElementById('login-btn');
       var logout = document.getElementById('logout-btn');
       if (button) button.onclick = async function () {
-      var email = window.prompt('Enter email (or cancel and use phone):', '');
-      var phone = email ? '' : window.prompt('Enter phone:', '');
-      var payload = email ? { email: email } : { phone: phone };
-      var res = await fetch('./api/login', {
+      try {
+      var email = window.prompt('Enter email:', '');
+      var password = window.prompt('Enter password:', '');
+      var res = await fetch('./api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        credentials: 'include',
+        body: JSON.stringify({ email: email, password: password })
       });
-      if (!res.ok) throw new Error('Login failed');
       var data = await res.json();
-      localStorage.setItem('zayvora_token', data.token);
+      if (!res.ok) throw new Error(data.error || 'Login failed');
+      localStorage.setItem('zayvora_token', data.token || data.accessToken || '');
       renderStatus();
+    } catch (error) { window.alert(error.message || 'Network error'); }
     };
 
       if (logout) logout.onclick = async function () {
