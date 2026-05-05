@@ -1,236 +1,173 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Aporaksha — Ecosystem Gateway</title>
-    <meta
-      name="description"
-      content="Aporaksha connects AI reasoning, creation tools, simulations, marketplaces, and security infrastructure into one builder ecosystem."
-    />
-    <meta property="og:title" content="Aporaksha — Ecosystem Gateway" />
-    <meta property="og:description" content="Build, publish, and own digital systems from one entry point." />
-    <meta property="og:type" content="website" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪐</text></svg>">
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="./styles.css" />
-    <script defer src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
-    <script defer src="./passport/passport-id-generator.js"></script>
-    <script defer src="./passport/passport-model.js"></script>
-    <script defer src="./passport/passport-store.js"></script>
-    <script defer src="./passport/passport-auth.js"></script>
-    <script defer src="./core/passport-adapter.js"></script>
-    <script defer src="./core/router-adapter.js"></script>
-    <script defer src="./core/security-adapter.js"></script>
-    <script defer src="./core/ecosystem-router.js"></script>
-    <script defer src="./passport/store/passport-cache.js"></script>
-    <script defer src="./passport/store/passport-loader.js"></script>
-    <script defer src="./security/hanuman-telemetry-adapter.js"></script>
-    <script defer src="./components/ecosystem/ecosystem-card.js"></script>
-    <script defer src="./components/ecosystem/ecosystem-grid.js"></script>
-    <script defer src="./components/capabilities/capabilities-grid.js"></script>
-    <script defer src="./components/activity/activity-feed.js"></script>
-    <script defer src="./components/global-navbar/global-navbar.js"></script>
-    <script defer src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script>
-      window.RAZORPAY_KEY_ID = "rzp_test_SkuL8wb20Jvjm7";
-    </script>
-    <script defer src="./script.js"></script>
-  </head>
-  <body data-system="dashboard">
-    <div id="global-navbar-root"></div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aporaksha — Sovereign AI Infrastructure</title>
+  <meta name="description" content="Aporaksha is a sovereign, local-first AI infrastructure stack that runs fully on your machine with zero cloud dependency." />
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --border: #1e1e1e;
+      --accent: #ff671f;
+      --accent-dim: #ff671f22;
+      --text: #f5f5f5;
+      --muted: #888888;
+      --radius-card: 12px;
+      --radius-btn: 6px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: system-ui,-apple-system,sans-serif; }
+    a { color: inherit; text-decoration: none; }
+    .container { width: min(1120px, 92vw); margin: 0 auto; }
 
-    <header class="hero section" id="gateway-home">
-      <p class="eyebrow">Aporaksha Ecosystem Gateway</p>
-      <h1>Build, publish, and own digital systems.</h1>
-      <p class="subtitle">Aporaksha connects AI reasoning, creation tools, simulations, marketplaces, and security infrastructure into one builder ecosystem.</p>
-      <div class="hero-links">
-        <a class="btn primary" href="https://daxini.xyz" target="_blank" rel="noopener noreferrer">Open Workspace</a>
-        <a class="btn" href="https://daxini.space" target="_blank" rel="noopener noreferrer">Explore Marketplace</a>
-        <a class="btn" href="./dashboard/">Open Dashboard</a>
-        <span id="nav-auth" aria-live="polite"></span>
-        <a class="btn" id="open-passport-button" href="./passport/">Create Passport</a>
-      </div>
-      <div class="surface" id="nfc-tracking" style="margin-top:1rem;display:none;"></div>
-    
-  <span id="nav-auth-block"></span>
-  <script>
-    (function () {
-      var s = null;
-      try { s = localStorage.getItem('aporaksha_session'); } catch(e) {}
-      var el = document.currentScript && document.currentScript.previousElementSibling;
-      if (!el) return;
-      if (s) {
-        el.innerHTML = '<a href="./passport/" style="color:inherit;text-decoration:none;font-size:0.9rem;">Logout</a>';
-      } else {
-        el.innerHTML = '<a href="./passport/" style="color:inherit;text-decoration:none;font-size:0.9rem;">Login</a>';
-      }
-    })();
-  </script>
-</header>
+    .nav {
+      position: sticky; top: 0; z-index: 50;
+      border-bottom: 1px solid var(--border);
+      background: #0a0a0ab0;
+      backdrop-filter: blur(12px);
+    }
+    .nav-inner { height: 72px; display: flex; align-items: center; justify-content: space-between; }
+    .brand { font-weight: 700; letter-spacing: 0.2px; display: inline-flex; align-items: center; gap: 8px; }
+    .brand .glyph { color: var(--accent); font-size: 14px; transform: translateY(-1px); }
+    .brand .dot { color: var(--accent); }
+    .nav-links { display: flex; align-items: center; gap: 20px; color: #cfcfcf; font-size: 14px; }
+    .products::after { content: " ▾"; color: #7a7a7a; }
 
-    <main>
-      <section class="section" id="ecosystem-modules" aria-labelledby="modules-title">
-        <div class="section-head">
-          <h2 id="modules-title">Ecosystem Modules</h2>
-          <p>Everything in the platform, connected from one launch point.</p>
-        </div>
-        <div class="modules-grid scroll-grid" id="ecosystem-module-grid"></div>
-      </section>
+    .btn { border: 1px solid var(--border); padding: 11px 16px; border-radius: var(--radius-btn); font-size: 14px; font-weight: 600; transition: .15s ease; display: inline-block; }
+    .btn:hover { transform: translateY(-1px); }
+    .btn.accent { background: var(--accent); color: #120b08; border-color: var(--accent); }
+    .btn.ghost { background: transparent; color: #d6d6d6; }
 
-      <section class="section" id="identity" aria-labelledby="identity-title">
-        <div class="section-head">
-          <h2 id="identity-title">Zayvora Passport</h2>
-          <p>The sovereign identity layer across the ecosystem. Your passport carries skills, reputation, assets, and activity score wherever you build or publish.</p>
-        </div>
-        <div class="identity-grid passport-fields">
-          <article class="surface identity-card"><h3>skills</h3></article>
-          <article class="surface identity-card"><h3>reputation</h3></article>
-          <article class="surface identity-card"><h3>assets</h3></article>
-          <article class="surface identity-card"><h3>activity score</h3></article>
-        </div>
-        <div class="hero-links identity-actions">
-          <a class="btn primary" href="./passport/">Create Passport</a>
-          <a class="btn" href="./passport/">View Passport</a>
-        </div>
-      </section>
+    .hero {
+      min-height: calc(100vh - 72px);
+      display: flex; align-items: center; position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ""; position: absolute; inset: -20%;
+      background: radial-gradient(circle at 50% 45%, #ff671f14 0%, #ff671f08 20%, transparent 60%);
+      animation: pulse-glow 8s ease-in-out infinite;
+      pointer-events: none;
+    }
+    .hero-content { position: relative; z-index: 2; padding: 56px 0 50px; }
+    .badge { display: inline-flex; padding: 7px 12px; border: 1px solid #2a2a2a; border-radius: 999px; background: #111; color: #c9c9c9; font-size: 13px; }
+    h1 { margin: 20px 0 14px; font-size: clamp(2.1rem, 6vw, 4.5rem); line-height: .98; letter-spacing: -1.2px; max-width: 11ch; }
+    .cycle { display: inline-grid; position: relative; }
+    .cycle span { grid-area: 1/1; opacity: 0; animation: swap-word 8s infinite; }
+    .cycle span:nth-child(2) { animation-delay: 2s; }
+    .cycle span:nth-child(3) { animation-delay: 4s; }
+    .cycle span:nth-child(4) { animation-delay: 6s; }
+    .subhead { max-width: 760px; color: #b0b0b0; line-height: 1.6; font-size: 18px; }
+    .hero-actions { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+    .trust-strip { margin-top: 28px; border-top: 1px solid var(--border); padding-top: 16px; color: #8f8f8f; font-size: 14px; display: flex; flex-wrap: wrap; gap: 10px; }
+    .trust-strip span + span::before { content: "·"; margin-right: 10px; color: #5c5c5c; }
 
-      <section class="section" id="capabilities" aria-labelledby="capabilities-title">
-        <div class="section-head">
-          <h2 id="capabilities-title">What You Can Do Here</h2>
-        </div>
-        <div class="identity-grid" id="capabilities-grid"></div>
-      </section>
+    .marquee { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--surface); overflow: hidden; }
+    .track { display: flex; gap: 10px; padding: 14px 0; width: max-content; animation: scroll-left 36s linear infinite; }
+    .pill { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 999px; padding: 4px 14px; font-size: 13px; color: #aaa; white-space: nowrap; }
 
-      <section class="section" id="activity" aria-labelledby="activity-title">
-        <div class="section-head">
-          <h2 id="activity-title">Ecosystem Activity Feed</h2>
-        </div>
-        <ul class="surface activity-feed" id="activity-feed"></ul>
-      </section>
+    section { padding: 78px 0; }
+    .eyebrow { color: var(--accent); font-size: 12px; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 10px; }
+    .section-title { margin: 0 0 22px; font-size: clamp(1.7rem, 3vw, 2.4rem); letter-spacing: -0.6px; }
 
-      <section class="section" id="economy" aria-labelledby="economy-title">
-        <div class="section-head">
-          <h2 id="economy-title">Creator Economy Loop</h2>
-        </div>
-        <div class="surface">
-          <p class="flow">Create → Publish → Earn</p>
-          <p>Build tools with Logichub, publish on Daxini.space, and earn as users install and run your work.</p>
-        </div>
-      </section>
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 18px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); padding: 28px; transition: border-color .2s, box-shadow .2s; }
+    .card:hover { border-color: #ff671f44; box-shadow: 0 0 24px #ff671f11; }
+    .icon { color: var(--accent); font-size: 22px; }
+    .card h3 { margin: 12px 0 10px; font-size: 25px; }
+    .card p { margin: 0 0 16px; color: #acacac; line-height: 1.6; }
+    .card a { color: var(--accent); font-size: 14px; }
 
-      <section class="section" id="creator-onboarding" aria-labelledby="creator-onboarding-title">
-        <div class="section-head">
-          <h2 id="creator-onboarding-title">Creator Onboarding Flow</h2>
-          <p>Follow this 5-step path to move from first identity setup to recurring income and reputation.</p>
-        </div>
-        <ol class="surface onboarding-flow">
-          <li><strong>Step 1 — Create Passport:</strong> Set up your identity so skills, reputation, and progress persist across all tools.</li>
-          <li><strong>Step 2 — Open Workspace:</strong> Launch Daxini.xyz and prepare your creator environment.</li>
-          <li><strong>Step 3 — Build tool with Logichub:</strong> Design and ship a usable creator utility in the ecosystem format.</li>
-          <li><strong>Step 4 — Publish on Daxini.space:</strong> List your finished tool for discovery, installation, and usage.</li>
-          <li><strong>Step 5 — Earn reputation and income:</strong> Grow trust and revenue as users adopt and engage with your tool.</li>
-        </ol>
-      </section>
+    .philosophy { display: grid; grid-template-columns: 1.1fr 1fr; gap: 38px; align-items: start; }
+    blockquote { margin: 0; padding: 24px; background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: var(--radius-card); font-size: clamp(1.35rem, 2.4vw, 2rem); line-height: 1.25; color: #ececec; }
+    .points { display: grid; gap: 16px; }
+    .point { border: 1px solid var(--border); border-radius: 10px; background: #0f0f0f; padding: 18px; color: #b5b5b5; }
+    .point strong { color: #efefef; }
 
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .stat { text-align: center; padding: 28px 16px; background: var(--surface); border-right: 1px solid var(--border); }
+    .stat:last-child { border-right: 0; }
+    .num { font-size: clamp(2rem, 5vw, 3rem); font-weight: 700; color: var(--accent); }
+    .label { color: #919191; font-size: 14px; margin-top: 6px; }
 
-      <section class="section" id="pricing-cta" aria-labelledby="pricing-cta-title">
-        <div class="section-head">
-          <h2 id="pricing-cta-title">NFC Passport Plans</h2>
-          <p>Choose a payment option after reviewing the ecosystem value proposition.</p>
-        </div>
-        <div class="hero-links">
-          
-          
-        </div>
-      </section>
+    .tabs input { display: none; }
+    .tab-labels { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+    .tab-labels label { border: 1px solid var(--border); color: #b9b9b9; background: #101010; padding: 10px 14px; border-radius: 999px; cursor: pointer; font-size: 14px; }
+    .panel { display: none; grid-template-columns: 1fr 1fr; gap: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px; }
+    .panel h4 { margin: 0 0 10px; font-size: 24px; }
+    .panel ul { margin: 0; padding-left: 18px; color: #b4b4b4; line-height: 1.7; }
+    .terminal { background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 8px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; color: #ccc; padding: 20px; line-height: 1.65; white-space: pre-line; }
+    .terminal .ok { color: #a9ff8f; }
+    .terminal .step { color: var(--accent); }
 
-      <section class="section" id="ecosystem-map" aria-labelledby="stack-title">
-        <div class="section-head">
-          <h2 id="stack-title">Ecosystem Map (Secondary)</h2>
-          <p>A simplified architecture view for users who want context after routing.</p>
-        </div>
-        <div class="stack" id="stack">
-          <button class="layer active" data-info="Aporaksha routes users into active ecosystem destinations.">Gateway Layer</button>
-          <button class="layer" data-info="Workspace and Builder power execution and app creation.">Execution Layer</button>
-          <button class="layer" data-info="Marketplace and simulations extend capability and skill development.">Expansion Layer</button>
-          <button class="layer" data-info="Security and identity maintain trust and persistent progression.">Trust Layer</button>
-        </div>
-        <p id="stack-info" class="surface">Aporaksha routes users into active ecosystem destinations.</p>
-      </section>
+    #t1:checked ~ .tab-labels label[for="t1"], #t2:checked ~ .tab-labels label[for="t2"], #t3:checked ~ .tab-labels label[for="t3"], #t4:checked ~ .tab-labels label[for="t4"] { border-color: #ff671f66; background: var(--accent-dim); color: #ffd7bf; }
+    #t1:checked ~ .panels #p1, #t2:checked ~ .panels #p2, #t3:checked ~ .panels #p3, #t4:checked ~ .panels #p4 { display: grid; }
 
-      <section class="section" id="security" aria-labelledby="security-title">
-        <div class="section-head">
-          <h2 id="security-title">Security</h2>
-          <p>Hanuman telemetry summary for gateway trust status.</p>
-        </div>
-        <div class="surface">
-          <p><strong>Status:</strong> <span id="security-status">Loading…</span></p>
-          <p><strong>Attack Summary:</strong> <span id="security-summary">Loading…</span></p>
-          <p><strong>Last Scan:</strong> <span id="security-scan">Loading…</span></p>
-        </div>
-      </section>
-    
-<section id="pricing" style="
-  padding: 3rem 1.5rem;
-  max-width: 640px;
-  margin: 0 auto;
-  text-align: center;
-  border-top: 1px solid #1a1a1a;
-">
-  <h2 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.4rem; color: #f0f0f0;">
-    Get Your NFC Card
-  </h2>
-  <p style="font-size: 0.85rem; color: #666; margin-bottom: 1.5rem;">
-    Carry your Zayvora Passport in the physical world.
-  </p>
-  <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-    <a href="#pay-nfc" style="
-      background: #ff671f;
-      color: #fff;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 0.9rem;
-      padding: 0.7rem 1.4rem;
-      border-radius: 6px;
-      display: inline-block;
-    ">Book NFC Card — &#8377;500</a>
-    <a href="#pay-full" style="
-      background: transparent;
-      color: #ff671f;
-      border: 1px solid #ff671f;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 0.9rem;
-      padding: 0.7rem 1.4rem;
-      border-radius: 6px;
-      display: inline-block;
-    ">Buy Full Access — &#8377;2999</a>
-  </div>
-</section>
-</main>
+    .manifesto, .cta-foot { text-align: center; background: #0d0d0d; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .manifesto p, .cta-foot p { max-width: 720px; margin: 0 auto 20px; color: #ababab; line-height: 1.7; }
 
-    <footer class="site-footer" id="footer-map">
-      <div class="footer-content">
-        <div>
-          <p><strong>Ecosystem Architecture</strong></p>
-          <p>Aporaksha → Identity Gateway</p>
-          <p>Daxini.xyz → Workspace</p>
-          <p>Logichub → Builder Platform</p>
-          <p>Daxini.space → Marketplace</p>
-          <p>Hanuman → Security</p>
-          <p>ViaDecide → Organization</p>
-        </div>
-        <div class="footer-links">
-          <a href="https://github.com/via-decide" target="_blank" rel="noopener noreferrer">GitHub</a>
-          <a href="https://viadecide.com" target="_blank" rel="noopener noreferrer">ViaDecide</a>
-        </div>
-      </div>
-    </footer>
-  </body>
+    footer { padding: 60px 0 30px; }
+    .footer-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; }
+    .footer-links { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+    .footer-links h5 { margin: 0 0 10px; color: #d9d9d9; }
+    .footer-links a { display: block; margin: 7px 0; color: #999; font-size: 14px; }
+    .footbar { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--border); color: #7d7d7d; font-size: 13px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+
+    @keyframes pulse-glow { 0%,100% { opacity: .7; } 50% { opacity: 1; } }
+    @keyframes swap-word { 0%,20% { opacity: 1; } 25%,100% { opacity: 0; } }
+    @keyframes scroll-left { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    @media (max-width: 860px) {
+      .nav-links a:not(.btn) { display: none; }
+      .grid, .philosophy, .panel, .footer-grid { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: 1fr 1fr; }
+      .stat:nth-child(2n) { border-right: 0; }
+      .stat { border-bottom: 1px solid var(--border); }
+      .stat:nth-last-child(-n+2) { border-bottom: 0; }
+      .footer-links { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav"><div class="container nav-inner"><a class="brand" href="#"><span class="glyph">◆</span><span><span class="dot">A</span>poraksha</span></a><div class="nav-links"><a href="#stack">Products</a><a href="#">Docs</a><a href="#">GitHub</a><a class="btn accent" href="#">Launch Stack →</a></div></div></nav>
+
+  <header class="hero"><div class="container hero-content"><div class="badge">🇮🇳 Sovereign · Local-First · Zero Cloud</div><h1>The AI stack that runs on <span class="cycle"><span>your machine.</span><span>your data.</span><span>your rules.</span><span>your machine.</span></span></h1><p class="subhead">Zayvora · Nex · Orchade · StudyOS — a complete sovereign AI infrastructure for builders who trust no one's cloud but their own.</p><div class="hero-actions"><a class="btn accent" href="#stack">Explore the Stack</a><a class="btn ghost" href="#manifesto">Read the Manifesto →</a></div><div class="trust-strip"><span>Built on Mac Mini M4</span><span>Zero cloud dependency</span><span>Runs fully offline</span><span>Made in Kutch, India</span></div></div></header>
+
+  <div class="marquee"><div class="track"><span class="pill">Zayvora LLM</span><span class="pill">6-Stage Reasoning</span><span class="pill">Nex RAG Engine</span><span class="pill">Orchade Asyncio</span><span class="pill">StudyOS</span><span class="pill">IndexedDB Auth</span><span class="pill">PWA Native</span><span class="pill">Offline First</span><span class="pill">LoRA Fine-tuning</span><span class="pill">No Cloud Bills</span><span class="pill">Antigravity Stack</span><span class="pill">daxini.space</span><span class="pill">Zayvora LLM</span><span class="pill">6-Stage Reasoning</span><span class="pill">Nex RAG Engine</span><span class="pill">Orchade Asyncio</span><span class="pill">StudyOS</span><span class="pill">IndexedDB Auth</span><span class="pill">PWA Native</span><span class="pill">Offline First</span><span class="pill">LoRA Fine-tuning</span><span class="pill">No Cloud Bills</span><span class="pill">Antigravity Stack</span><span class="pill">daxini.space</span></div></div>
+
+  <main>
+    <section id="stack" class="container"><div class="eyebrow">THE APORAKSHA STACK</div><h2 class="section-title">The stack you can inspect, run, and trust.</h2><div class="grid"><article class="card"><div class="icon">◈</div><h3>Zayvora</h3><p>Local LLM with 6-stage reasoning loop. Runs on Ollama. No API keys.</p><a href="#">Learn more →</a></article><article class="card"><div class="icon">⬡</div><h3>Nex</h3><p>Hybrid RAG research engine. Finds what matters. Keeps it local.</p><a href="#">Learn more →</a></article><article class="card"><div class="icon">⟳</div><h3>Orchade</h3><p>Asyncio orchestration layer. Chains agents without the cloud tax.</p><a href="#">Learn more →</a></article><article class="card"><div class="icon">▦</div><h3>StudyOS</h3><p>Single-file study interface. Offline. Auditable. No SaaS required.</p><a href="#">Learn more →</a></article></div></section>
+
+    <section class="container"><div class="philosophy"><blockquote>"If your AI stack phones home, it's not your stack."</blockquote><div class="points"><div class="point"><strong>1. Own your compute.</strong> Every model runs on your hardware. No usage fees, no rate limits, no outage dependencies.</div><div class="point"><strong>2. Own your data.</strong> IndexedDB, local files, local vector store. Nothing leaves your machine unless you decide.</div><div class="point"><strong>3. Own your audit trail.</strong> Every inference, every prompt, every response — logged locally in formats you control.</div></div></div></section>
+
+    <section class="container"><div class="stats"><div class="stat"><div class="num">0</div><div class="label">Cloud dependencies</div></div><div class="stat"><div class="num">4</div><div class="label">Core stack products</div></div><div class="stat"><div class="num">1</div><div class="label">File per product (Antigravity)</div></div><div class="stat"><div class="num">∞</div><div class="label">Inferences per month (local)</div></div></div></section>
+
+    <section class="container"><h2 class="section-title">Use Cases</h2><div class="tabs"><input checked id="t1" name="tabs" type="radio"><input id="t2" name="tabs" type="radio"><input id="t3" name="tabs" type="radio"><input id="t4" name="tabs" type="radio"><div class="tab-labels"><label for="t1">AI Research</label><label for="t2">Study & Learning</label><label for="t3">Developer Tools</label><label for="t4">Local Agents</label></div><div class="panels"><article class="panel" id="p1"><div><h4>AI Research</h4><ul><li>Query local corpora without exposing sources.</li><li>Blend vector and lexical retrieval for precision.</li><li>Synthesize answers with citation-ready context.</li></ul></div><div class="terminal">$ nex query "protein folding mechanisms"
+<span class="step">▶</span> Searching local corpus...
+<span class="step">▶</span> Hybrid BM25 + vector match: 94.2%
+<span class="step">▶</span> Synthesizing with Zayvora...
+<span class="ok">✓</span> Response ready  [0 API calls]</div></article><article class="panel" id="p2"><div><h4>Study & Learning</h4><ul><li>Run study sessions fully offline.</li><li>Track notes and revisions in local-first storage.</li><li>Build reusable learning loops with no SaaS lock-in.</li></ul></div><div class="terminal">$ studyos start --mode focused
+<span class="step">▶</span> Loading local decks...
+<span class="step">▶</span> Session timer: 45 min
+<span class="step">▶</span> Prompting with Zayvora tutor mode...
+<span class="ok">✓</span> Session synced to local ledger</div></article><article class="panel" id="p3"><div><h4>Developer Tools</h4><ul><li>Orchestrate CLI workflows with Orchade.</li><li>Chain local models for coding, review, and refactor.</li><li>Maintain full logs for audit and replay.</li></ul></div><div class="terminal">$ orchade run build-agent
+<span class="step">▶</span> Task graph initialized
+<span class="step">▶</span> Agent chain: lint → patch → verify
+<span class="step">▶</span> Local sandbox execution...
+<span class="ok">✓</span> Build completed with zero remote calls</div></article><article class="panel" id="p4"><div><h4>Local Agents</h4><ul><li>Deploy autonomous assistants in private environments.</li><li>Schedule periodic tasks with deterministic logs.</li><li>Control access with machine-local permissions.</li></ul></div><div class="terminal">$ zayvora agent deploy ops-watch
+<span class="step">▶</span> Loading policy: local-only
+<span class="step">▶</span> Attaching Nex memory index
+<span class="step">▶</span> Enabling Orchade scheduler
+<span class="ok">✓</span> Agent active  [scope: this machine]</div></article></div></div></section>
+
+    <section class="manifesto" id="manifesto"><div class="container"><div class="eyebrow">THE ANTIGRAVITY MANIFESTO</div><h2 class="section-title">Constraint is the architecture.</h2><p>We build with hard limits: single-file outputs, local compute, and zero external dependency chains. Every decision in Aporaksha exists to reduce fragility and increase user control. Sovereignty is not a feature layer — it is the default execution model.</p><a class="btn ghost" href="#">Read the full manifesto →</a></div></section>
+
+    <section class="cta-foot"><div class="container"><h2 class="section-title">Ready to own your AI stack?</h2><p>No sign-up. No API key. No cloud account. Just clone and run.</p><div class="hero-actions" style="justify-content:center;"><a class="btn accent" href="#">Get the Stack on GitHub</a><a class="btn ghost" href="#">Read the Docs</a></div><p style="margin-top:16px;font-size:13px;">Built solo in Kutch, India · Mac Mini M4 · Running since 2024</p></div></section>
+  </main>
+
+  <footer><div class="container"><div class="footer-grid"><div><a class="brand" href="#"><span class="glyph">◆</span><span><span class="dot">A</span>poraksha</span></a><p style="color:#9c9c9c;max-width:420px;line-height:1.7;">Sovereign AI infrastructure designed for builders who need local-first systems that remain auditable, controllable, and cloud-independent.</p></div><div class="footer-links"><div><h5>Stack</h5><a href="#">Zayvora</a><a href="#">Nex</a><a href="#">Orchade</a><a href="#">StudyOS</a></div><div><h5>Domains</h5><a href="#">daxini.space</a><a href="#">logichub.app</a><a href="#">viadecide.com</a></div><div><h5>Connect</h5><a href="#">LinkedIn</a><a href="#">GitHub</a><a href="#">Newsletter</a></div></div></div><div class="footbar"><span>© 2025 Dharam Daxini · aporaksha.com · Made in Kutch 🇮🇳</span><span>Sovereign · Local-First · Antigravity</span></div></div></footer>
+
+  <script></script>
+</body>
 </html>
