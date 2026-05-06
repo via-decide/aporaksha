@@ -12,3 +12,16 @@ Storage schema is persisted in `localStorage` with SQLite-like tables:
 
 - `subscriptions`: `id`, `user_id`, `plan`, `status`
 - `auth_nonces`: `nonce`, `created_at`, `used_at`
+
+## Razorpay Webhook Setup
+
+1. Go to Razorpay Dashboard → Webhooks
+2. Set webhook URL:
+
+   https://aporaksha.com/api/webhooks/razorpay
+
+3. Add events:
+   - payment.captured
+   - order.paid
+4. Set secret (same as `.env`)
+5. Ensure endpoint returns HTTP 200
