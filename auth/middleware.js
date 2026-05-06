@@ -23,6 +23,7 @@ function authMiddleware(req, res, next) {
   }
 
   req.userId = verification.payload.userId;
+  req.user = verification.payload;
   return next();
 }
 

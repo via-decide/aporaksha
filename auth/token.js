@@ -33,27 +33,32 @@ function verify(token, secret) {
   return { valid: true, payload };
 }
 
-function issueAccessToken(user) {
+function issueAccessToken(user, jti) {
   return sign({
     userId: user.id,
     email: user.email || '',
+    role: user.role || 'user',
+    jti,
     type: 'access',
     exp: Math.floor(Date.now() / 1000) + ACCESS_TOKEN_TTL_SEC,
   }, ACCESS_SECRET);
 }
 
-function issueRefreshToken(user) {
+function issueRefreshToken(user, deviceId) {
   return sign({
     userId: user.id,
+    deviceId: deviceId || 'unknown',
     type: 'refresh',
     exp: Math.floor(Date.now() / 1000) + REFRESH_TOKEN_TTL_SEC,
   }, REFRESH_SECRET);
 }
 
-function issueTokenPair(user) {
+function issueTokenPair(user, deviceId) {
+  const jti = crypto.randomBytes(16).toString('hex');
   return {
-    accessToken: issueAccessToken(user),
-    refreshToken: issueRefreshToken(user),
+    accessToken: issueAccessToken(user, jti),
+    refreshToken: issueRefreshToken(user, deviceId),
+    jti,
     expiresIn: ACCESS_TOKEN_TTL_SEC,
   };
 }
