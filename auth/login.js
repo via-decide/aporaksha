@@ -10,6 +10,9 @@ const users = new Map();
 const lastIpByUser = new Map();
 const fingerprintByUser = new Map();
 const auditLogsByUser = new Map();
+const mfaCodesByUser = new Map();
+const lastGeoByUser = new Map();
+const behaviorByUser = new Map();
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{12,}$/;
@@ -50,13 +53,42 @@ function generateFingerprint(req) {
   return crypto.createHash('sha256').update(`${ua}|${lang}|${ip}`).digest('hex');
 }
 
-function calculateRisk({ newIP, newDevice }) {
+function calculateRisk({ impossibleTravel, newIP, newDevice, behaviorAnomaly }) {
   let score = 0;
-  if (newIP) score += 40;
-  if (newDevice) score += 40;
-  if (score >= 70) return { level: 'HIGH', score };
-  if (score >= 40) return { level: 'MEDIUM', score };
+  if (impossibleTravel) score += 50;
+  if (newIP) score += 20;
+  if (newDevice) score += 20;
+  if (behaviorAnomaly) score += 10;
+  if (score >= 60) return { level: 'HIGH', score };
+  if (score >= 30) return { level: 'MEDIUM', score };
   return { level: 'LOW', score };
+}
+
+
+function toRad(x) { return (x * Math.PI) / 180; }
+
+function isImpossibleTravel(prev, curr, timeDiffSec) {
+  if (!prev || !curr || !timeDiffSec || timeDiffSec <= 0) return false;
+  const dLat = toRad(curr.lat - prev.lat);
+  const dLon = toRad(curr.lon - prev.lon);
+  const lat1 = toRad(prev.lat);
+  const lat2 = toRad(curr.lat);
+  const aVal = Math.sin(dLat / 2) ** 2 + Math.sin(dLon / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
+  const dist = 6371 * (2 * Math.atan2(Math.sqrt(aVal), Math.sqrt(1 - aVal)));
+  const speed = dist / (timeDiffSec / 3600);
+  return speed > 900;
+}
+
+function detectBehaviorAnomaly(userId, action) {
+  const history = behaviorByUser.get(userId) || [];
+  const freq = history.filter((entry) => entry.action === action).length;
+  return freq < 2;
+}
+
+function trackBehavior(userId, action) {
+  const history = behaviorByUser.get(userId) || [];
+  history.push({ time: Date.now(), action });
+  behaviorByUser.set(userId, history.slice(-20));
 }
 
 function logEvent(event) {
@@ -114,14 +146,23 @@ router.post('/auth/login', [validators.email, validators.password], validate, (r
   const fingerprint = generateFingerprint(req);
   const lastIP = lastIpByUser.get(user.id);
   const lastDevice = fingerprintByUser.get(user.id);
-  const risk = calculateRisk({ newIP: Boolean(lastIP && lastIP !== geo.ip), newDevice: Boolean(lastDevice && lastDevice !== fingerprint) });
+  const prevGeo = lastGeoByUser.get(user.id);
+  const now = Date.now();
+  const impossibleTravel = isImpossibleTravel(prevGeo, geo, (now - (prevGeo?.time || now)) / 1000);
+  const behaviorAnomaly = detectBehaviorAnomaly(user.id, 'login');
+  const risk = calculateRisk({ impossibleTravel, newIP: Boolean(lastIP && lastIP !== geo.ip), newDevice: Boolean(lastDevice && lastDevice !== fingerprint), behaviorAnomaly });
 
   lastIpByUser.set(user.id, geo.ip);
   fingerprintByUser.set(user.id, fingerprint);
-  logEvent({ type: 'LOGIN', userId: user.id, ip: geo.ip, country: geo.country, city: geo.city, risk: risk.level, score: risk.score });
+  lastGeoByUser.set(user.id, { lat: Number(req.headers['x-geo-lat'] || 0), lon: Number(req.headers['x-geo-lon'] || 0), time: now });
+  trackBehavior(user.id, 'login');
+  logEvent({ type: 'LOGIN', userId: user.id, ip: geo.ip, country: geo.country, city: geo.city, risk: risk.level, score: risk.score, impossibleTravel, behaviorAnomaly });
 
   if (risk.level === 'HIGH') {
-    return res.status(403).json({ error: 'Suspicious login detected', risk });
+    const code = String(Math.floor(100000 + Math.random() * 900000));
+    mfaCodesByUser.set(user.id, { code, expiresAt: now + 300000 });
+    logEvent({ type: 'MFA_REQUIRED', userId: user.id, ip: geo.ip, country: geo.country, city: geo.city, risk: risk.level, score: risk.score });
+    return res.status(403).json({ requireMFA: true, userId: user.id, risk });
   }
 
   const deviceId = req.headers['x-device-id'] || 'unknown';
@@ -129,6 +170,15 @@ router.post('/auth/login', [validators.email, validators.password], validate, (r
   if (detectAnomaly(user.id, req.ip)) console.warn('Suspicious login detected for user:', user.id);
   createSession(user.id, deviceId, tokens.refreshToken);
   return res.json({ ...tokens, risk });
+});
+
+
+router.post('/auth/verify-mfa', (req, res) => {
+  const { userId, code } = req.body || {};
+  const record = mfaCodesByUser.get(userId);
+  if (!record || record.expiresAt < Date.now() || record.code !== String(code || '')) return res.status(401).json({ error: 'Invalid MFA' });
+  mfaCodesByUser.delete(userId);
+  return res.json({ success: true });
 });
 
 router.post('/auth/refresh', [validators.refreshToken], validate, (req, res) => {

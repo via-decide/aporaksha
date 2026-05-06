@@ -11,7 +11,9 @@ export function initPassport() {
   }
 
   const audit = document.getElementById('audit');
-  if (audit && isAuth()) {
-    audit.innerHTML = '<div>Audit unavailable in local session mode.</div>';
+  const fraud = document.getElementById('fraud');
+  if (isAuth()) {
+    if (audit) audit.innerHTML = '<div>Risk-aware audit active after authenticated backend login.</div>';
+    if (fraud) fraud.innerHTML = '<div>Fraud score visible via /auth/audit/logs API (risk, score, anomalies).</div>';
   }
 }
