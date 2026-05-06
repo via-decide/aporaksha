@@ -9,4 +9,9 @@ export function initPassport() {
     loadAuth();
     dash.textContent = isAuth() ? 'Secure dashboard loaded' : 'Unauthorized';
   }
+
+  const audit = document.getElementById('audit');
+  if (audit && isAuth()) {
+    audit.innerHTML = '<div>Audit unavailable in local session mode.</div>';
+  }
 }
