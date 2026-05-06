@@ -1,7 +1,6 @@
 {
   "functions": {
-    "api/webhooks/*.js": {
-      "memory": 512,
+    "api/**/*.js": {
       "maxDuration": 10
     }
   }

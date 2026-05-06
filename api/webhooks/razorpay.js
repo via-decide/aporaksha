@@ -1,37 +1,42 @@
 import crypto from "crypto";
-
-const processedEventIds = new Set();
-
-export const config = { api: { bodyParser: false } };
-
-async function readRawBody(req) {
-  const chunks = [];
-  for await (const chunk of req) chunks.push(Buffer.from(chunk));
-  return Buffer.concat(chunks);
-}
+import { markPaid, getOrder } from "../../lib/orderStore";
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+  if (req.method !== "POST") {
+    return res.status(405).end();
+  }
 
   try {
     const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
-    if (!secret) return res.status(500).json({ error: "Webhook secret missing" });
 
     const signature = req.headers["x-razorpay-signature"];
-    const rawBody = await readRawBody(req);
-    const expectedSignature = crypto.createHmac("sha256", secret).update(rawBody).digest("hex");
+    const body = JSON.stringify(req.body);
 
-    if (!signature || signature !== expectedSignature) return res.status(400).json({ error: "Invalid signature" });
+    const expectedSignature = crypto
+      .createHmac("sha256", secret)
+      .update(body)
+      .digest("hex");
 
-    const payload = JSON.parse(rawBody.toString("utf8"));
-    const eventId = payload?.payload?.payment?.entity?.id || payload?.created_at;
-    if (eventId && processedEventIds.has(eventId)) return res.status(200).json({ status: "ok" });
+    if (signature !== expectedSignature) {
+      return res.status(400).json({ error: "Invalid signature" });
+    }
 
-    if (eventId) processedEventIds.add(eventId);
-    console.log("Webhook event:", payload?.event || "unknown");
+    const event = req.body.event;
+
+    if (event === "payment.captured") {
+      const payment = req.body.payload.payment.entity;
+      const orderId = payment.order_id;
+
+      const existing = getOrder(orderId);
+
+      if (existing && existing.status !== "paid") {
+        markPaid(orderId, payment.id);
+      }
+    }
+
     return res.status(200).json({ status: "ok" });
   } catch (err) {
-    console.error("Webhook error:", err);
-    return res.status(500).json({ error: "Internal error" });
+    console.error(err);
+    return res.status(500).end();
   }
 }
