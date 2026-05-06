@@ -15,6 +15,9 @@ export default async function handler(req, res) {
     const riskScore = Math.min(100, score);
     const severity = riskScore > 85 ? "CRITICAL" : riskScore > 60 ? "HIGH" : "NORMAL";
     const aiSummary = severity === "CRITICAL" ? "Immediate investigation required" : "Monitor activity";
+    const graphEdge = `${payload.userId || "anon"}:${e.type}:${payload.ip || "na"}`;
+    const playbookAction = riskScore > 85 ? "BLOCK_USER" : riskScore > 60 ? "ESCALATE" : "MONITOR";
+    return { ...e, riskScore, severity, aiSummary, alert: severity !== "NORMAL", streamReady: true, graphEdge, playbookAction };
     return { ...e, riskScore, severity, aiSummary, alert: severity !== "NORMAL" };
     return { ...e, riskScore: Math.min(100, score) };
   }).sort((a, b) => b.riskScore - a.riskScore);
