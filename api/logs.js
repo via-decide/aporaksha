@@ -16,6 +16,7 @@ export default async function handler(req, res) {
     const severity = riskScore > 85 ? "CRITICAL" : riskScore > 60 ? "HIGH" : "NORMAL";
     const aiSummary = severity === "CRITICAL" ? "Immediate investigation required" : "Monitor activity";
     return { ...e, riskScore, severity, aiSummary, alert: severity !== "NORMAL" };
+    return { ...e, riskScore: Math.min(100, score) };
   }).sort((a, b) => b.riskScore - a.riskScore);
   res.status(200).json(ranked);
 }
