@@ -342,3 +342,17 @@ h1 {
     grid-template-columns: 1fr;
   }
 }
+
+[data-view] {
+  display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+[data-view].active {
+  display: block;
+}
+
+[data-view].fade-in {
+  opacity: 1;
+}

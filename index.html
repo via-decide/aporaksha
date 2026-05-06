@@ -118,6 +118,11 @@
     @keyframes swap-word { 0%,20% { opacity: 1; } 25%,100% { opacity: 0; } }
     @keyframes scroll-left { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
+    
+    [data-view] { display: none; opacity: 0; transition: opacity 0.3s ease; }
+    [data-view].active { display: block; }
+    [data-view].fade-in { opacity: 1; }
+
     @media (max-width: 860px) {
       .nav-links a:not(.btn) { display: none; }
       .grid, .philosophy, .panel, .footer-grid { grid-template-columns: 1fr; }
@@ -172,8 +177,8 @@
   <script></script>
 
 </div>
-<div data-view="login" style="display:none;"><div class="container" style="padding:48px 0;"><h2>Login</h2><button class="btn" type="button" onclick="navigate('/')">Back</button></div></div>
-<div data-view="passport" style="display:none;"><div class="container" style="padding:48px 0;"><h2>Create Passport</h2><button class="btn" type="button" onclick="navigate('/')">Back</button></div></div>
-<script src="/public/router.js"></script>
+<div data-view="login"><div class="container" style="padding:48px 0;"><h2>Login</h2><button id="login-btn" class="btn primary" type="button">Login Now</button><button class="btn" type="button" onclick="navigate('/')">Back</button></div></div>
+<div data-view="passport"><div class="container" style="padding:48px 0;"><h2>Passport Dashboard</h2><button class="btn" type="button" onclick="navigate('/')">Back</button></div></div>
+<script type="module" src="/public/main.js"></script>
 </body>
 </html>
