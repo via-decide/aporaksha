@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Event Logs</title>
+</head>
+<body>
+  <h1>System Logs</h1>
+  <ul id="logs"></ul>
+
+  <script>
+    fetch("/api/logs")
+      .then((res) => res.json())
+      .then((data) => {
+        const ul = document.getElementById("logs");
+        data.forEach((log) => {
+          const li = document.createElement("li");
+          li.textContent = log.type + " - " + log.created_at;
+          ul.appendChild(li);
+        });
+      });
+  </script>
+</body>
+</html>

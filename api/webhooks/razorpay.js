@@ -1,5 +1,9 @@
 import crypto from "crypto";
-import { markPaid, getOrder } from "../../lib/orderStore";
+import { getDB } from "../../lib/db";
+import { initDB } from "../../lib/initDb";
+import { enqueue } from "../../lib/queue";
+import { detectFraud } from "../../lib/fraud";
+import { logEvent } from "../../lib/logger";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -8,7 +12,6 @@ export default async function handler(req, res) {
 
   try {
     const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
-
     const signature = req.headers["x-razorpay-signature"];
     const body = JSON.stringify(req.body);
 
@@ -21,17 +24,40 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Invalid signature" });
     }
 
-    const event = req.body.event;
+    await initDB();
+    const db = await getDB();
 
-    if (event === "payment.captured") {
+    const eventId = req.headers["x-razorpay-event-id"];
+    if (!eventId) {
+      return res.status(400).json({ error: "Missing event id" });
+    }
+
+    const existing = await db.get("SELECT * FROM webhook_events WHERE id = ?", [eventId]);
+    if (existing) {
+      return res.status(200).json({ status: "duplicate ignored" });
+    }
+
+    await db.run("INSERT INTO webhook_events (id, processed) VALUES (?, ?)", [eventId, 1]);
+
+    if (req.body.event === "payment.captured") {
       const payment = req.body.payload.payment.entity;
-      const orderId = payment.order_id;
 
-      const existing = getOrder(orderId);
+      enqueue(async () => {
+        const order = await db.get("SELECT * FROM orders WHERE id = ?", [payment.order_id]);
 
-      if (existing && existing.status !== "paid") {
-        markPaid(orderId, payment.id);
-      }
+        if (detectFraud(order, payment)) {
+          await logEvent("fraud_detected", payment);
+          return;
+        }
+
+        await db.run("UPDATE orders SET status = ?, payment_id = ? WHERE id = ?", [
+          "paid",
+          payment.id,
+          payment.order_id,
+        ]);
+
+        await logEvent("payment_processed", payment);
+      });
     }
 
     return res.status(200).json({ status: "ok" });
