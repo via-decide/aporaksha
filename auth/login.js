@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const { issueTokenPair, verifyAccessToken, verifyRefreshToken } = require('./token');
 const { revokeToken, isTokenRevoked } = require('./token-blacklist');
 const { validate, validators, escapeHtml } = require('../server/middleware/input-validation');
+const { createSession, validateSession, revokeSession, detectAnomaly } = require('./session-store');
 
 const router = express.Router();
 const users = new Map();
@@ -56,6 +57,7 @@ router.post('/auth/signup', [validators.email, validators.password], validate, (
     created_at: createdAt,
     updated_at: createdAt,
     is_active: true,
+    role: 'user',
     recovery_codes: recoveryCodes.map((code) => hashWithRounds(code, 10)),
   };
 
@@ -77,7 +79,11 @@ router.post('/auth/login', [validators.email, validators.password], validate, (r
     return res.status(401).json({ error: 'Invalid credentials' });
   }
 
-  return res.json(issueTokenPair(user));
+  const deviceId = req.headers['x-device-id'] || 'unknown';
+  const tokens = issueTokenPair(user, deviceId);
+  if (detectAnomaly(user.id, req.ip)) console.warn('Suspicious login detected for user:', user.id);
+  createSession(user.id, deviceId, tokens.refreshToken);
+  return res.json(tokens);
 });
 
 router.post('/auth/refresh', [validators.refreshToken], validate, (req, res) => {
@@ -97,7 +103,13 @@ router.post('/auth/refresh', [validators.refreshToken], validate, (req, res) => 
     return res.status(401).json({ error: 'Invalid token' });
   }
 
-  return res.json(issueTokenPair(user));
+  const deviceId = verification.payload.deviceId || req.headers['x-device-id'] || 'unknown';
+  if (!validateSession(user.id, deviceId, refreshToken)) {
+    return res.status(401).json({ error: 'Session revoked' });
+  }
+  const tokens = issueTokenPair(user, deviceId);
+  createSession(user.id, deviceId, tokens.refreshToken);
+  return res.json(tokens);
 });
 
 router.post('/auth/logout', [validators.refreshToken], validate, (req, res) => {
@@ -124,6 +136,7 @@ router.post('/auth/logout', [validators.refreshToken], validate, (req, res) => {
 
   revokeToken(accessToken, accessVerification.payload.exp);
   revokeToken(refreshToken, refreshVerification.payload.exp);
+  revokeSession(accessVerification.payload.userId, refreshVerification.payload.deviceId);
 
   return res.json({ status: 'logged out' });
 });
