@@ -1,5 +1,6 @@
 const { verifyAccessToken } = require('./token');
 const { isTokenRevoked } = require('./token-blacklist');
+const { checkThrottle, isBlocked, blockUser } = require('./session-store');
 const { checkThrottle } = require('./session-store');
 
 function authMiddleware(req, res, next) {
@@ -26,6 +27,9 @@ function authMiddleware(req, res, next) {
   req.userId = verification.payload.userId;
   req.user = verification.payload;
 
+  if (isBlocked(req.userId)) return res.status(403).json({ error: 'User blocked' });
+  const throttle = checkThrottle(req.userId);
+  if (throttle.blocked) { blockUser(req.userId); return res.status(429).json({ error: 'Too many requests' }); }
   const throttle = checkThrottle(req.userId);
   if (throttle.blocked) return res.status(429).json({ error: 'Too many requests' });
   if (throttle.delay) return setTimeout(() => next(), throttle.delay);

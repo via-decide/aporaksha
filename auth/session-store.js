@@ -2,6 +2,7 @@ const ipByUser = new Map();
 const sessions = new Map();
 
 const throttleByUser = new Map();
+const blockedUsers = new Map();
 
 function checkThrottle(userId) {
   const now = Date.now();
@@ -13,6 +14,18 @@ function checkThrottle(userId) {
   if (item.count > 20) return { blocked: true, delay: 2000 };
   if (item.count > 10) return { blocked: false, delay: 500 };
   return { blocked: false, delay: 0 };
+}
+
+
+function blockUser(userId, ms = 3600000) {
+  blockedUsers.set(String(userId), Date.now() + ms);
+}
+
+function isBlocked(userId) {
+  const exp = blockedUsers.get(String(userId));
+  if (!exp) return false;
+  if (exp < Date.now()) blockedUsers.delete(String(userId));
+  return Boolean(exp && exp >= Date.now());
 }
 
 function sessionKey(userId, deviceId) {
@@ -37,4 +50,5 @@ function detectAnomaly(userId, ip) {
   return Boolean(lastIp && lastIp !== ip);
 }
 
+module.exports = { createSession, validateSession, revokeSession, detectAnomaly, checkThrottle, blockUser, isBlocked };
 module.exports = { createSession, validateSession, revokeSession, detectAnomaly, checkThrottle };

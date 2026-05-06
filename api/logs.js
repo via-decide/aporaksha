@@ -12,6 +12,10 @@ export default async function handler(req, res) {
   const ranked = logs.map((e) => {
     const payload = JSON.parse(e.payload || "{}");
     const score = Number(payload.score || (e.type === "fraud_detected" ? 90 : 20));
+    const riskScore = Math.min(100, score);
+    const severity = riskScore > 85 ? "CRITICAL" : riskScore > 60 ? "HIGH" : "NORMAL";
+    const aiSummary = severity === "CRITICAL" ? "Immediate investigation required" : "Monitor activity";
+    return { ...e, riskScore, severity, aiSummary, alert: severity !== "NORMAL" };
     return { ...e, riskScore: Math.min(100, score) };
   }).sort((a, b) => b.riskScore - a.riskScore);
   res.status(200).json(ranked);
