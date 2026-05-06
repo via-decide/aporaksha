@@ -7,6 +7,9 @@ const { createSession, validateSession, revokeSession, detectAnomaly } = require
 
 const router = express.Router();
 const users = new Map();
+const lastIpByUser = new Map();
+const fingerprintByUser = new Map();
+const auditLogsByUser = new Map();
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{12,}$/;
@@ -32,6 +35,34 @@ function comparePassword(value, storedHash) {
 
 function generateRecoveryCodes() {
   return Array.from({ length: 6 }, () => crypto.randomBytes(6).toString('base64url').slice(0, 8).toUpperCase());
+}
+
+
+function getGeoData(req) {
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip || 'unknown';
+  return { ip, country: req.headers['x-vercel-ip-country'] || 'unknown', city: req.headers['x-vercel-ip-city'] || 'unknown' };
+}
+
+function generateFingerprint(req) {
+  const ua = req.headers['user-agent'] || '';
+  const lang = req.headers['accept-language'] || '';
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+  return crypto.createHash('sha256').update(`${ua}|${lang}|${ip}`).digest('hex');
+}
+
+function calculateRisk({ newIP, newDevice }) {
+  let score = 0;
+  if (newIP) score += 40;
+  if (newDevice) score += 40;
+  if (score >= 70) return { level: 'HIGH', score };
+  if (score >= 40) return { level: 'MEDIUM', score };
+  return { level: 'LOW', score };
+}
+
+function logEvent(event) {
+  const logs = auditLogsByUser.get(event.userId) || [];
+  logs.unshift({ ...event, time: Date.now() });
+  auditLogsByUser.set(event.userId, logs.slice(0, 100));
 }
 
 router.post('/auth/signup', [validators.email, validators.password], validate, (req, res) => {
@@ -79,11 +110,25 @@ router.post('/auth/login', [validators.email, validators.password], validate, (r
     return res.status(401).json({ error: 'Invalid credentials' });
   }
 
+  const geo = getGeoData(req);
+  const fingerprint = generateFingerprint(req);
+  const lastIP = lastIpByUser.get(user.id);
+  const lastDevice = fingerprintByUser.get(user.id);
+  const risk = calculateRisk({ newIP: Boolean(lastIP && lastIP !== geo.ip), newDevice: Boolean(lastDevice && lastDevice !== fingerprint) });
+
+  lastIpByUser.set(user.id, geo.ip);
+  fingerprintByUser.set(user.id, fingerprint);
+  logEvent({ type: 'LOGIN', userId: user.id, ip: geo.ip, country: geo.country, city: geo.city, risk: risk.level, score: risk.score });
+
+  if (risk.level === 'HIGH') {
+    return res.status(403).json({ error: 'Suspicious login detected', risk });
+  }
+
   const deviceId = req.headers['x-device-id'] || 'unknown';
   const tokens = issueTokenPair(user, deviceId);
   if (detectAnomaly(user.id, req.ip)) console.warn('Suspicious login detected for user:', user.id);
   createSession(user.id, deviceId, tokens.refreshToken);
-  return res.json(tokens);
+  return res.json({ ...tokens, risk });
 });
 
 router.post('/auth/refresh', [validators.refreshToken], validate, (req, res) => {
@@ -139,6 +184,15 @@ router.post('/auth/logout', [validators.refreshToken], validate, (req, res) => {
   revokeSession(accessVerification.payload.userId, refreshVerification.payload.deviceId);
 
   return res.json({ status: 'logged out' });
+});
+
+router.get('/auth/audit/logs', (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token || isTokenRevoked(token)) return res.status(401).json({ error: 'No token' });
+  const verification = verifyAccessToken(token);
+  if (!verification.valid || verification.payload?.type !== 'access') return res.status(401).json({ error: 'Invalid token' });
+  const logs = auditLogsByUser.get(verification.payload.userId) || [];
+  return res.json({ logs: logs.slice(0, 50) });
 });
 
 module.exports = router;
