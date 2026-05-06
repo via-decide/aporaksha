@@ -130,7 +130,8 @@
   </style>
 </head>
 <body>
-  <nav class="nav"><div class="container nav-inner"><a class="brand" href="#"><span class="glyph">◆</span><span><span class="dot">A</span>poraksha</span></a><div class="nav-links"><a href="#stack">Products</a><a href="#">Docs</a><a href="#">GitHub</a><a class="btn accent" href="#">Launch Stack →</a></div></div></nav>
+<div data-view="gateway">
+  <nav class="nav"><div class="container nav-inner"><a class="brand" href="#"><span class="glyph">◆</span><span><span class="dot">A</span>poraksha</span></a><div class="nav-links"><a href="#stack">Products</a><a href="#">Docs</a><a href="#">GitHub</a><button class="btn accent" type="button" onclick="navigate('/login')">Login</button></div></div></nav>
 
   <header class="hero"><div class="container hero-content"><div class="badge">🇮🇳 Sovereign · Local-First · Zero Cloud</div><h1>The AI stack that runs on <span class="cycle"><span>your machine.</span><span>your data.</span><span>your rules.</span><span>your machine.</span></span></h1><p class="subhead">Zayvora · Nex · Orchade · StudyOS — a complete sovereign AI infrastructure for builders who trust no one's cloud but their own.</p><div class="hero-actions"><a class="btn accent" href="#stack">Explore the Stack</a><a class="btn ghost" href="#manifesto">Read the Manifesto →</a></div><div class="trust-strip"><span>Built on Mac Mini M4</span><span>Zero cloud dependency</span><span>Runs fully offline</span><span>Made in Kutch, India</span></div></div></header>
 
@@ -163,11 +164,16 @@
 
     <section class="manifesto" id="manifesto"><div class="container"><div class="eyebrow">THE ANTIGRAVITY MANIFESTO</div><h2 class="section-title">Constraint is the architecture.</h2><p>We build with hard limits: single-file outputs, local compute, and zero external dependency chains. Every decision in Aporaksha exists to reduce fragility and increase user control. Sovereignty is not a feature layer — it is the default execution model.</p><a class="btn ghost" href="#">Read the full manifesto →</a></div></section>
 
-    <section class="cta-foot"><div class="container"><h2 class="section-title">Ready to own your AI stack?</h2><p>No sign-up. No API key. No cloud account. Just clone and run.</p><div class="hero-actions" style="justify-content:center;"><a class="btn accent" href="#">Get the Stack on GitHub</a><a class="btn ghost" href="#">Read the Docs</a></div><p style="margin-top:16px;font-size:13px;">Built solo in Kutch, India · Mac Mini M4 · Running since 2024</p></div></section>
+    <section class="cta-foot"><div class="container"><h2 class="section-title">Ready to own your AI stack?</h2><p>No sign-up. No API key. No cloud account. Just clone and run.</p><div class="hero-actions" style="justify-content:center;"><button class="btn accent" type="button" onclick="navigate('/passport')">Create Passport</button><a class="btn ghost" href="#">Read the Docs</a></div><p style="margin-top:16px;font-size:13px;">Built solo in Kutch, India · Mac Mini M4 · Running since 2024</p></div></section>
   </main>
 
   <footer><div class="container"><div class="footer-grid"><div><a class="brand" href="#"><span class="glyph">◆</span><span><span class="dot">A</span>poraksha</span></a><p style="color:#9c9c9c;max-width:420px;line-height:1.7;">Sovereign AI infrastructure designed for builders who need local-first systems that remain auditable, controllable, and cloud-independent.</p></div><div class="footer-links"><div><h5>Stack</h5><a href="#">Zayvora</a><a href="#">Nex</a><a href="#">Orchade</a><a href="#">StudyOS</a></div><div><h5>Domains</h5><a href="#">daxini.space</a><a href="#">logichub.app</a><a href="#">viadecide.com</a></div><div><h5>Connect</h5><a href="#">LinkedIn</a><a href="#">GitHub</a><a href="#">Newsletter</a></div></div></div><div class="footbar"><span>© 2025 Dharam Daxini · aporaksha.com · Made in Kutch 🇮🇳</span><span>Sovereign · Local-First · Antigravity</span></div></div></footer>
 
   <script></script>
+
+</div>
+<div data-view="login" style="display:none;"><div class="container" style="padding:48px 0;"><h2>Login</h2><button class="btn" type="button" onclick="navigate('/')">Back</button></div></div>
+<div data-view="passport" style="display:none;"><div class="container" style="padding:48px 0;"><h2>Create Passport</h2><button class="btn" type="button" onclick="navigate('/')">Back</button></div></div>
+<script src="/public/router.js"></script>
 </body>
 </html>
