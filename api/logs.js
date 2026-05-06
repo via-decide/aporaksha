@@ -18,6 +18,8 @@ export default async function handler(req, res) {
     const graphEdge = `${payload.userId || "anon"}:${e.type}:${payload.ip || "na"}`;
     const playbookAction = riskScore > 85 ? "BLOCK_USER" : riskScore > 60 ? "ESCALATE" : "MONITOR";
     return { ...e, riskScore, severity, aiSummary, alert: severity !== "NORMAL", streamReady: true, graphEdge, playbookAction };
+    return { ...e, riskScore, severity, aiSummary, alert: severity !== "NORMAL" };
+    return { ...e, riskScore: Math.min(100, score) };
   }).sort((a, b) => b.riskScore - a.riskScore);
   res.status(200).json(ranked);
 }
