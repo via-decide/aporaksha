@@ -1,17 +1,37 @@
-const routes = { '/': 'gateway', '/login': 'login', '/passport': 'passport' };
+import { isAuth, loadAuth } from './state.js';
+
+const routes = {
+  '/': { view: 'gateway' },
+  '/login': { view: 'login' },
+  '/passport': { view: 'passport', protected: true },
+};
 
 function navigate(path) {
   window.history.pushState({}, '', path);
-  renderRoute(path);
+  render(path);
 }
 
-function renderRoute(path) {
-  const view = routes[path] || 'gateway';
+function render(path) {
+  loadAuth();
+
+  const route = routes[path] || routes['/'];
+
+  if (route.protected && !isAuth()) {
+    return navigate('/login');
+  }
+
   document.querySelectorAll('[data-view]').forEach((el) => {
-    el.style.display = el.dataset.view === view ? '' : 'none';
+    el.classList.remove('active', 'fade-in');
   });
+
+  const el = document.querySelector(`[data-view="${route.view}"]`);
+
+  if (el) {
+    el.classList.add('active');
+    setTimeout(() => el.classList.add('fade-in'), 10);
+  }
 }
 
-window.addEventListener('popstate', () => renderRoute(window.location.pathname));
 window.navigate = navigate;
-document.addEventListener('DOMContentLoaded', () => renderRoute(window.location.pathname));
+window.addEventListener('popstate', () => render(window.location.pathname));
+document.addEventListener('DOMContentLoaded', () => render(window.location.pathname));
