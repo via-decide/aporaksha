@@ -2,67 +2,57 @@ import crypto from "crypto";
 import { getDB } from "../../lib/db";
 import { initDB } from "../../lib/initDb";
 import { enqueue } from "../../lib/queue";
-import { detectFraud } from "../../lib/fraud";
 import { logEvent } from "../../lib/logger";
 
+export const config = { api: { bodyParser: false } };
+
+const readRawBody = (req) => new Promise((resolve, reject) => {
+  const chunks = [];
+  req.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
+  req.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
+  req.on("error", reject);
+});
+
+function safeLog(type, payload) {
+  console.error(JSON.stringify({ provider: "razorpay", type, ...payload, ts: new Date().toISOString() }));
+}
+
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).end();
-  }
+  if (req.method !== "POST") return res.status(405).end();
 
   try {
     const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
     const signature = req.headers["x-razorpay-signature"];
-    const body = JSON.stringify(req.body);
+    const rawBody = await readRawBody(req);
+    const expected = crypto.createHmac("sha256", secret).update(rawBody).digest("hex");
+    if (!signature || signature !== expected) return res.status(200).json({ ok: true });
 
-    const expectedSignature = crypto
-      .createHmac("sha256", secret)
-      .update(body)
-      .digest("hex");
-
-    if (signature !== expectedSignature) {
-      return res.status(400).json({ error: "Invalid signature" });
-    }
+    const payload = JSON.parse(rawBody || "{}");
+    const eventId = req.headers["x-razorpay-event-id"] || payload?.payload?.payment?.entity?.id || payload?.id;
+    if (!eventId) return res.status(200).json({ ok: true });
 
     await initDB();
     const db = await getDB();
+    await db.run(
+      `INSERT OR IGNORE INTO webhook_events (id, provider, event_type, signature, payload_raw, payload_json, processing_state, processing_attempts)
+       VALUES (?, 'razorpay', ?, ?, ?, ?, 'PENDING', 0)`,
+      [eventId, payload?.event || "unknown", signature, rawBody, JSON.stringify(payload)]
+    );
 
-    const eventId = req.headers["x-razorpay-event-id"];
-    if (!eventId) {
-      return res.status(400).json({ error: "Missing event id" });
-    }
+    enqueue(async () => {
+      try {
+        await db.run("UPDATE webhook_events SET processing_state = 'PROCESSING', processing_attempts = processing_attempts + 1 WHERE id = ?", [eventId]);
+        await logEvent("razorpay_webhook_received", { eventId, eventType: payload?.event || "unknown" });
+        await db.run("UPDATE webhook_events SET processing_state = 'PROCESSED', processed_at = CURRENT_TIMESTAMP, last_error = NULL WHERE id = ?", [eventId]);
+      } catch (error) {
+        safeLog("worker_error", { eventId, error: error?.message || "unknown" });
+        await db.run("UPDATE webhook_events SET processing_state = 'FAILED', last_error = ? WHERE id = ?", [error?.message || "unknown", eventId]);
+      }
+    });
 
-    const existing = await db.get("SELECT * FROM webhook_events WHERE id = ?", [eventId]);
-    if (existing) {
-      return res.status(200).json({ status: "duplicate ignored" });
-    }
-
-    await db.run("INSERT INTO webhook_events (id, processed) VALUES (?, ?)", [eventId, 1]);
-
-    if (req.body.event === "payment.captured") {
-      const payment = req.body.payload.payment.entity;
-
-      enqueue(async () => {
-        const order = await db.get("SELECT * FROM orders WHERE id = ?", [payment.order_id]);
-
-        if (detectFraud(order, payment)) {
-          await logEvent("fraud_detected", payment);
-          return;
-        }
-
-        await db.run("UPDATE orders SET status = ?, payment_id = ? WHERE id = ?", [
-          "paid",
-          payment.id,
-          payment.order_id,
-        ]);
-
-        await logEvent("payment_processed", payment);
-      });
-    }
-
-    return res.status(200).json({ status: "ok" });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).end();
+    return res.status(200).json({ ok: true });
+  } catch (error) {
+    safeLog("ingestion_error", { error: error?.message || "unknown" });
+    return res.status(200).json({ ok: true });
   }
 }
