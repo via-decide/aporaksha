@@ -1,8 +1,7 @@
 import crypto from "crypto";
 import { getDB } from "../../lib/db";
 import { initDB } from "../../lib/initDb";
-import { enqueue } from "../../lib/queue";
-import { logEvent } from "../../lib/logger";
+import { enqueue, processWebhookEvent } from "../../lib/queue";
 
 export const config = { api: { bodyParser: false } };
 
@@ -22,6 +21,7 @@ export default async function handler(req, res) {
 
   try {
     const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    if (!secret) return res.status(200).json({ ok: true });
     const signature = req.headers["x-razorpay-signature"];
     const rawBody = await readRawBody(req);
     const expected = crypto.createHmac("sha256", secret).update(rawBody).digest("hex");
@@ -39,16 +39,7 @@ export default async function handler(req, res) {
       [eventId, payload?.event || "unknown", signature, rawBody, JSON.stringify(payload)]
     );
 
-    enqueue(async () => {
-      try {
-        await db.run("UPDATE webhook_events SET processing_state = 'PROCESSING', processing_attempts = processing_attempts + 1 WHERE id = ?", [eventId]);
-        await logEvent("razorpay_webhook_received", { eventId, eventType: payload?.event || "unknown" });
-        await db.run("UPDATE webhook_events SET processing_state = 'PROCESSED', processed_at = CURRENT_TIMESTAMP, last_error = NULL WHERE id = ?", [eventId]);
-      } catch (error) {
-        safeLog("worker_error", { eventId, error: error?.message || "unknown" });
-        await db.run("UPDATE webhook_events SET processing_state = 'FAILED', last_error = ? WHERE id = ?", [error?.message || "unknown", eventId]);
-      }
-    });
+    enqueue(async () => processWebhookEvent(eventId));
 
     return res.status(200).json({ ok: true });
   } catch (error) {
