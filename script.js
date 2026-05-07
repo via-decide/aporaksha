@@ -199,11 +199,10 @@
       try {
       var email = window.prompt('Enter email:', '');
       var password = window.prompt('Enter password:', '');
-      var res = await fetch('./api/auth/login', {
+      var res = await fetch('./api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email: email, password: password })
+        body: JSON.stringify({ action: 'login', email: email, password: password })
       });
       var data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Login failed');
