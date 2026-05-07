@@ -1,7 +1,19 @@
 {
+  "version": 2,
+  "outputDirectory": ".",
+  "cleanUrls": true,
   "functions": {
     "api/**/*.js": {
       "maxDuration": 10
     }
-  }
+  },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/passport", "destination": "/passport/index.html" },
+    { "source": "/passport/(.*)", "destination": "/passport/$1" },
+    { "source": "/dashboard", "destination": "/dashboard/index.html" },
+    { "source": "/dashboard/(.*)", "destination": "/dashboard/$1" },
+    { "source": "/ecosystem", "destination": "/ecosystem/index.html" },
+    { "source": "/ecosystem/(.*)", "destination": "/ecosystem/$1" }
+  ]
 }
