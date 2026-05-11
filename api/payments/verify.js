@@ -30,8 +30,27 @@ export default async function handler(req, res) {
     return res.status(404).json({ error: "Order not found" });
   }
 
-  await db.run("UPDATE orders SET verified = ? WHERE id = ?", [1, razorpay_order_id]);
-  await logEvent("payment_verified", { razorpay_order_id, razorpay_payment_id });
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 30);
 
-  return res.status(200).json({ success: true });
+  await db.run("UPDATE orders SET verified = ?, expires_at = ? WHERE id = ?", [
+    1,
+    expiresAt.toISOString(),
+    razorpay_order_id,
+  ]);
+  await logEvent("payment_verified", {
+    razorpay_order_id,
+    razorpay_payment_id,
+    email: order.email,
+    article_slug: order.article_slug,
+    newsletter_slug: order.newsletter_slug,
+  });
+
+  return res.status(200).json({
+    success: true,
+    email: order.email,
+    article_slug: order.article_slug,
+    newsletter_slug: order.newsletter_slug,
+    expiresAt: expiresAt.toISOString(),
+  });
 }
