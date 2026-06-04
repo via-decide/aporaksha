@@ -6,6 +6,9 @@ const users = new Map();
 const requestCounter = new Map(); // Tracks request frequency per identity
 const hotPool = new Map(); // "Replicated" cache for hot keys to distribute load
 
+// In-memory OTP store (for production, move to Redis/KV)
+const otps = new Map();
+
 function trackHotKey(identity) {
   const now = Math.floor(Date.now() / 1000);
   const data = requestCounter.get(identity) || { count: 0, lastReset: now };
@@ -152,5 +155,71 @@ export default async function handler(req, res) {
     return res.json({ valid: v.valid, userId: v.payload?.userId || null });
   }
 
-  return res.status(400).json({ error: "Unknown action. Use: signup, login, refresh, verify" });
+  // SEND OTP
+  if (action === "send_otp") {
+    const uid = req.body.uid;
+    if (!uid) return res.status(400).json({ error: "UID required" });
+
+    const now = Math.floor(Date.now() / 1000);
+    const existing = otps.get(uid);
+
+    // Rate limiting: max 1 per minute
+    if (existing && now < existing.createdAt + 60) {
+      return res.status(429).json({ error: "Please wait 60 seconds before requesting a new OTP." });
+    }
+
+    // Generate secure 6 digit OTP
+    const otp = Math.floor(100000 + crypto.randomInt(900000)).toString();
+    otps.set(uid, {
+      otp,
+      createdAt: now,
+      expiresAt: now + 300, // 5 minutes expiry
+      attempts: 0
+    });
+
+    // In production, this dispatches to the Zayvora SMS Gateway (Twilio/FastAPI)
+    console.log(`[ZAYVORA SMS GATEWAY] Dispatching OTP ${otp} to authority bound to UID: ${uid}`);
+
+    return res.json({ success: true, message: "OTP sent" });
+  }
+
+  // VERIFY OTP
+  if (action === "verify_otp") {
+    const { uid, otp } = req.body;
+    if (!uid || !otp) return res.status(400).json({ error: "UID and OTP required" });
+
+    const record = otps.get(uid);
+    const now = Math.floor(Date.now() / 1000);
+
+    if (!record || now > record.expiresAt) {
+      return res.status(401).json({ error: "OTP expired or invalid" });
+    }
+
+    if (record.attempts >= 3) {
+      otps.delete(uid);
+      return res.status(401).json({ error: "Too many failed attempts. Request a new OTP." });
+    }
+
+    if (record.otp !== otp) {
+      record.attempts++;
+      otps.set(uid, record);
+      return res.status(401).json({ error: "Invalid OTP" });
+    }
+
+    // OTP matched! Destroy the OTP record.
+    otps.delete(uid);
+
+    // Ensure the user exists in the local map (or create them)
+    let user = users.get(uid);
+    if (!user) {
+      const id = crypto.randomUUID();
+      user = { id, email: uid, role: "user" }; // UID acts as email/identifier
+      users.set(uid, user);
+    }
+
+    const tokens = issueTokens(user, req.headers["x-device-id"] || "web");
+    return res.json(tokens);
+  }
+
+  return res.status(400).json({ error: "Unknown action. Use: signup, login, refresh, verify, send_otp, verify_otp" });
 }

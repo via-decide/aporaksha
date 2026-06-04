@@ -14,10 +14,16 @@ function navigate(path) {
 function render(path) {
   loadAuth();
 
+  if (path === '/login' || path === '/passport') {
+    window.location.href = '/passport/';
+    return;
+  }
+
   const route = routes[path] || routes['/'];
 
   if (route.protected && !isAuth()) {
-    return navigate('/login');
+    window.location.href = '/passport/';
+    return;
   }
 
   document.querySelectorAll('[data-view]').forEach((el) => {

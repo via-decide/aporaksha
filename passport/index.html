@@ -251,51 +251,140 @@
   </nav>
 
   <div class="card">
-    <div class="card-header">
-      <div class="passport-icon">🪪</div>
-      <h1>Create Passport</h1>
-      <p class="subtitle">Your sovereign identity across the ecosystem. Skills, reputation, and assets follow you everywhere.</p>
+    <div id="create-view">
+      <div class="card-header">
+        <div class="passport-icon">🪪</div>
+        <h1>Create Passport</h1>
+        <p class="subtitle">Your sovereign identity across the ecosystem. Skills, reputation, and assets follow you everywhere.</p>
+      </div>
+
+      <div class="field">
+        <label for="name">Display Name</label>
+        <input type="text" id="name" placeholder="e.g. Dharam Daxini" autocomplete="off" />
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="you@example.com" autocomplete="off" />
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Minimum 8 characters" />
+      </div>
+
+      <button class="btn-primary" id="create-btn">Create Passport</button>
+
+      <div class="card-footer">
+        Already have a passport? <a href="#" onclick="alert('Login UI pending. Use create for now.'); return false;">Log in</a>
+      </div>
+
+      <div class="trust">
+        <span class="badge">✦ Sovereign identity</span>
+        <span class="badge">✦ No third-party auth</span>
+        <span class="badge">✦ Aporaksha Stack</span>
+      </div>
     </div>
 
-    <div class="field">
-      <label for="name">Display Name</label>
-      <input type="text" id="name" placeholder="e.g. Dharam Daxini" autocomplete="off" />
+    <!-- OTP Authenticator View -->
+    <div id="otp-view" style="display: none;">
+      <div class="card-header">
+        <div class="passport-icon">🔒</div>
+        <h1>Authenticator</h1>
+        <p class="subtitle">Physical NFC tag detected. Enter the 6-digit SMS OTP sent to your registered device to verify authority.</p>
+      </div>
+
+      <div class="field">
+        <label for="otp">One-Time Password</label>
+        <input type="text" id="otp" placeholder="123456" autocomplete="off" maxlength="6" style="text-align: center; letter-spacing: 0.5em; font-size: 1.2rem; font-weight: bold;" />
+      </div>
+
+      <button class="btn-primary" id="verify-btn">Verify & Authenticate</button>
     </div>
 
-    <div class="field">
-      <label for="email">Email</label>
-      <input type="email" id="email" placeholder="you@example.com" autocomplete="off" />
-    </div>
-
-    <div class="field">
-      <label for="password">Password</label>
-      <input type="password" id="password" placeholder="Minimum 8 characters" />
-    </div>
-
-    <button class="btn-primary" id="create-btn">Create Passport</button>
     <div id="msg"></div>
-
-    <div class="card-footer">
-      Already have a passport? <a href="#" onclick="alert('Login UI pending. Use create for now.'); return false;">Log in</a>
-    </div>
-
-    <div class="trust">
-      <span class="badge">✦ Sovereign identity</span>
-      <span class="badge">✦ No third-party auth</span>
-      <span class="badge">✦ Aporaksha Stack</span>
-    </div>
   </div>
 
   <script>
-    const btn = document.getElementById('create-btn');
+    const createBtn = document.getElementById('create-btn');
+    const verifyBtn = document.getElementById('verify-btn');
     const msg = document.getElementById('msg');
+    
+    let activeUid = null;
 
     function setMsg(text, type) {
       msg.textContent = text;
       msg.className = type || '';
     }
 
-    btn.addEventListener('click', function () {
+    // NFC Trigger Interception
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const uid = params.get('uid');
+      if (uid) {
+        // Strip the URL so the UID isn't casually shared
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        activeUid = uid;
+        document.getElementById('create-view').style.display = 'none';
+        document.getElementById('otp-view').style.display = 'block';
+        
+        setMsg('Dispatching secure OTP via Zayvora SMS Gateway...', 'muted');
+        verifyBtn.disabled = true;
+
+        fetch('../api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'send_otp', uid: uid })
+        })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            setMsg('OTP sent. Please check your messages.', 'success');
+            verifyBtn.disabled = false;
+            document.getElementById('otp').focus();
+          } else {
+            setMsg(data.error || 'Failed to send OTP.', 'error');
+          }
+        })
+        .catch(() => setMsg('Network error while dispatching OTP.', 'error'));
+      }
+    });
+
+    verifyBtn.addEventListener('click', function() {
+      const otp = document.getElementById('otp').value.trim();
+      if (otp.length !== 6) {
+        setMsg('Enter the 6-digit OTP.', 'error');
+        return;
+      }
+
+      verifyBtn.disabled = true;
+      setMsg('Verifying authority...');
+
+      fetch('../api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'verify_otp', uid: activeUid, otp: otp })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.accessToken) {
+          localStorage.setItem('aporaksha_access', data.accessToken);
+          localStorage.setItem('aporaksha_refresh', data.refreshToken);
+          setMsg('Authority verified. Entering workspace...', 'success');
+          setTimeout(() => { window.location.href = '../dashboard/'; }, 1000);
+        } else {
+          setMsg(data.error || 'Verification failed.', 'error');
+          verifyBtn.disabled = false;
+        }
+      })
+      .catch(() => {
+        setMsg('Network error during verification.', 'error');
+        verifyBtn.disabled = false;
+      });
+    });
+
+    createBtn.addEventListener('click', function () {
       const name     = document.getElementById('name').value.trim();
       const email    = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
@@ -313,7 +402,7 @@
         return;
       }
 
-      btn.disabled = true;
+      createBtn.disabled = true;
       setMsg('Creating passport…');
 
       fetch('../api/auth', {
@@ -330,18 +419,20 @@
             }, 1200);
           } else {
             setMsg(data.error || 'Creation failed. Please try again.', 'error');
-            btn.disabled = false;
+            createBtn.disabled = false;
           }
         })
         .catch(function () {
           setMsg('Network error. Please try again.', 'error');
-          btn.disabled = false;
+          createBtn.disabled = false;
         });
     });
 
-    // Allow Enter key to submit
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' && !btn.disabled) btn.click();
+      if (e.key === 'Enter') {
+        if (!createBtn.disabled && document.getElementById('create-view').style.display !== 'none') createBtn.click();
+        if (!verifyBtn.disabled && document.getElementById('otp-view').style.display !== 'none') verifyBtn.click();
+      }
     });
   </script>
 
