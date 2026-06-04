@@ -3,6 +3,31 @@ import crypto from "crypto";
 // In-memory user store (serverless-compatible, resets per cold start)
 // For production: migrate to Vercel KV or Postgres
 const users = new Map();
+const requestCounter = new Map(); // Tracks request frequency per identity
+const hotPool = new Map(); // "Replicated" cache for hot keys to distribute load
+
+function trackHotKey(identity) {
+  const now = Math.floor(Date.now() / 1000);
+  const data = requestCounter.get(identity) || { count: 0, lastReset: now };
+  
+  if (now - data.lastReset > 60) {
+    data.count = 1;
+    data.lastReset = now;
+  } else {
+    data.count++;
+  }
+  
+  requestCounter.set(identity, data);
+  
+  // If > 50 requests per minute, replicate to hotPool
+  if (data.count > 50) {
+    const user = users.get(identity);
+    if (user) {
+      hotPool.set(identity, { ...user, replicatedAt: now });
+      console.log(`[HOT_KEY] Replicating session for: ${identity}`);
+    }
+  }
+}
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{12,}$/;
@@ -89,7 +114,9 @@ export default async function handler(req, res) {
   if (action === "login") {
     if (!identity || !password)
       return res.status(400).json({ error: "Email and password required" });
-    const user = users.get(identity);
+    
+    trackHotKey(identity);
+    const user = hotPool.get(identity) || users.get(identity);
     if (!user || !comparePassword(password, user.password_hash))
       return res.status(401).json({ error: "Invalid credentials" });
 
@@ -116,6 +143,12 @@ export default async function handler(req, res) {
   if (action === "verify") {
     const token = (req.headers.authorization || "").replace("Bearer ", "");
     const v = verifyJWT(token, ACCESS_SECRET);
+    
+    // Track verify hits to see if this user becomes hot
+    if (v.valid && v.payload?.email) {
+      trackHotKey(v.payload.email);
+    }
+    
     return res.json({ valid: v.valid, userId: v.payload?.userId || null });
   }
 
