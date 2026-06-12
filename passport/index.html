@@ -306,6 +306,13 @@
   </div>
 
   <script>
+    const INTENT_ROUTES = {
+      alchemist: 'https://daxini.space/alchemist_app/index.html',
+      zayvora: 'https://daxini.xyz/zayvora/index.html',
+      logichub: 'https://daxini.xyz/LogicHub-main/index.html',
+      dashboard: '../dashboard/'
+    };
+
     const createBtn = document.getElementById('create-btn');
     const verifyBtn = document.getElementById('verify-btn');
     const msg = document.getElementById('msg');
@@ -372,7 +379,23 @@
           localStorage.setItem('aporaksha_access', data.accessToken);
           localStorage.setItem('aporaksha_refresh', data.refreshToken);
           setMsg('Authority verified. Entering workspace...', 'success');
-          setTimeout(() => { window.location.href = '../dashboard/'; }, 1000);
+          setTimeout(() => {
+            const params = new URLSearchParams(window.location.search);
+            let targetUrl = params.get('redirect');
+            if (!targetUrl) {
+              const intent = params.get('intent');
+              if (intent && INTENT_ROUTES[intent]) {
+                targetUrl = INTENT_ROUTES[intent];
+              }
+            }
+            if (targetUrl) {
+              const url = new URL(targetUrl, window.location.href);
+              url.searchParams.set('ecosystem_uid', activeUid);
+              window.location.href = url.toString();
+            } else {
+              window.location.href = '../dashboard/';
+            }
+          }, 1000);
         } else {
           setMsg(data.error || 'Verification failed.', 'error');
           verifyBtn.disabled = false;
@@ -415,7 +438,21 @@
           if (data.success) {
             setMsg('Passport created! Redirecting…', 'success');
             setTimeout(function () {
-              window.location.href = '../dashboard/';
+              const params = new URLSearchParams(window.location.search);
+              let targetUrl = params.get('redirect');
+              if (!targetUrl) {
+                const intent = params.get('intent');
+                if (intent && INTENT_ROUTES[intent]) {
+                  targetUrl = INTENT_ROUTES[intent];
+                }
+              }
+              if (targetUrl) {
+                const url = new URL(targetUrl, window.location.href);
+                url.searchParams.set('ecosystem_uid', email);
+                window.location.href = url.toString();
+              } else {
+                window.location.href = '../dashboard/';
+              }
             }, 1200);
           } else {
             setMsg(data.error || 'Creation failed. Please try again.', 'error');

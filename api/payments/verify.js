@@ -1,7 +1,7 @@
 import crypto from "crypto";
-import { getDB } from "../../lib/db";
-import { initDB } from "../../lib/initDb";
-import { logEvent } from "../../lib/logger";
+import { getDB } from "../../lib/db.js";
+import { initDB } from "../../lib/initDb.js";
+import { logEvent } from "../../lib/logger.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
