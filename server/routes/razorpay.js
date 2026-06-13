@@ -18,18 +18,16 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 async function isStudentVerified(email) {
   if (!email) return false;
   try {
-    const gatewayDb = await open({
-      filename: "/Users/dharamdaxini/Downloads/via/daxini.xyz/database/daxini.db",
-      driver: sqlite3.Database,
-    });
-    const row = await gatewayDb.get(`
-      SELECT verification_status FROM student_verifications 
-      WHERE academic_email = ? AND verification_status IN ('OCR_VERIFIED', 'MANUAL_APPROVED')
-    `, [email]);
-    await gatewayDb.close();
-    return !!row;
+    const gatewayUrl = process.env.GATEWAY_URL || "https://daxini.xyz";
+    const res = await fetch(`${gatewayUrl}/api/verify/student/status?email=${encodeURIComponent(email)}`);
+    if (!res.ok) {
+      console.error(`[APORAKSHA ROUTE] Student status lookup failed with status: ${res.status}`);
+      return false;
+    }
+    const data = await res.json();
+    return !!data.verified;
   } catch (e) {
-    console.error("[APORAKSHA ROUTE] Failed to check student status in gateway DB:", e);
+    console.error("[APORAKSHA ROUTE] Failed to check student status in gateway API:", e);
     return false;
   }
 }

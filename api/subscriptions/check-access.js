@@ -1,28 +1,40 @@
 import { getDB } from "../../lib/db.js";
 import { initDB } from "../../lib/initDb.js";
-import sqlite3 from "sqlite3";
-import { open } from "sqlite";
 
 async function isStudentVerified(email) {
   if (!email) return false;
   try {
-    const gatewayDb = await open({
-      filename: "/Users/dharamdaxini/Downloads/via/daxini.xyz/database/daxini.db",
-      driver: sqlite3.Database,
+    const gatewayUrl = process.env.GATEWAY_URL || "https://daxini.xyz";
+    console.log(`[APORAKSHA] Checking student status for ${email} at ${gatewayUrl}/api/verify/student/status`);
+    const res = await fetch(`${gatewayUrl}/api/verify/student/status?email=${encodeURIComponent(email)}&t=${Date.now()}`, {
+      cache: 'no-store'
     });
-    const row = await gatewayDb.get(`
-      SELECT verification_status FROM student_verifications 
-      WHERE academic_email = ? AND verification_status IN ('OCR_VERIFIED', 'MANUAL_APPROVED')
-    `, [email]);
-    await gatewayDb.close();
-    return !!row;
+    
+    const text = await res.text();
+    console.log(`[APORAKSHA] Student status response: ${res.status} ${text}`);
+    
+    if (!res.ok) {
+      console.error(`[APORAKSHA] Student status lookup failed with status: ${res.status}`);
+      return false;
+    }
+    const data = JSON.parse(text);
+    return !!data.verified;
   } catch (e) {
-    console.error("[APORAKSHA] Failed to check student status in gateway DB:", e);
+    console.error("[APORAKSHA] Failed to check student status in gateway API:", e);
     return false;
   }
 }
 
 export default async function handler(req, res) {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   if (req.method !== "GET") {
     return res.status(405).end();
   }
