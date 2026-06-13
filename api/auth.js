@@ -76,16 +76,32 @@ const REFRESH_SECRET = process.env.REFRESH_SECRET_KEY || "zayvora_dev_refresh_se
 
 function issueTokens(user, deviceId) {
   const jti = crypto.randomBytes(16).toString("hex");
+  const now = Math.floor(Date.now() / 1000);
+  const sessionId = `sess_${crypto.randomBytes(8).toString("hex")}`;
+  
   return {
     accessToken: signJWT({
-      userId: user.id, email: user.email, role: user.role || "user",
-      jti, type: "access", exp: Math.floor(Date.now() / 1000) + 900,
+      ecosystem_uid: user.email,
+      display_name: user.display_name || user.email.split('@')[0],
+      roles: [user.role || "student"],
+      session_id: sessionId,
+      jti, 
+      type: "access", 
+      issued_at: now,
+      expires_at: now + 900,
+      exp: now + 900,
+      iat: now
     }, ACCESS_SECRET),
     refreshToken: signJWT({
-      userId: user.id, deviceId: deviceId || "unknown",
-      type: "refresh", exp: Math.floor(Date.now() / 1000) + 604800,
+      ecosystem_uid: user.email,
+      session_id: sessionId,
+      deviceId: deviceId || "unknown",
+      type: "refresh", 
+      exp: now + 604800,
+      iat: now
     }, REFRESH_SECRET),
-    userId: user.id,
+    ecosystem_uid: user.email,
+    session_id: sessionId,
     expiresIn: 900,
   };
 }
@@ -135,24 +151,45 @@ export default async function handler(req, res) {
     if (!v.valid || v.payload?.type !== "refresh")
       return res.status(401).json({ error: "Invalid token" });
 
-    const user = Array.from(users.values()).find((u) => u.id === v.payload.userId);
+    const user = Array.from(users.values()).find((u) => u.email === v.payload.ecosystem_uid);
     if (!user) return res.status(401).json({ error: "User not found" });
 
     const tokens = issueTokens(user, v.payload.deviceId);
     return res.json(tokens);
   }
 
-  // VERIFY (check if token is valid)
-  if (action === "verify") {
+  // VERIFY / VALIDATE (check if token is valid)
+  if (action === "verify" || action === "validate") {
     const token = (req.headers.authorization || "").replace("Bearer ", "");
     const v = verifyJWT(token, ACCESS_SECRET);
     
     // Track verify hits to see if this user becomes hot
-    if (v.valid && v.payload?.email) {
-      trackHotKey(v.payload.email);
+    if (v.valid && v.payload?.ecosystem_uid) {
+      trackHotKey(v.payload.ecosystem_uid);
     }
     
-    return res.json({ valid: v.valid, userId: v.payload?.userId || null });
+    return res.json({ valid: v.valid, ecosystem_uid: v.payload?.ecosystem_uid || null, session_id: v.payload?.session_id || null });
+  }
+
+  // LOGOUT
+  if (action === "logout") {
+    // In a full implementation, you'd add the token to a Revocation List (Redis).
+    // For now, we instruct the client to discard tokens.
+    return res.json({ success: true, message: "Logged out successfully. Please clear your local tokens." });
+  }
+
+  // INTROSPECT
+  if (action === "introspect") {
+    const token = (req.headers.authorization || "").replace("Bearer ", "");
+    const v = verifyJWT(token, ACCESS_SECRET);
+    if (!v.valid) return res.status(401).json({ active: false });
+    
+    // Track verify hits to see if this user becomes hot
+    if (v.payload?.ecosystem_uid) {
+      trackHotKey(v.payload.ecosystem_uid);
+    }
+    
+    return res.json({ active: true, ...v.payload });
   }
 
   // SEND OTP
@@ -221,5 +258,5 @@ export default async function handler(req, res) {
     return res.json(tokens);
   }
 
-  return res.status(400).json({ error: "Unknown action. Use: signup, login, refresh, verify, send_otp, verify_otp" });
+  return res.status(400).json({ error: "Unknown action. Use: signup, login, refresh, verify, validate, logout, introspect, send_otp, verify_otp" });
 }

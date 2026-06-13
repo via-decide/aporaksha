@@ -3,6 +3,8 @@ const crypto = require('crypto');
 const Razorpay = require('razorpay');
 const rateLimit = require('express-rate-limit');
 const { Pool } = require('pg');
+const sqlite3 = require('sqlite3');
+const { open } = require('sqlite');
 
 const router = express.Router();
 const { authMiddleware } = require('../../auth/middleware');
@@ -12,6 +14,23 @@ const orders = new Map();
 const processedPayments = new Set();
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+async function isStudentVerified(email) {
+  if (!email) return false;
+  try {
+    const gatewayUrl = process.env.GATEWAY_URL || "https://daxini.xyz";
+    const res = await fetch(`${gatewayUrl}/api/verify/student/status?email=${encodeURIComponent(email)}`);
+    if (!res.ok) {
+      console.error(`[APORAKSHA ROUTE] Student status lookup failed with status: ${res.status}`);
+      return false;
+    }
+    const data = await res.json();
+    return !!data.verified;
+  } catch (e) {
+    console.error("[APORAKSHA ROUTE] Failed to check student status in gateway API:", e);
+    return false;
+  }
+}
 
 const paymentRateLimit = rateLimit({ windowMs: 60 * 1000, max: 10, standardHeaders: true, legacyHeaders: false });
 
@@ -24,6 +43,31 @@ router.post('/payments/create-order', paymentRateLimit, authMiddleware, [validat
     const { productId } = req.body || {};
     const userId = req.userId;
     if (!productId) return res.status(400).json({ error: 'productId is required' });
+
+    // Enforce Geoblocking for India/INR requests unless student is verified
+    const country = req.headers['cf-ipcountry'] || req.headers['x-country-code'] || 'US';
+    const currency = 'INR';
+
+    if (country === 'IN' || currency === 'INR') {
+      let userEmail = '';
+      try {
+        const userRes = await pool.query('SELECT email FROM users WHERE id = $1 LIMIT 1', [userId]);
+        if (userRes.rows && userRes.rows[0]) {
+          userEmail = userRes.rows[0].email;
+        }
+      } catch (dbErr) {
+        console.error('Failed to query user email for geoblock check:', dbErr);
+      }
+
+      const verified = await isStudentVerified(userEmail);
+      if (!verified) {
+        return res.status(403).json({
+          error: 'SaaS Billing Restricted',
+          code: 'regional_saas_billing_blocked',
+          message: 'SaaS licensing and subscription checkouts are not available in India. Access is restricted to local-first workstations or verified academic student accounts.'
+        });
+      }
+    }
 
     const { rows } = await pool.query('SELECT id, name, price FROM products WHERE id = $1 LIMIT 1', [productId]);
     const product = rows[0];

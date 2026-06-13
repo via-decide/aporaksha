@@ -1,6 +1,6 @@
-import { getDB } from "../../../../lib/db";
-import { initDB } from "../../../../lib/initDb";
-import { enqueue, processWebhookEvent } from "../../../../lib/queue";
+import { getDB } from "../../../../lib/db.js";
+import { initDB } from "../../../../lib/initDb.js";
+import { enqueue, processWebhookEvent } from "../../../../lib/queue.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();

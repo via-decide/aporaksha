@@ -1,5 +1,5 @@
-import { getDB } from "../lib/db";
-import { initDB } from "../lib/initDb";
+import { getDB } from "../lib/db.js";
+import { initDB } from "../lib/initDb.js";
 
 export default async function handler(req, res) {
   if (req.method !== "GET") {
