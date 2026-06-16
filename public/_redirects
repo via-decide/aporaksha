@@ -1,0 +1,6 @@
+
+# Force HTTPS (Pages only serves HTTPS, but belt-and-suspenders)
+http://:domain/*  https://:domain/:splat  301
+
+# Root security.txt → .well-known canonical
+/security.txt  /.well-known/security.txt  301
