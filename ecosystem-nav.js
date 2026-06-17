@@ -58,6 +58,8 @@
   const banner = document.createElement('div');
   banner.id = 'eco-personalization-banner';
   banner.className = 'eco-personalization-banner';
+  banner.style.display = 'flex';
+  banner.innerHTML = `✨ Build with <span style="color: #00e5ff; margin: 0 4px;">LogicHub</span> · Own with <span style="color: #ff671f; margin: 0 4px;">Aporaksha</span> · Publish on <span style="color: #00ff96; margin: 0 4px;">Daxini Space</span>`;
   
   // 4. Build Progress Bar
   const progressContainer = document.createElement('div');
@@ -111,6 +113,7 @@
   `;
 
   // 6. Build Onboarding Modal
+  const isActivated = localStorage.getItem('onboarding_complete') === 'true' || localStorage.getItem('aporaksha_session');
   const modal = document.createElement('div');
   modal.id = 'eco-modal';
   modal.className = 'eco-modal-overlay';
@@ -127,9 +130,14 @@
         <button class="eco-intent-btn" onclick="window.location.href='https://daxini.space'">
           Publish Software <span>Daxini Space</span>
         </button>
-        <button class="eco-intent-btn" style="opacity: 0.6; cursor: not-allowed;">
-          Sell an Artifact <span>Marketplace (Soon)</span>
-        </button>
+        ${isActivated 
+          ? `<button class="eco-intent-btn" onclick="window.location.href='https://daxini.space/apps/marketplace/'">
+               Trade Assets <span>Marketplace</span>
+             </button>`
+          : `<button class="eco-intent-btn" style="opacity: 0.55; cursor: not-allowed;" title="Unlock after building your first app">
+               Trade Assets <span>🔒 Locked</span>
+             </button>`
+        }
       </div>
       <div style="text-align:center; margin-top: 24px;">
         <a href="#" style="color: #8b90a0; font-size: 12px; text-decoration: none;" onclick="document.getElementById('eco-modal').classList.remove('active'); return false;">Cancel</a>
@@ -146,27 +154,10 @@
 
   // 7. Identity-Backed "Since Last Visit" Logic (Mocked Aporaksha SDK Check)
   function checkIdentityState() {
-    // In production, this queries the Aporaksha Identity backend via SDK
     const lastVisit = localStorage.getItem('_aporaksha_last_visit');
     const now = Date.now();
-    
-    if (lastVisit) {
-      const daysSince = Math.floor((now - parseInt(lastVisit)) / (1000 * 60 * 60 * 24));
-      if (daysSince > 0 || !lastVisit) {
-        banner.style.display = 'flex';
-        if (currentProduct === 'logichub') {
-          banner.innerText = '✨ 2 New Upgrade Suggestions found for your projects since your last visit.';
-        } else if (currentProduct === 'daxinispace') {
-          banner.innerText = '✨ 3 New Apps Trending since your last visit.';
-        } else if (currentProduct === 'aporaksha') {
-          banner.innerText = '🛡️ Your identity session was last active ' + daysSince + ' days ago.';
-        } else {
-          banner.innerText = '✨ Welcome back to the ecosystem.';
-        }
-      }
-    }
-    
-    // Update local stamp
+    banner.style.display = 'flex';
+    banner.innerHTML = `✨ Build with <span style="color: #00e5ff; margin: 0 4px;">LogicHub</span> · Own with <span style="color: #ff671f; margin: 0 4px;">Aporaksha</span> · Publish on <span style="color: #00ff96; margin: 0 4px;">Daxini Space</span>`;
     localStorage.setItem('_aporaksha_last_visit', now.toString());
   }
 

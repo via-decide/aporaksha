@@ -88,15 +88,18 @@
 
 /* User / Personalization Banner */
 .eco-personalization-banner {
-  background: var(--eco-surface);
-  border-bottom: 1px solid var(--eco-border);
+  background: var(--eco-bg);
+  border-bottom: 1px solid rgba(0, 229, 255, 0.2);
   padding: 8px 24px;
-  font-size: 12px;
-  color: #10b981;
-  display: none; /* hidden by default */
+  font-size: 11px;
+  color: #fff;
+  display: flex;
   justify-content: center;
   align-items: center;
-  font-weight: 500;
+  font-weight: 600;
+  font-family: var(--eco-font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 /* Ecosystem Progress Bar */
@@ -242,4 +245,49 @@
 .eco-intent-btn span {
   color: var(--eco-muted);
   font-size: 12px;
+}
+
+@media (max-width: 768px) {
+  .eco-global-header {
+    padding: 0 16px;
+    font-size: 12px;
+  }
+  .eco-header-links {
+    display: none !important;
+  }
+  .eco-progress-bar {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 12px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  .eco-progress-bar .eco-step-arrow {
+    display: none !important;
+  }
+  .eco-global-footer {
+    margin-top: 40px;
+    padding: 30px 16px;
+  }
+  .eco-footer-map {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    max-width: 280px;
+    margin: 0 auto 20px;
+    gap: 12px;
+  }
+  .eco-footer-map .eco-step-arrow {
+    display: none !important;
+  }
+  .eco-map-node {
+    padding: 12px 16px;
+  }
+  .eco-modal {
+    padding: 24px 16px;
+  }
+  .eco-modal h2 {
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
 }

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Aporaksha — Identity That Belongs To The User</title>
-  <meta name="description" content="Authentication, ownership, and payment identity for local-first software. The identity infrastructure platform for trust." />
+  <title>Aporaksha — Cryptographic Ownership Layer for LogicHub & Daxini Apps</title>
+  <meta name="description" content="Own, license, and monetize your generated software assets cryptographically. Aporaksha is the cryptographic ownership layer for LogicHub and Daxini Apps." />
   <link rel="stylesheet" href="styles.css" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -25,42 +25,42 @@
         <a href="#payments">Payments</a>
         <a href="#trust">Trust</a>
       </div>
-      <div>
-        <button class="btn secondary" style="margin-right:8px;" onclick="navigate('/login')">Sign In</button>
-        <button class="btn primary" onclick="navigate('/passport')">Get Started</button>
+      <div class="nav-actions">
+        <button class="btn secondary btn-signin" onclick="navigate('/login')">Sign In</button>
+        <button class="btn primary btn-getstarted" onclick="navigate('/passport')">Get Started</button>
       </div>
     </div>
   </nav>
-
+ 
   <main>
     <!-- SECTION 1: Hero -->
     <header class="hero">
-      <div class="container" style="display:flex; flex-direction:column; align-items:center; text-align:center;">
-        <div class="hero-badge" style="margin-bottom:24px;">
-          <span style="color:#10b981;">●</span> APORAKSHA IDENTITY
+      <div class="container hero-container">
+        <div class="hero-badge">
+          <span class="badge-dot">●</span> APORAKSHA IDENTITY
         </div>
-        <h1 style="font-size: 3.5rem; letter-spacing: -1.5px; margin-bottom: 1.5rem;">Identity That Owns Software</h1>
-        <p style="font-size: 1.1rem; max-width: 600px; margin: 0 auto 2.5rem; color: var(--muted);">
-          Cryptographic trust infrastructure for local-first execution. Secure your artifacts, authenticate users, and process payments without third-party tracking.
+        <h1 class="hero-title">Aporaksha: Cryptographic Ownership Layer for LogicHub & Daxini Apps</h1>
+        <p class="hero-desc">
+          Own, license, and monetize your generated software assets cryptographically. Secure your artifacts, authenticate users, and process payments without third-party tracking.
         </p>
         
         <!-- Lifecycle Visualization Pipeline -->
-        <div style="display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:12px; margin: 0 auto 3rem; padding:1.5rem; border:1px solid rgba(255,255,255,0.05); border-radius:12px; background:rgba(0,0,0,0.3); font-family:monospace; font-size:0.8rem; width:100%; max-width:800px;">
-          <span style="color:#fff; font-weight:600;">Identity</span>
-          <span style="color:var(--muted);">→</span>
-          <span style="color:#10b981; font-weight:600;">Authentication</span>
-          <span style="color:var(--muted);">→</span>
-          <span style="color:#3b82f6; font-weight:600;">Payments</span>
-          <span style="color:var(--muted);">→</span>
-          <span style="color:#f59e0b; font-weight:600;">Ownership</span>
+        <div class="lifecycle-pipeline">
+          <span class="pipeline-step step-identity">Identity</span>
+          <span class="pipeline-arrow">→</span>
+          <span class="pipeline-step step-auth">Authentication</span>
+          <span class="pipeline-arrow">→</span>
+          <span class="pipeline-step step-payments">Payments</span>
+          <span class="pipeline-arrow">→</span>
+          <span class="pipeline-step step-ownership">Ownership</span>
         </div>
-
-        <div class="hero-actions" style="margin-bottom: 2rem;">
+ 
+        <div class="hero-actions">
           <button class="btn primary" onclick="navigate('/passport')">Create Identity</button>
         </div>
         
-        <div style="font-family: monospace; font-size: 0.75rem; color: #10b981; display: flex; align-items: center; justify-content:center; gap: 0.5rem;">
-          <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981; box-shadow: 0 0 8px #10b981;"></span>
+        <div class="next-step-indicator">
+          <span class="indicator-dot"></span>
           <span>Next Step: Connect your LogicHub Projects</span>
         </div>
       </div>
@@ -158,9 +158,9 @@
         <h2>Why Ownership Matters</h2>
         <p>Cloud accounts can disappear. Subscriptions expire. Platforms pivot.</p>
       </div>
-      <div class="card" style="text-align:center; padding:60px 40px; border-color:rgba(255,255,255,0.1);">
-        <h3 style="font-size:2rem; margin-bottom:20px;">Ownership persists.</h3>
-        <p style="max-width:700px; margin:0 auto;">When software is local-first, identity must be too. Aporaksha ensures that when a user buys a license or sets up an environment, the ownership token is bound cryptographically to them, surviving even if the central cloud goes offline.</p>
+      <div class="card card-cta">
+        <h3 class="cta-title">Ownership persists.</h3>
+        <p class="cta-desc">When software is local-first, identity must be too. Aporaksha ensures that when a user buys a license or sets up an environment, the ownership token is bound cryptographically to them, surviving even if the central cloud goes offline.</p>
       </div>
     </section>
 
@@ -171,19 +171,19 @@
         <p>APIs built by developers, for developers.</p>
       </div>
       <div class="grid-4">
-        <div class="arch-block" style="width:100%; margin:0;">
+        <div class="arch-block flex-arch-block">
           <h4>SDK</h4>
           <p>Drop-in JS libraries</p>
         </div>
-        <div class="arch-block" style="width:100%; margin:0;">
+        <div class="arch-block flex-arch-block">
           <h4>API</h4>
           <p>RESTful endpoints</p>
         </div>
-        <div class="arch-block" style="width:100%; margin:0;">
+        <div class="arch-block flex-arch-block">
           <h4>JWT & OAuth</h4>
           <p>Standard protocols</p>
         </div>
-        <div class="arch-block" style="width:100%; margin:0;">
+        <div class="arch-block flex-arch-block">
           <h4>Webhooks</h4>
           <p>Realtime events</p>
         </div>
@@ -200,7 +200,7 @@
         <div class="card">
           <h3>Supported Regions</h3>
           <p>Our payment gateway integration is strictly compliant, currently offering deep integrations for users in:</p>
-          <ul style="color:var(--muted); margin-top:10px;">
+          <ul class="muted-list">
             <li>🇮🇳 India</li>
             <li>🇱🇺 Luxembourg</li>
             <li>🇯🇵 Japan</li>
@@ -209,7 +209,7 @@
         <div class="card">
           <h3>Payment Methods</h3>
           <p>Aporaksha integrates deeply with <strong>Razorpay</strong> to provide robust support for:</p>
-          <ul style="color:var(--muted); margin-top:10px;">
+          <ul class="muted-list">
             <li>Visa & Mastercard</li>
             <li>International Credit Cards</li>
             <li>UPI & Regional Methods</li>
@@ -225,17 +225,17 @@
         <p>We do not compromise on privacy.</p>
       </div>
       <div class="grid-4">
-        <div class="card" style="text-align:center;">
-          <h3 style="color:#10b981;">No Hidden Tracking</h3>
+        <div class="card center-card">
+          <h3 class="trust-highlight">No Hidden Tracking</h3>
         </div>
-        <div class="card" style="text-align:center;">
-          <h3 style="color:#10b981;">Full Auditability</h3>
+        <div class="card center-card">
+          <h3 class="trust-highlight">Full Auditability</h3>
         </div>
-        <div class="card" style="text-align:center;">
-          <h3 style="color:#10b981;">Strict Privacy</h3>
+        <div class="card center-card">
+          <h3 class="trust-highlight">Strict Privacy</h3>
         </div>
-        <div class="card" style="text-align:center;">
-          <h3 style="color:#10b981;">Data Portability</h3>
+        <div class="card center-card">
+          <h3 class="trust-highlight">Data Portability</h3>
         </div>
       </div>
     </section>
@@ -245,26 +245,26 @@
       <div class="section-header">
         <h2>Stack Architecture</h2>
       </div>
-      <div class="diagram-container" style="display:flex; flex-direction:column; gap:16px;">
-        <div style="background:rgba(255,255,255,0.05); padding:16px; border-radius:8px; border:1px solid var(--border);">
+      <div class="diagram-container diagram-stack">
+        <div class="stack-layer">
           <strong>Layer 4: Environment Layer</strong> (Runtime, Executables, Local Servers)
         </div>
-        <div style="background:rgba(255,255,255,0.05); padding:16px; border-radius:8px; border:1px solid var(--border);">
+        <div class="stack-layer">
           <strong>Layer 3: Payment Layer</strong> (Razorpay, Checkout, Ownership Ledger)
         </div>
-        <div style="background:rgba(255,255,255,0.05); padding:16px; border-radius:8px; border:1px solid var(--border);">
+        <div class="stack-layer">
           <strong>Layer 2: Authorization Layer</strong> (Passports, License Verification)
         </div>
-        <div style="background:rgba(255,255,255,0.05); padding:16px; border-radius:8px; border:1px solid var(--border);">
+        <div class="stack-layer">
           <strong>Layer 1: Identity Layer</strong> (Core Authentication, User Profiles)
         </div>
       </div>
     </section>
 
     <!-- SECTION 10: Get Started -->
-    <section class="container" style="text-align:center; padding-bottom:120px;">
-      <h2 style="font-size:2.5rem; margin-bottom:24px;">Start Building Trust Today</h2>
-      <div style="display:flex; justify-content:center; gap:24px; flex-wrap:wrap;">
+    <section class="container get-started-section">
+      <h2 class="get-started-title">Start Building Trust Today</h2>
+      <div class="get-started-actions">
         <button class="btn primary" onclick="navigate('/passport')">Create Identity</button>
         <button class="btn secondary">Generate Passport</button>
         <button class="btn secondary">Connect Application</button>
@@ -295,15 +295,15 @@
         </div>
         <div class="footer-col">
           <h4>Support</h4>
-          <span style="color:var(--muted); font-size:0.9rem;">Email: support@aporaksha.com</span><br>
-          <span style="color:var(--muted); font-size:0.9rem;">Address: Daxini Ecosystem, Kutch, India</span>
+          <span class="footer-info">Email: support@aporaksha.com</span><br>
+          <span class="footer-info">Address: Daxini Ecosystem, Kutch, India</span>
         </div>
       </div>
       <div class="footer-bottom">
         <div>&copy; 2026 Aporaksha Identity Infrastructure. All rights reserved.</div>
         <div class="trust-badges">
-          <span style="color:var(--muted); font-size:0.8rem;">Protected by SSL</span>
-          <span style="color:var(--muted); font-size:0.8rem;">Powered by Razorpay</span>
+          <span class="badge-info">Protected by SSL</span>
+          <span class="badge-info">Powered by Razorpay</span>
         </div>
       </div>
     </div>
@@ -311,22 +311,22 @@
 </div>
 
 <div data-view="login">
-  <div class="container" style="padding:100px 0; text-align:center;">
+  <div class="container auth-container">
     <h2>Sign In</h2>
-    <p style="color:var(--muted); margin-bottom:30px;">Authenticate with your Aporaksha Identity</p>
-    <button id="login-btn" class="btn primary" type="button" style="margin-right:10px;">Login with Passkey</button>
+    <p class="auth-desc">Authenticate with your Aporaksha Identity</p>
+    <button id="login-btn" class="btn primary btn-passkey" type="button">Login with Passkey</button>
     <button class="btn secondary" type="button" onclick="navigate('/')">Back to Home</button>
   </div>
 </div>
 
 <div data-view="passport">
-  <div class="container" style="padding:100px 0;">
+  <div class="container passport-container">
     <h2>Passport Dashboard</h2>
-    <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-card); padding:32px; margin-top:24px;">
-      <p style="color:#10b981;">✓ Identity Verified</p>
-      <p style="color:var(--muted);">Your local session is active.</p>
-      <div style="margin-top:24px;">
-        <button id="logout-btn" class="btn primary" type="button" style="margin-right:10px;">End Session</button>
+    <div class="passport-card">
+      <p class="verified-status">✓ Identity Verified</p>
+      <p class="session-desc">Your local session is active.</p>
+      <div class="passport-actions">
+        <button id="logout-btn" class="btn primary btn-endsession" type="button">End Session</button>
         <button class="btn secondary" type="button" onclick="navigate('/')">Back to Home</button>
       </div>
     </div>
