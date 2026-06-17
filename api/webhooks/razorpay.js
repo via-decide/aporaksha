@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
     if (!secret) return res.status(200).json({ ok: true });
     const signature = req.headers["x-razorpay-signature"];
-    const rawBody = await readRawBody(req);
+    const rawBody = req.rawBody || await readRawBody(req);
     const expected = crypto.createHmac("sha256", secret).update(rawBody).digest("hex");
     if (!signature || signature !== expected) return res.status(200).json({ ok: true });
 
