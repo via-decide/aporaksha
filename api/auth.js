@@ -122,9 +122,11 @@ export default async function handler(req, res) {
       return res.status(409).json({ error: "Account exists" });
 
     const id = crypto.randomUUID();
-    users.set(identity, { id, email: identity, password_hash: hashPassword(password), role: "user" });
+    const newUser = { id, email: identity, password_hash: hashPassword(password), role: "user" };
+    users.set(identity, newUser);
     saveUsers(users);
-    return res.status(201).json({ success: true, userId: id, email: identity });
+    const tokens = issueTokens(newUser, req.headers["x-device-id"] || "web");
+    return res.status(201).json(tokens);
   }
 
   // LOGIN

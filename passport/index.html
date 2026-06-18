@@ -257,7 +257,7 @@
       <p class="subtitle">Your sovereign identity across the ecosystem. Skills, reputation, and assets follow you everywhere.</p>
     </div>
 
-    <div class="field">
+    <div class="field" id="name-field">
       <label for="name">Display Name</label>
       <input type="text" id="name" placeholder="e.g. Dharam Daxini" autocomplete="off" />
     </div>
@@ -275,8 +275,8 @@
     <button class="btn-primary" id="create-btn">Create Passport</button>
     <div id="msg"></div>
 
-    <div class="card-footer">
-      Already have a passport? <a href="./">Log in</a>
+    <div class="card-footer" id="toggle-container">
+      Already have a passport? <a href="#" id="toggle-mode">Log in</a>
     </div>
 
     <div class="trust">
@@ -295,41 +295,67 @@
       msg.className = type || '';
     }
 
+    let isLogin = false;
+    const toggleLink = document.getElementById('toggle-mode');
+    const nameField = document.getElementById('name-field');
+    const headerTitle = document.querySelector('h1');
+    const headerSubtitle = document.querySelector('.subtitle');
+
+    toggleLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      isLogin = !isLogin;
+      if (isLogin) {
+        nameField.style.display = 'none';
+        headerTitle.textContent = 'Log In';
+        headerSubtitle.textContent = 'Access your sovereign identity and ecosystem assets.';
+        btn.textContent = 'Log In';
+        document.getElementById('toggle-container').innerHTML = 'Need a passport? <a href="#" id="toggle-mode">Create one</a>';
+      } else {
+        nameField.style.display = 'block';
+        headerTitle.textContent = 'Create Passport';
+        headerSubtitle.textContent = 'Your sovereign identity across the ecosystem. Skills, reputation, and assets follow you everywhere.';
+        btn.textContent = 'Create Passport';
+        document.getElementById('toggle-container').innerHTML = 'Already have a passport? <a href="#" id="toggle-mode">Log in</a>';
+      }
+      document.getElementById('toggle-mode').addEventListener('click', arguments.callee);
+    });
+
     btn.addEventListener('click', function () {
       const name     = document.getElementById('name').value.trim();
       const email    = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
 
-      if (!name || !email || !password) {
-        setMsg('All fields are required.', 'error');
+      if ((!isLogin && !name) || !email || !password) {
+        setMsg('Please fill in all required fields.', 'error');
         return;
       }
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         setMsg('Enter a valid email address.', 'error');
         return;
       }
-      if (password.length < 8) {
+      if (!isLogin && password.length < 8) {
         setMsg('Password must be at least 8 characters.', 'error');
         return;
       }
 
       btn.disabled = true;
-      setMsg('Creating passport…');
+      setMsg(isLogin ? 'Logging in…' : 'Creating passport…');
 
-      fetch('../api/passport/create', {
+      fetch('../api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name, email: email, password: password })
+        body: JSON.stringify({ action: isLogin ? 'login' : 'signup', name: name, email: email, password: password })
       })
         .then(function (r) { return r.json(); })
         .then(function (data) {
-          if (data.ok) {
-            setMsg('Passport created! Redirecting…', 'success');
+          if (data.accessToken) {
+            localStorage.setItem('aporaksha_session', JSON.stringify({ email: email, accessToken: data.accessToken, refreshToken: data.refreshToken }));
+            setMsg('Success! Redirecting…', 'success');
             setTimeout(function () {
               window.location.href = '../dashboard/';
             }, 1200);
           } else {
-            setMsg(data.error || 'Creation failed. Please try again.', 'error');
+            setMsg(data.error || 'Authentication failed. Please try again.', 'error');
             btn.disabled = false;
           }
         })
