@@ -23,5 +23,6 @@ Storage schema is persisted in `localStorage` with SQLite-like tables:
 3. Add events:
    - payment.captured
    - order.paid
+   - payment_link.paid
 4. Set secret (same as `.env`)
 5. Ensure endpoint returns HTTP 200
