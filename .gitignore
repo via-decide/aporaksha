@@ -15,3 +15,6 @@ data.db
 
 # Vercel
 .vercel/
+
+# Invoices and Emails
+invoices/

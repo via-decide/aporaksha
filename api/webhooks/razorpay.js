@@ -1,7 +1,7 @@
 import crypto from "crypto";
-import { getDB } from "../../lib/db";
-import { initDB } from "../../lib/initDb";
-import { enqueue, processWebhookEvent } from "../../lib/queue";
+import { getDB } from "../../lib/db.js";
+import { initDB } from "../../lib/initDb.js";
+import { enqueue, processWebhookEvent } from "../../lib/queue.js";
 
 export const config = { api: { bodyParser: false } };
 
