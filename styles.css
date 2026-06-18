@@ -34,33 +34,57 @@ a {
   color: var(--accent);
 }
 
-.top-nav {
-  max-width: 1080px;
-  margin: 0.75rem auto 0;
-  padding: 0.75rem 1.25rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.55rem;
+.nav {
   position: sticky;
   top: 0;
-  z-index: 12;
-  background: rgba(11, 17, 32, 0.9);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  backdrop-filter: blur(8px);
+  z-index: 50;
+  border-bottom: 1px solid var(--border);
+  background: rgba(11, 17, 32, 0.85);
+  backdrop-filter: blur(12px);
 }
 
-.top-nav a {
-  text-decoration: none;
+.nav-inner {
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+.brand {
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 0.3rem 0.7rem;
-  font-size: 0.9rem;
+  text-decoration: none;
 }
 
-.top-nav a:hover {
-  border-color: var(--gold);
+.brand svg {
+  width: 20px;
+  height: 20px;
+  color: var(--accent);
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  color: #cfcfcf;
+  font-size: 14px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.15s;
+}
+
+.nav-links a:hover {
+  color: var(--accent);
 }
 
 main,
@@ -342,6 +366,19 @@ h1 {
 
   .identity-grid {
     grid-template-columns: 1fr;
+  }
+
+  main,
+  main.container {
+    padding: 40px 1.25rem !important;
+  }
+
+  .card {
+    padding: 24px !important;
+  }
+
+  .nav-links {
+    gap: 12px;
   }
 }
 
