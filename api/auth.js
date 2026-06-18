@@ -4,7 +4,8 @@ import fs from "fs";
 import path from "path";
 
 // File-based user store to prevent identity loss on serverless cold starts
-const DATA_FILE = path.join(process.cwd(), "aporaksha_users.json");
+// Note: /tmp is the only writable directory in Vercel serverless functions
+const DATA_FILE = path.join("/tmp", "aporaksha_users.json");
 
 function loadUsers() {
   try {
