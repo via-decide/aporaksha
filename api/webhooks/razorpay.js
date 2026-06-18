@@ -39,7 +39,9 @@ export default async function handler(req, res) {
       [eventId, payload?.event || "unknown", signature, rawBody, JSON.stringify(payload)]
     );
 
-    enqueue(async () => processWebhookEvent(eventId));
+    // Await execution directly on Vercel to prevent serverless function termination
+    // while catching errors to ensure Razorpay still gets a 200 OK ACK.
+    await processWebhookEvent(eventId).catch((e) => console.error("Async webhook error:", e));
 
     return res.status(200).json({ ok: true });
   } catch (error) {
