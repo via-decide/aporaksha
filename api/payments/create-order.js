@@ -100,6 +100,12 @@ export default async function handler(req, res) {
       },
     });
 
+    console.log('[Telemetry] order_created:', {
+      order_id: order.id,
+      product_id: product_id,
+      user_id: userId
+    });
+
     return res.status(200).json({
       order_id:    order.id,
       amount:      order.amount,
@@ -109,7 +115,12 @@ export default async function handler(req, res) {
     });
 
   } catch (err) {
-    console.error('[Razorpay] Order creation failed:', err);
-    return res.status(500).json({ error: 'Order creation failed. Please try again.' });
+    const errorRef = `ORD-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
+    console.error(`[Razorpay] Order creation failed [Ref: ${errorRef}]:`, err);
+    return res.status(500).json({ 
+      error: 'Payment system unavailable.', 
+      reference: errorRef, 
+      code: 'PAYMENT_GATEWAY_ERROR' 
+    });
   }
 }

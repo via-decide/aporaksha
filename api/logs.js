@@ -2,6 +2,20 @@ import { getDB } from "../lib/db";
 import { initDB } from "../lib/initDb";
 
 export default async function handler(req, res) {
+  if (req.method === "POST") {
+    try {
+      await initDB();
+      const db = await getDB();
+      const { type, payload } = req.body || {};
+      if (!type) return res.status(400).json({ error: "Missing event type" });
+      await db.run("INSERT INTO events (type, payload) VALUES (?, ?)", [type, JSON.stringify(payload || {})]);
+      return res.status(200).json({ success: true });
+    } catch(err) {
+      console.error("Failed to log event via POST", err);
+      return res.status(500).json({ error: "Failed to log event" });
+    }
+  }
+
   if (req.method !== "GET") {
     return res.status(405).end();
   }

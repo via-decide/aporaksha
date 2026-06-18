@@ -132,355 +132,1209 @@
       .stat:nth-last-child(-n+2) { border-bottom: 0; }
       .footer-links { grid-template-columns: 1fr; }
     }
+
+    /* Legitimacy & Verification Strip */
+    .legitimacy-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: center;
+      background: rgba(29, 77, 79, 0.15);
+      border: 1px solid rgba(255, 103, 31, 0.25);
+      border-radius: 8px;
+      padding: 12px 20px;
+      margin-top: 32px;
+      backdrop-filter: blur(8px);
+    }
+    .legitimacy-strip a {
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.15s, transform 0.15s;
+    }
+    .legitimacy-strip a:hover {
+      color: var(--accent);
+      transform: translateY(-1px);
+    }
+    .legitimacy-strip span {
+      color: rgba(255, 255, 255, 0.25);
+    }
+
+    /* Ecosystem Map */
+    .eco-map-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      max-width: 800px;
+      margin: 32px auto 0;
+      padding: 10px 0;
+    }
+    .eco-node-card {
+      width: 100%;
+      max-width: 520px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s;
+      text-decoration: none;
+      color: inherit;
+    }
+    .eco-node-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 24px rgba(255, 103, 31, 0.15);
+      transform: translateY(-2px);
+    }
+    .eco-node-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      text-align: left;
+    }
+    .eco-node-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .eco-node-badge {
+      font-size: 10px;
+      font-family: monospace;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      background: rgba(255, 103, 31, 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(255, 103, 31, 0.3);
+      border-radius: 4px;
+    }
+    .eco-node-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    .eco-arrow {
+      font-size: 22px;
+      color: var(--accent);
+      animation: float-down 2.2s ease-in-out infinite;
+      line-height: 1;
+    }
+    .eco-node-go {
+      font-size: 16px;
+      color: var(--accent);
+      transition: transform 0.2s;
+    }
+    .eco-node-card:hover .eco-node-go {
+      transform: translateX(4px);
+    }
+    @keyframes float-down {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(5px); }
+    }
+
+    /* What Exists Today Grid */
+    .exists-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      margin-top: 32px;
+    }
+    .exists-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s;
+    }
+    .exists-card:hover {
+      border-color: rgba(255, 103, 31, 0.45);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+      transform: translateY(-3px);
+    }
+    .exists-img-wrapper {
+      height: 200px;
+      overflow: hidden;
+      position: relative;
+      border-bottom: 1px solid var(--border);
+      background: #000;
+    }
+    .exists-img-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+    .exists-card:hover .exists-img-wrapper img {
+      transform: scale(1.04);
+    }
+    .exists-content {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      text-align: left;
+    }
+    .exists-name {
+      font-size: 19px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    .exists-desc {
+      font-size: 13.5px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 20px;
+      flex-grow: 1;
+    }
+    .exists-link {
+      align-self: flex-start;
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 13.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+    .exists-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Choose Your Path */
+    .path-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 16px;
+      margin-top: 32px;
+    }
+    .path-card {
+      background: #0f131f;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 20px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      text-decoration: none;
+      color: inherit;
+    }
+    .path-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(255, 103, 31, 0.12);
+    }
+    .path-icon {
+      font-size: 32px;
+      margin-bottom: 2px;
+    }
+    .path-role {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .path-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.45;
+      min-height: 54px;
+    }
+    .path-btn {
+      margin-top: auto;
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      font-weight: 600;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .path-card:hover .path-btn {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #120b08;
+    }
+
+    /* Founder Biography Section */
+    .founder-section {
+      background: linear-gradient(135deg, rgba(29, 77, 79, 0.18) 0%, rgba(15, 23, 42, 0.3) 100%);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      margin-top: 48px;
+      display: flex;
+      align-items: center;
+      gap: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .founder-section::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; height: 100%; width: 4px;
+      background: var(--accent);
+    }
+    .founder-avatar {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent) 0%, #ff8c52 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 44px;
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(255, 103, 31, 0.2);
+      flex-shrink: 0;
+    }
+    .founder-content {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      text-align: left;
+    }
+    .founder-name {
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+      margin: 0;
+    }
+    .founder-location {
+      font-size: 13px;
+      font-family: monospace;
+      color: var(--accent);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .founder-bio {
+      font-size: 15px;
+      color: #d1d5db;
+      line-height: 1.6;
+      max-width: 600px;
+      margin: 4px 0 12px;
+    }
+    .founder-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .founder-link {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #fff;
+      border: 1px solid var(--border);
+      padding: 6px 16px;
+      border-radius: 20px;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      text-decoration: none;
+    }
+    .founder-link:hover {
+      background: #fff;
+      color: #0b0c0f;
+      border-color: #fff;
+    }
+
+    /* Navigation Ladder */
+    .nav-ladder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 40px;
+      flex-wrap: wrap;
+    }
+    .nav-ladder-step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #d1d5db;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .nav-ladder-step.active {
+      border-color: var(--accent);
+      color: #fff;
+      box-shadow: 0 0 12px rgba(255, 103, 31, 0.15);
+    }
+    .nav-ladder-step:hover {
+      border-color: var(--accent);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+    .nav-ladder-connector {
+      color: rgba(255, 255, 255, 0.25);
+      font-weight: 700;
+    }
+
+    @media (max-width: 768px) {
+      .founder-section {
+        flex-direction: column;
+        text-align: center;
+        padding: 32px 24px;
+        gap: 24px;
+      }
+      .founder-section::before {
+        width: 100%; height: 4px; left: 0; top: 0;
+      }
+      .founder-links {
+        justify-content: center;
+      }
+    }
+    @media (max-width: 600px) {
+      .nav-ladder {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .nav-ladder-connector {
+        text-align: center;
+        transform: rotate(90deg);
+        margin: 4px 0;
+      }
+    }
+  
+    /* Product Cards & Trust Layer */
+    .mkt-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      margin-top: 36px;
+    }
+    .product-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      padding: 32px 28px;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s;
+    }
+    .product-card:hover {
+      border-color: rgba(255, 103, 31, 0.45);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+      transform: translateY(-3px);
+    }
+    .product-header {
+      margin-bottom: 12px;
+    }
+    .product-badge {
+      font-size: 11px;
+      font-family: monospace;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background: rgba(255, 103, 31, 0.1);
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 103, 31, 0.2);
+      display: inline-block;
+      margin-bottom: 12px;
+    }
+    .product-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+      margin: 0;
+    }
+    .product-desc {
+      font-size: 14.5px;
+      color: #d1d5db;
+      line-height: 1.5;
+      margin-bottom: 20px;
+      min-height: 44px;
+    }
+    .product-benefits {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 24px 0;
+      flex-grow: 1;
+    }
+    .product-benefits li {
+      font-size: 13.5px;
+      color: #9ca3af;
+      margin-bottom: 8px;
+      display: flex;
+      gap: 8px;
+    }
+    .product-benefits li span {
+      color: var(--accent);
+    }
+    .product-pricing {
+      margin-bottom: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+    .product-pricing .price {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .product-pricing .price-note {
+      font-size: 12.5px;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+    .product-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .product-actions .btn {
+      text-align: center;
+      padding: 10px 0;
+      width: 100%;
+    }
+    .product-trust {
+      font-size: 11.5px;
+      color: #6b7280;
+      text-align: center;
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .product-trust-global {
+      background: rgba(29, 77, 79, 0.15);
+      border: 1px solid rgba(255, 103, 31, 0.25);
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+      margin-top: 40px;
+      color: #d1d5db;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* Mobile Spacing Overrides */
+    @media (max-width: 768px) {
+      .product-card {
+        padding: 32px 24px;
+        margin-bottom: 16px;
+      }
+      .mkt-cards-grid {
+        gap: 32px;
+      }
+      section {
+        padding: 56px 0;
+      }
+      .product-actions {
+        grid-template-columns: 1fr;
+      }
+      p {
+        max-width: 60ch;
+      }
+    }
+
   </style>
 </head>
 <body>
 <div data-view="gateway">
-  <nav class="nav"><div class="container nav-inner"><a class="brand" href="https://aporaksha.com"><span class="glyph">&#x25C6;</span><span><span class="dot">A</span>poraksha</span></a><div class="nav-links"><a href="#stack">Ecosystem</a><a href="#marketplace">Marketplace</a><a href="https://daxini.xyz" target="_blank">Docs</a><a href="https://github.com/via-decide" target="_blank">GitHub</a></div></div></nav>
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="https://aporaksha.com">
+        <span class="glyph">&#x25C6;</span><span><span class="dot">A</span>poraksha</span>
+      </a>
+      <div class="nav-links">
+        <a href="#exists">Projects</a>
+        <a href="#architecture-map">Ecosystem</a>
+        <a href="https://daxini.xyz/deploy.html" target="_blank">Docs</a>
+        <a href="https://github.com/via-decide" target="_blank">GitHub</a>
+        <a href="/passport" class="btn accent" style="padding: 6px 12px; font-size: 13px;">Passport</a>
+      </div>
+    </div>
+  </nav>
 
-  <header class="hero"><div class="container hero-content"><div class="badge">🇮🇳 Sovereign · Local-First · Zero Cloud</div><h1>Run AI locally.<br/>Search your data.<br/>Build agents.<br/>Own the entire stack.</h1><p class="subhead">A complete local-first AI platform for builders who trust no one's cloud but their own.</p><div class="hero-actions"><a class="btn accent" href="#architecture">Explore Architecture</a><a class="btn ghost" href="#manifesto">Read the Manifesto →</a></div><div class="trust-strip"><span>Built for:</span><span>✓ Self-hosters</span><span>✓ AI builders</span><span>✓ Researchers</span><span>✓ Privacy-first teams</span></div></div></header>
+  <!-- Hero Section (Task 001) -->
+  <header class="hero">
+    <div class="container hero-content">
+      <div class="badge" style="border-color: rgba(255, 103, 31, 0.4); background: rgba(255, 103, 31, 0.08); color: #ff9d6e;">
+        🇮🇳 Built in Kutch, India
+      </div>
+      <h1 style="max-width: 15ch;">Sovereign AI Infrastructure Gateway</h1>
+      
+      <div style="display: flex; flex-direction: column; gap: 8px; margin: 20px 0 28px; text-align: left; font-size: 18px; font-weight: 500; color: #e2e8f0; max-width: 600px; margin-left: auto; margin-right: auto;">
+        <div style="display: flex; align-items: center; gap: 10px; justify-content: center;">
+          <span style="color: var(--accent);">✦</span> <span>Build apps.</span>
+          <span style="color: rgba(255,255,255,0.2); margin: 0 4px;">|</span>
+          <span style="color: var(--accent);">✦</span> <span>Run workflows.</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; justify-content: center;">
+          <span style="color: var(--accent);">✦</span> <span>Deploy AI systems.</span>
+          <span style="color: rgba(255,255,255,0.2); margin: 0 4px;">|</span>
+          <span style="color: var(--accent);">✦</span> <span>Own the stack.</span>
+        </div>
+      </div>
+
+      <div class="hero-actions" style="justify-content: center;">
+        <a class="btn accent" href="https://logichub.app/forge" target="_blank">Open Forge</a>
+        <a class="btn ghost" href="/products/zayvora">Explore Zayvora</a>
+        <a class="btn ghost" href="#manifesto">Read Manifesto</a>
+        <a class="btn ghost" href="https://daxini.xyz/workspace.html" target="_blank">View Workspace</a>
+      </div>
+
+      <!-- Trust / Razorpay Legitimacy Strip (Task 008, within first 2 scrolls) -->
+      <div class="legitimacy-strip">
+        <a href="#founder">👤 Dharam Daxini (Gujarat, India)</a>
+        <span>•</span>
+        <a href="#exists">🏗️ Core Projects</a>
+        <span>•</span>
+        <a href="https://daxini.xyz/log.html" target="_blank">📜 Public Build Logs</a>
+        <span>•</span>
+        <a href="https://daxini.xyz/deploy.html" target="_blank">⚙️ Infrastructure Docs</a>
+        <span>•</span>
+        <a href="/contact.html">📞 Contact Support</a>
+      </div>
+    </div>
+  </header>
 
   <div class="marquee"><div class="track"><span class="pill">Zayvora LLM</span><span class="pill">6-Stage Reasoning</span><span class="pill">Nex RAG Engine</span><span class="pill">Orchade Asyncio</span><span class="pill">StudyOS</span><span class="pill">IndexedDB Auth</span><span class="pill">PWA Native</span><span class="pill">Offline First</span><span class="pill">LoRA Fine-tuning</span><span class="pill">No Cloud Bills</span><span class="pill">Local-First</span><span class="pill">daxini.space</span><span class="pill">Zayvora LLM</span><span class="pill">6-Stage Reasoning</span><span class="pill">Nex RAG Engine</span><span class="pill">Orchade Asyncio</span><span class="pill">StudyOS</span><span class="pill">IndexedDB Auth</span><span class="pill">PWA Native</span><span class="pill">Offline First</span><span class="pill">LoRA Fine-tuning</span><span class="pill">No Cloud Bills</span><span class="pill">Local-First</span><span class="pill">daxini.space</span></div></div>
 
   <main>
-    <section class="container"><h2 class="section-title">Use Cases</h2><div class="tabs"><input checked id="t1" name="tabs" type="radio"><input id="t2" name="tabs" type="radio"><input id="t3" name="tabs" type="radio"><input id="t4" name="tabs" type="radio"><div class="tab-labels"><label for="t1">AI Research</label><label for="t2">Study & Learning</label><label for="t3">Developer Tools</label><label for="t4">Local Agents</label></div><div class="panels"><article class="panel" id="p1"><div><h4>AI Research</h4><ul><li>Query local corpora without exposing sources.</li><li>Blend vector and lexical retrieval for precision.</li><li>Synthesize answers with citation-ready context.</li></ul></div><div class="terminal">$ nex query "protein folding mechanisms"
-<span class="step">▶</span> Searching local corpus...
-<span class="step">▶</span> Hybrid BM25 + vector match: 94.2%
-<span class="step">▶</span> Synthesizing with Zayvora...
-<span class="ok">✓</span> Response ready  [0 API calls]</div></article><article class="panel" id="p2"><div><h4>Study & Learning</h4><ul><li>Run study sessions fully offline.</li><li>Track notes and revisions in local-first storage.</li><li>Build reusable learning loops with no SaaS lock-in.</li></ul></div><div class="terminal">$ studyos start --mode focused
-<span class="step">▶</span> Loading local decks...
-<span class="step">▶</span> Session timer: 45 min
-<span class="step">▶</span> Prompting with Zayvora tutor mode...
-<span class="ok">✓</span> Session synced to local ledger</div></article><article class="panel" id="p3"><div><h4>Developer Tools</h4><ul><li>Orchestrate CLI workflows with Orchade.</li><li>Chain local models for coding, review, and refactor.</li><li>Maintain full logs for audit and replay.</li></ul></div><div class="terminal">$ orchade run build-agent
-<span class="step">▶</span> Task graph initialized
-<span class="step">▶</span> Agent chain: lint → patch → verify
-<span class="step">▶</span> Local sandbox execution...
-<span class="ok">✓</span> Build completed with zero remote calls</div></article><article class="panel" id="p4"><div><h4>Local Agents</h4><ul><li>Deploy autonomous assistants in private environments.</li><li>Schedule periodic tasks with deterministic logs.</li><li>Control access with machine-local permissions.</li></ul></div><div class="terminal">$ zayvora agent deploy ops-watch
-<span class="step">▶</span> Loading policy: local-only
-<span class="step">▶</span> Attaching Nex memory index
-<span class="step">▶</span> Enabling Orchade scheduler
-<span class="ok">✓</span> Agent active  [scope: this machine]</div></article></div></div></section>
-
-    <section id="architecture" class="container">
-      <div class="eyebrow">SYSTEM ARCHITECTURE</div>
-      <h2 class="section-title">How it connects.</h2>
-      <div class="arch-diagram" style="background:#0e1a1a;border:1px solid #1c3433;border-radius:10px;padding:40px;text-align:center;font-family:monospace;color:#d8d2c8;margin-bottom:60px;line-height:2.5;">
-        <div style="font-weight:bold;color:#fff;">USER</div>
-        <div style="color:#7a8f8e;">&#8595;</div>
-        <div><strong style="color:#fff;">ZAYVORA</strong> (LLM)</div>
-        <div style="color:#7a8f8e;">&#8595;</div>
-        <div><strong style="color:#fff;">NEX MEMORY</strong> (Search)</div>
-        <div style="color:#7a8f8e;">&#8595;</div>
-        <div><strong style="color:#fff;">ORCHADE EXECUTION</strong> (Workflow)</div>
-        <div style="color:#7a8f8e;">&#8595;</div>
-        <div><strong style="color:#fff;">STUDYOS / APPS</strong></div>
+    <!-- Section 2: What Can I Do Here? (Task 007) -->
+    <section class="container" style="border-bottom: 1px solid var(--border); padding-bottom: 78px;">
+      <div class="eyebrow" style="text-align: center;">CAPABILITIES</div>
+      <h2 class="section-title" style="text-align: center;">What Can I Do Here?</h2>
+      <p style="text-align: center; color: var(--muted); max-width: 600px; margin: -10px auto 36px; font-size: 15px;">
+        Aporaksha operates as a local-first interface coordinates. Use these integrated environments to run local model logic securely.
+      </p>
+      
+      <div class="tabs">
+        <input checked id="t1" name="tabs" type="radio">
+        <input id="t2" name="tabs" type="radio">
+        <input id="t3" name="tabs" type="radio">
+        <input id="t4" name="tabs" type="radio">
+        <div class="tab-labels" style="justify-content: center;">
+          <label for="t1">AI Research</label>
+          <label for="t2">Study & Learning</label>
+          <label for="t3">Developer Tools</label>
+          <label for="t4">Local Agents</label>
+        </div>
+        <div class="panels">
+          <article class="panel" id="p1">
+            <div>
+              <h4>AI Research</h4>
+              <ul>
+                <li>Query local corpora without exposing sources.</li>
+                <li>Blend vector and lexical retrieval for precision.</li>
+                <li>Synthesize answers with citation-ready context.</li>
+              </ul>
+            </div>
+            <div class="terminal">$ nex query "protein folding mechanisms"
+              <span class="step">▶</span> Searching local corpus...
+              <span class="step">▶</span> Hybrid BM25 + vector match: 94.2%
+              <span class="step">▶</span> Synthesizing with Zayvora...
+              <span class="ok">✓</span> Response ready  [0 API calls]</div>
+          </article>
+          <article class="panel" id="p2">
+            <div>
+              <h4>Study & Learning</h4>
+              <ul>
+                <li>Run study sessions fully offline.</li>
+                <li>Track notes and revisions in local-first storage.</li>
+                <li>Build reusable learning loops with no SaaS lock-in.</li>
+              </ul>
+            </div>
+            <div class="terminal">$ studyos start --mode focused
+              <span class="step">▶</span> Loading local decks...
+              <span class="step">▶</span> Session timer: 45 min
+              <span class="step">▶</span> Prompting with Zayvora tutor mode...
+              <span class="ok">✓</span> Session synced to local ledger</div>
+          </article>
+          <article class="panel" id="p3">
+            <div>
+              <h4>Developer Tools</h4>
+              <ul>
+                <li>Orchestrate CLI workflows with Orchade.</li>
+                <li>Chain local models for coding, review, and refactor.</li>
+                <li>Maintain full logs for audit and replay.</li>
+              </ul>
+            </div>
+            <div class="terminal">$ orchade run build-agent
+              <span class="step">▶</span> Task graph initialized
+              <span class="step">▶</span> Agent chain: lint → patch → verify
+              <span class="step">▶</span> Local sandbox execution...
+              <span class="ok">✓</span> Build completed with zero remote calls</div>
+          </article>
+          <article class="panel" id="p4">
+            <div>
+              <h4>Local Agents</h4>
+              <ul>
+                <li>Deploy autonomous assistants in private environments.</li>
+                <li>Schedule periodic tasks with deterministic logs.</li>
+                <li>Control access with machine-local permissions.</li>
+              </ul>
+            </div>
+            <div class="terminal">$ zayvora agent deploy ops-watch
+              <span class="step">▶</span> Loading policy: local-only
+              <span class="step">▶</span> Attaching Nex memory index
+              <span class="step">▶</span> Enabling Orchade scheduler
+              <span class="ok">✓</span> Agent active  [scope: this machine]</div>
+          </article>
+        </div>
       </div>
     </section>
 
-    <section id="stack" class="container"><div class="eyebrow">THE APORAKSHA STACK</div><h2 class="section-title">The stack you can inspect, run, and trust.</h2><div class="grid"><article class="card"><div class="icon">&#x25C8;</div><h3>Local LLM</h3><p><strong>Zayvora.</strong> 6-stage reasoning loop. Runs on Ollama. No API keys.</p><a href="/products/zayvora">Learn more &#8594;</a></article><article class="card"><div class="icon">&#x2B21;</div><h3>Research Engine</h3><p><strong>Nex.</strong> Hybrid RAG engine. Finds what matters. Keeps it local.</p><a href="/products/nex">Learn more &#8594;</a></article><article class="card"><div class="icon">&#x27F3;</div><h3>Workflow Engine</h3><p><strong>Orchade.</strong> Asyncio orchestration layer. Chains agents locally.</p><a href="/products/orchade">Learn more &#8594;</a></article><article class="card"><div class="icon">&#x25A6;</div><h3>Study System</h3><p><strong>StudyOS.</strong> Single-file interface. Offline. Auditable. No SaaS.</p><a href="/products/studyos">Learn more &#8594;</a></article></div></section>
-    <!--
-      MARKETPLACE — ARTS COLOR THEORY
-      Palette: Split-complementary
-        — Deep Teal   #1D4D4F  (trust, engineering precision)
-        — Warm Amber  #C49A3C  (energy, creation, commerce)
-        — Slate Ivory #E8E3DC  (readability, calm)
-      Accent glyph tones stay within 50-70% luminance for eye comfort.
-    -->
-    <style>
-      .mkt-section { padding: 80px 0 100px; }
-      .mkt-eyebrow {
-        font-size: 11px; letter-spacing: 2.5px; font-weight: 700; text-transform: uppercase;
-        color: #9aacab; margin-bottom: 10px;
-      }
-      .mkt-title {
-        font-size: clamp(1.6rem, 3vw, 2.3rem);
-        letter-spacing: -0.5px; margin: 0 0 4px;
-        color: #e8e3dc;
-      }
-      .mkt-subtitle {
-        color: #7a8f8e; font-size: 15px; margin-bottom: 44px; max-width: 520px; line-height: 1.6;
-      }
+    <!-- Section 3: Ecosystem Map (Task 002, Task 007) -->
+    <section id="architecture-map" class="container" style="border-bottom: 1px solid var(--border); padding-bottom: 78px;">
+      <div class="eyebrow" style="text-align: center;">SYSTEM ARCHITECTURE</div>
+      <h2 class="section-title" style="text-align: center;">Ecosystem Architecture</h2>
+      <p style="text-align: center; color: var(--muted); max-width: 600px; margin: -10px auto 36px; font-size: 15px;">
+        Aporaksha serves as the identity root, powering and connecting each sovereign system on your device.
+      </p>
 
-      /* 3-column domain cards */
-      .mkt-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
-      }
-      @media (max-width: 900px) { .mkt-grid { grid-template-columns: 1fr; } }
-      @media (min-width: 640px) and (max-width: 900px) { .mkt-grid { grid-template-columns: 1fr 1fr; } }
+      <div class="eco-map-container">
+        <!-- Node 1: Aporaksha -->
+        <a href="https://aporaksha.com" class="eco-node-card">
+          <div class="eco-node-info">
+            <div class="eco-node-title">Aporaksha <span class="eco-node-badge">Identity Root</span></div>
+            <div class="eco-node-desc">Unified authentication, security certificates, and payment authorization layer.</div>
+          </div>
+          <div class="eco-node-go">&#8594;</div>
+        </a>
 
-      .domain-card {
-        background: #0e1a1a;
-        border: 1px solid #1c3433;
-        border-radius: 10px;
-        overflow: hidden;
-        display: flex; flex-direction: column;
-        transition: border-color 0.25s ease, transform 0.2s ease;
-      }
-      .domain-card:hover {
-        border-color: #2d5c5a;
-        transform: translateY(-2px);
-      }
+        <div class="eco-arrow">&#8595;</div>
 
-      /* Colour-coded top stripe per domain */
-      .domain-card[data-domain="daxini"]   { --stripe: #1D4D4F; --glyph-col: #5a9ea0; }
-      .domain-card[data-domain="logichub"] { --stripe: #4a3a10; --glyph-col: #C49A3C; }
-      .domain-card[data-domain="hanuman"]  { --stripe: #3a1f1a; --glyph-col: #b56a4e; }
+        <!-- Node 2: LogicHub Forge -->
+        <a href="https://logichub.app/forge" target="_blank" class="eco-node-card">
+          <div class="eco-node-info">
+            <div class="eco-node-title">LogicHub Forge <span class="eco-node-badge">Build</span></div>
+            <div class="eco-node-desc">No-code builder. Describe your application and compile code interfaces instantly.</div>
+          </div>
+          <div class="eco-node-go">&#8594;</div>
+        </a>
 
-      .domain-stripe {
-        height: 3px;
-        background: var(--stripe);
-        border-bottom: 1px solid color-mix(in srgb, var(--stripe) 60%, #fff 10%);
-      }
+        <div class="eco-arrow">&#8595;</div>
 
-      .domain-header {
-        padding: 22px 22px 16px;
-        border-bottom: 1px solid #162424;
-      }
-      .domain-glyph {
-        font-size: 20px; color: var(--glyph-col);
-        line-height: 1; margin-bottom: 10px;
-        /* Unicode geometric: no emojis */
-      }
-      .domain-name {
-        font-size: 17px; font-weight: 700;
-        color: #d8d2c8; letter-spacing: -0.3px;
-        margin: 0 0 5px;
-      }
-      .domain-desc {
-        font-size: 13px; color: #5d7372; line-height: 1.55;
-        margin: 0;
-      }
+        <!-- Node 3: Zayvora -->
+        <a href="/products/zayvora" class="eco-node-card">
+          <div class="eco-node-info">
+            <div class="eco-node-title">Zayvora <span class="eco-node-badge">Execute</span></div>
+            <div class="eco-node-desc">Local-first reasoning OS. Executes model inferences and schedules agent threads.</div>
+          </div>
+          <div class="eco-node-go">&#8594;</div>
+        </a>
 
-      /* Product rows inside a card */
-      .product-list { flex: 1; display: flex; flex-direction: column; }
-      .product-row {
-        padding: 16px 22px;
-        border-bottom: 1px solid #111f1f;
-        display: flex; flex-direction: column; gap: 6px;
-      }
-      .product-row:last-child { border-bottom: 0; }
+        <div class="eco-arrow">&#8595;</div>
 
-      .product-name {
-        font-size: 14px; font-weight: 600;
-        color: #c8c2b8; letter-spacing: -0.2px;
-      }
-      .product-desc {
-        font-size: 12px; color: #4f6665; line-height: 1.5;
-        margin: 0;
-      }
-      .product-footer {
-        display: flex; align-items: center; justify-content: space-between;
-        margin-top: 4px;
-      }
+        <!-- Node 4: Daxini Space -->
+        <a href="https://daxini.space" target="_blank" class="eco-node-card">
+          <div class="eco-node-info">
+            <div class="eco-node-title">Daxini Space <span class="eco-node-badge">Distribute</span></div>
+            <div class="eco-node-desc">Distributed marketplace vault containing APK files, custom modules, and tools.</div>
+          </div>
+          <div class="eco-node-go">&#8594;</div>
+        </a>
 
-      /* Price badge */
-      .price {
-        font-size: 15px; font-weight: 700;
-        color: #C49A3C; letter-spacing: -0.3px;
-        font-variant-numeric: tabular-nums;
-      }
-      .price-note {
-        font-size: 10px; color: #4a5f5e;
-        display: block; margin-top: 1px;
-      }
+        <div class="eco-arrow">&#8595;</div>
 
-      /* CTA buttons — two kinds: link and pay */
-      .btn-mkt {
-        font-size: 11.5px; font-weight: 600; letter-spacing: 0.5px;
-        padding: 6px 14px; border-radius: 5px;
-        cursor: pointer; transition: all 0.18s ease;
-        white-space: nowrap; text-decoration: none;
-        display: inline-block; border: 1px solid;
-      }
-      .btn-link {
-        background: transparent;
-        color: #5a9ea0; border-color: #1c3433;
-      }
-      .btn-link:hover { background: #1c3433; color: #8ac8ca; border-color: #2d5c5a; }
+        <!-- Node 5: VIA -->
+        <a href="https://daxini.xyz/VIA/" target="_blank" class="eco-node-card">
+          <div class="eco-node-info">
+            <div class="eco-node-title">VIA <span class="eco-node-badge">Connect</span></div>
+            <div class="eco-node-desc">Peer-to-peer WebRTC encrypted mesh connecting sibling nodes across devices.</div>
+          </div>
+          <div class="eco-node-go">&#8594;</div>
+        </a>
+      </div>
+    </section>
 
-      .btn-pay {
-        background: #1a2e2e;
-        color: #C49A3C; border-color: #2c4040;
-      }
-      .btn-pay:hover { background: #253f3f; color: #d4aa52; border-color: #3a5555; }
+    <!-- Section 4: What Exists Today (Task 003, Task 007) -->
+    <section id="exists" class="container" style="border-bottom: 1px solid var(--border); padding-bottom: 78px;">
+      <div class="eyebrow" style="text-align: center;">PROOF & EVIDENCE</div>
+      <h2 class="section-title" style="text-align: center;">What Exists Today</h2>
+      <p style="text-align: center; color: var(--muted); max-width: 600px; margin: -10px auto 36px; font-size: 15px;">
+        Explore the tangible systems already deployed, running, and supporting user computation across our network.
+      </p>
 
-      /* Custom quote row */
-      .product-row.quote-row .price { color: #7a8f8e; font-size: 13px; font-weight: 500; }
-    </style>
+      <div class="exists-grid">
+        <!-- 1. LogicHub Forge -->
+        <article class="exists-card">
+          <div class="exists-img-wrapper">
+            <img src="/static/images/logichub_forge_preview.png" alt="LogicHub Forge interface preview">
+          </div>
+          <div class="exists-content">
+            <div class="exists-name">LogicHub Forge</div>
+            <p class="exists-desc">AI-assisted application builder. Describe your application and compile production-ready code instantly.</p>
+            <a href="https://logichub.app/forge" target="_blank" class="exists-link">Open Forge &rarr;</a>
+          </div>
+        </article>
 
-    <section id="marketplace" class="mkt-section">
+        <!-- 2. VIA -->
+        <article class="exists-card">
+          <div class="exists-img-wrapper">
+            <img src="/static/images/via_connect_preview.png" alt="VIA Connect secure messenger preview">
+          </div>
+          <div class="exists-content">
+            <div class="exists-name">VIA Connect</div>
+            <p class="exists-desc">Peer-to-peer encrypted communications platform. Multi-agent networking with absolute data privacy.</p>
+            <a href="https://daxini.xyz/VIA/" target="_blank" class="exists-link">Launch VIA &rarr;</a>
+          </div>
+        </article>
+
+        <!-- 3. Workspace -->
+        <article class="exists-card">
+          <div class="exists-img-wrapper">
+            <img src="/static/images/workspace_console_preview.png" alt="Daxini Workspace dashboard preview">
+          </div>
+          <div class="exists-content">
+            <div class="exists-name">Daxini Workspace</div>
+            <p class="exists-desc">Unified local interface. Coordinate reasoning loops, access stored modules, and view real-time logs.</p>
+            <a href="https://daxini.xyz/workspace.html" target="_blank" class="exists-link">Explore Workspace &rarr;</a>
+          </div>
+        </article>
+
+        <!-- 4. Journal -->
+        <article class="exists-card">
+          <div class="exists-img-wrapper">
+            <img src="/static/images/founder_journal_preview.png" alt="Founder blog journal preview">
+          </div>
+          <div class="exists-content">
+            <div class="exists-name">Founder's Journal</div>
+            <p class="exists-desc">Ecosystem dispatches and build logs. Technical writeups on local compute and sovereign architecture.</p>
+            <a href="https://daxini.xyz/journal.html" target="_blank" class="exists-link">Read Journal &rarr;</a>
+          </div>
+        </article>
+
+        <!-- 5. Zayvora -->
+        <article class="exists-card">
+          <div class="exists-img-wrapper">
+            <img src="/static/images/zayvora_ide_preview.png" alt="Zayvora OS model execution preview">
+          </div>
+          <div class="exists-content">
+            <div class="exists-name">Zayvora OS</div>
+            <p class="exists-desc">Sovereign local reasoning IDE. Runs offline-first on top of Ollama and MLX architectures.</p>
+            <a href="/products/zayvora" class="exists-link">Explore Zayvora &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Section 5: Choose Your Path (Task 005, Task 007) -->
+    <section class="container" style="border-bottom: 1px solid var(--border); padding-bottom: 78px;">
+      <div class="eyebrow" style="text-align: center;">ONBOARDING ENGINE</div>
+      <h2 class="section-title" style="text-align: center;">Choose Your Path</h2>
+      <p style="text-align: center; color: var(--muted); max-width: 600px; margin: -10px auto 36px; font-size: 15px;">
+        We build for builders, engineers, and thinkers. Select your profile below to get your specific onboarding instructions.
+      </p>
+
+      <div class="path-grid">
+        <!-- Builder -->
+        <a href="https://logichub.app/forge" target="_blank" class="path-card">
+          <div class="path-icon">🏗️</div>
+          <div class="path-role">Builder</div>
+          <p class="path-desc">Build interfaces, draft prompts, and scaffold applications instantly.</p>
+          <button class="path-btn">Open Forge &rarr;</button>
+        </a>
+
+        <!-- Infrastructure Engineer -->
+        <a href="https://daxini.xyz/deploy.html" target="_blank" class="path-card">
+          <div class="path-icon">⚙️</div>
+          <div class="path-role">Infra Engineer</div>
+          <p class="path-desc">Configure local-first node networks, hardware, and tunnels.</p>
+          <button class="path-btn">Deploy Stack &rarr;</button>
+        </a>
+
+        <!-- Researcher -->
+        <a href="#manifesto" class="path-card">
+          <div class="path-icon">📖</div>
+          <div class="path-role">Researcher</div>
+          <p class="path-desc">Explore our sovereign local compute design thesis and protocols.</p>
+          <button class="path-btn">Read Manifesto &rarr;</button>
+        </a>
+
+        <!-- Founder -->
+        <a href="https://daxini.xyz/journal.html" target="_blank" class="path-card">
+          <div class="path-icon">✍️</div>
+          <div class="path-role">Founder</div>
+          <p class="path-desc">Read Dharam's daily logs, strategy updates, and build lessons.</p>
+          <button class="path-btn">Read Journal &rarr;</button>
+        </a>
+
+        <!-- Curious Visitor -->
+        <a href="https://daxini.xyz/workspace.html" target="_blank" class="path-card">
+          <div class="path-icon">🧭</div>
+          <div class="path-role">Curious Visitor</div>
+          <p class="path-desc">Launch the demo workspace interface and inspect live logs.</p>
+          <button class="path-btn">View Workspace &rarr;</button>
+        </a>
+      </div>
+    </section>
+
+    <!-- Section 6: Founder Block (Task 004, Task 007) -->
+    <section id="founder" class="container" style="border-bottom: 1px solid var(--border); padding-bottom: 78px;">
+      <div class="eyebrow" style="text-align: center;">SOCIETY</div>
+      <h2 class="section-title" style="text-align: center;">Founder Verification Layer</h2>
+      
+      <div class="founder-section">
+        <div class="founder-avatar">👤</div>
+        <div class="founder-content">
+          <div class="founder-name">Dharam Daxini</div>
+          <div class="founder-location">📍 Kutch, Gujarat, India 🇮🇳</div>
+          <p class="founder-bio">
+            Building local-first systems, AI infrastructure, and sovereign software. I design computational systems that preserve privacy, remove cloud single-points-of-failure, and guarantee user ownership over reasoning logs and logic layers.
+          </p>
+          <div class="founder-links">
+            <a href="https://www.linkedin.com/in/dharamdaxini/" target="_blank" rel="noopener noreferrer" class="founder-link">LinkedIn ↗</a>
+            <a href="https://github.com/via-decide" target="_blank" rel="noopener noreferrer" class="founder-link">GitHub ↗</a>
+            <a href="https://daxini.xyz/journal.html" target="_blank" class="founder-link">Founder's Journal &rarr;</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 7: Manifesto & Navigation Ladder (Task 006, Task 007) -->
+    <section class="manifesto" id="manifesto" style="padding: 78px 0;">
       <div class="container">
-        <div class="mkt-eyebrow">Software &amp; Services</div>
-        <h2 class="mkt-title">What we build. What we sell.</h2>
-        <p class="mkt-subtitle">Three studios. One engineering philosophy. Own your stack, own your data, own your outcomes.</p>
+        <div class="eyebrow">THE APORAKSHA MANIFESTO</div>
+        <h2 class="section-title">Constraint is the architecture.</h2>
+        <p>
+          We build with hard limits: single-file outputs, local compute, and zero external dependency chains. Every decision in Aporaksha exists to reduce fragility and increase user control. Sovereignty is not a feature layer — it is the default execution model. If your AI stack phones home, it is not your stack.
+        </p>
+        <a class="btn ghost" href="https://daxini.xyz" target="_blank" style="margin-bottom: 30px;">Read the full manifesto &#8594;</a>
 
-        <div class="mkt-grid">
-
-          <!-- ── DAXINI.SPACE ── -->
-          <div class="domain-card" data-domain="daxini">
-            <div class="domain-stripe"></div>
-            <div class="domain-header">
-              <div class="domain-glyph">&#x25C6;</div>
-              <div class="domain-name">Daxini.Space</div>
-              <p class="domain-desc">Reasoning engines, knowledge systems, and operating software. Runs entirely offline.</p>
-            </div>
-            <div class="product-list">
-
-              <div class="product-row">
-                <div class="product-name">Zayvora OS — Reasoning IDE</div>
-                <p class="product-desc">6-stage local agent loop. Runs on Ollama. No API keys, no cloud calls, no subscriptions.</p>
-                <div class="product-footer">
-                  <div>
-                    <span class="price geo-price" data-inr="1717" data-usd="21">&#8377;1,717</span>
-                    <span class="price-note">one-time license</span>
-                  </div>
-                  <div style="display:flex;gap:8px;">
-                    <a href="/products/zayvora" class="btn-mkt btn-link">Learn more &#8594;</a>
-                    <button class="btn-mkt btn-pay" onclick="razorpayPay('zayvora_os',171700,'Zayvora OS License')">Buy &#8599;</button>
-                  </div>
-                </div>
-              </div>
-
-              <div class="product-row">
-                <div class="product-name">Daxini Stack — PDF / ePub</div>
-                <p class="product-desc">Complete engineering manual for building local-first sovereign software infrastructure.</p>
-                <div class="product-footer">
-                  <div>
-                    <span class="price geo-price" data-inr="399" data-usd="5">&#8377;399</span>
-                    <span class="price-note">instant download</span>
-                  </div>
-                  <div style="display:flex;gap:8px;">
-                    <a href="/products/daxini-stack" class="btn-mkt btn-link">Preview &#8594;</a>
-                    <button class="btn-mkt btn-pay" onclick="razorpayPay('daxini_stack',39900,'Daxini Stack PDF/ePub')">Buy &#8599;</button>
-                  </div>
-                </div>
-              </div>
-
-              <div class="product-row">
-                <div class="product-name">PrintByDD 3D Configurator</div>
-                <p class="product-desc">CAD &amp; mesh configurators for hardware fabrication. Custom-quoted per project scope.</p>
-                <div class="product-footer">
-                  <div>
-                    <span class="price" style="color:#7a8f8e;font-size:13px;">Custom quote</span>
-                    <span class="price-note">project-based</span>
-                  </div>
-                  <a href="/products/logichub" class="btn-mkt btn-link">Configure &#8594;</a>
-                </div>
-              </div>
-
-            </div>
+        <div style="margin-top: 56px; border-top: 1px solid var(--border); padding-top: 36px;">
+          <div class="eyebrow">RECOMMENDED JOURNEY</div>
+          <h3 style="font-size: 20px; color: #fff; margin-bottom: 12px;">The Navigation Ladder</h3>
+          
+          <div class="nav-ladder">
+            <a href="#manifesto" class="nav-ladder-step active">
+              <span>1. Manifesto</span>
+            </a>
+            <div class="nav-ladder-connector">&#8594;</div>
+            <a href="https://logichub.app/forge" target="_blank" class="nav-ladder-step">
+              <span>2. Forge</span>
+            </a>
+            <div class="nav-ladder-connector">&#8594;</div>
+            <a href="/products/zayvora" class="nav-ladder-step">
+              <span>3. Zayvora</span>
+            </a>
+            <div class="nav-ladder-connector">&#8594;</div>
+            <a href="https://daxini.xyz/deploy.html" target="_blank" class="nav-ladder-step">
+              <span>4. Deploy</span>
+            </a>
           </div>
-
-          <!-- ── LOGICHUB.APP ── -->
-          <div class="domain-card" data-domain="logichub">
-            <div class="domain-stripe"></div>
-            <div class="domain-header">
-              <div class="domain-glyph">&#x25B3;</div>
-              <div class="domain-name">LogicHub.App</div>
-              <p class="domain-desc">AI-native app scaffolding, UI production templates, and deployment pipelines.</p>
-            </div>
-            <div class="product-list">
-
-              <div class="product-row">
-                <div class="product-name">Forge Access</div>
-                <p class="product-desc">AI-assisted product builder. Describe your app; receive production-ready code with full source export.</p>
-                <div class="product-footer">
-                  <div>
-                    <span class="price geo-price" data-inr="899" data-usd="11">&#8377;899</span>
-                    <span class="price-note">per project build</span>
-                  </div>
-                  <div style="display:flex;gap:8px;">
-                    <a href="https://logichub.app/forge" target="_blank" class="btn-mkt btn-link">Open Forge &#8594;</a>
-                    <button class="btn-mkt btn-pay" onclick="razorpayPay('forge_access',89900,'LogicHub Forge Access')">Buy &#8599;</button>
-                  </div>
-                </div>
-              </div>
-
-              <div class="product-row">
-                <div class="product-name">Production Scaffolds</div>
-                <p class="product-desc">Pre-hardened UI templates and system architecture starters. Drop in, wire up, ship.</p>
-                <div class="product-footer">
-                  <div>
-                    <span class="price geo-price" data-inr="149" data-usd="2">&#8377;149</span>
-                    <span class="price-note">per template</span>
-                  </div>
-                  <div style="display:flex;gap:8px;">
-                    <a href="https://logichub.app" target="_blank" class="btn-mkt btn-link">Browse &#8594;</a>
-                    <button class="btn-mkt btn-pay" onclick="razorpayPay('scaffold',14900,'Production Scaffold')">Buy &#8599;</button>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          <!-- ── HANUMAN.SOLUTIONS ── -->
-          <div class="domain-card" data-domain="hanuman">
-            <div class="domain-stripe"></div>
-            <div class="domain-header">
-              <div class="domain-glyph">&#x25A1;</div>
-              <div class="domain-name">Hanuman.Solutions</div>
-              <p class="domain-desc">Emergency debugging and infra repairs for production systems. Diagnosis in 12 hours.</p>
-            </div>
-            <div class="product-list">
-
-              <div class="product-row quote-row">
-                <div class="product-name">Production System Repair</div>
-                <p class="product-desc">Broken AI pipelines, auth bridges, silent token drops, automation edge cases. Send the logs, get a fix.</p>
-                <div class="product-footer">
-                  <div>
-                    <span class="price">Diagnosed first</span>
-                    <span class="price-note">quoted after root cause found</span>
-                  </div>
-                  <a href="https://hanuman.solutions" target="_blank" class="btn-mkt btn-link">Send issue &#8594;</a>
-                </div>
-              </div>
-
-              <div class="product-row">
-                <div class="product-name">Architecture Audit</div>
-                <p class="product-desc">Security and resilience hardening. We review your stack and return a written report with a fix plan.</p>
-                <div class="product-footer">
-                  <div>
-                    <span class="price geo-price" data-inr="4999" data-usd="60">&#8377;4,999</span>
-                    <span class="price-note">fixed-scope audit</span>
-                  </div>
-                  <div style="display:flex;gap:8px;">
-                    <a href="/products/orchade" class="btn-mkt btn-link">Learn more &#8594;</a>
-                    <button class="btn-mkt btn-pay" onclick="razorpayPay('arch_audit',499900,'Architecture Audit')">Book &#8599;</button>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-        </div><!-- /mkt-grid -->
+        </div>
       </div>
     </section>
 
+    <!-- Software & Services Marketplace (Retained from original code, customized for theme) -->
+    
+    <!-- Software & Services Marketplace -->
+    <section id="marketplace" class="mkt-section" style="border-top: 1px solid var(--border); background: #080d1a;">
+      <div class="container">
+        <div class="eyebrow" style="text-align: center;">SOFTWARE & SERVICES</div>
+        <h2 class="section-title" style="text-align: center;">What we build. What we sell.</h2>
+        <p style="text-align: center; color: var(--muted); max-width: 600px; margin: -10px auto 36px; font-size: 15px;">
+          Three studios. One engineering philosophy. Own your stack, own your data, own your outcomes.
+        </p>
 
-    <section class="container"><div class="philosophy"><blockquote>"If your AI stack phones home, it's not your stack."</blockquote><div class="points"><div class="point"><strong>1. Own your compute.</strong> Every model runs on your hardware. No usage fees, no rate limits, no outage dependencies.</div><div class="point"><strong>2. Own your data.</strong> IndexedDB, local files, local vector store. Nothing leaves your machine unless you decide.</div><div class="point"><strong>3. Own your audit trail.</strong> Every inference, every prompt, every response — logged locally in formats you control.</div></div></div></section>
+        <div class="mkt-cards-grid">
+          <!-- Zayvora OS -->
+          <div class="product-card">
+            <div class="product-header">
+              <span class="product-badge">Daxini.Space</span>
+              <h3 class="product-title">Zayvora OS</h3>
+            </div>
+            <p class="product-desc">6-stage local agent loop. Runs entirely offline on Ollama.</p>
+            <ul class="product-benefits">
+              <li><span>✓</span> Reasoning IDE</li>
+              <li><span>✓</span> No API keys or cloud calls</li>
+              <li><span>✓</span> Absolute data privacy</li>
+            </ul>
+            <div class="product-pricing">
+              <div class="price">₹1,717</div>
+              <div class="price-note">one-time license</div>
+            </div>
+            <div class="product-actions">
+              <a href="/products/zayvora" class="btn ghost">Learn More</a>
+              <button class="btn accent" onclick="razorpayPay('zayvora_os',171700,'Zayvora OS License')">Buy Now</button>
+            </div>
+            <div class="product-trust">
+              <span>🇮🇳 Built by Dharam Daxini in Kutch</span>
+              <span>⚡ Instant Digital Delivery</span>
+            </div>
+          </div>
 
-    <section class="container"><div class="stats"><div class="stat"><div class="num" style="font-size:2.5rem;font-weight:700;">Kutch</div><div class="label">Built in India</div></div><div class="stat"><div class="num" style="font-size:2.5rem;font-weight:700;">2026</div><div class="label">Running Since</div></div><div class="stat"><div class="num" style="font-size:2.5rem;font-weight:700;">&#8734;</div><div class="label">Local Inferences</div></div><div class="stat"><div class="num" style="font-size:2.5rem;font-weight:700;">100%</div><div class="label">Offline Sovereignty</div></div></div></section>
+          <!-- Daxini Stack -->
+          <div class="product-card">
+            <div class="product-header">
+              <span class="product-badge">Daxini.Space</span>
+              <h3 class="product-title">Daxini Stack</h3>
+            </div>
+            <p class="product-desc">Complete engineering manual for building local-first software.</p>
+            <ul class="product-benefits">
+              <li><span>✓</span> Architecture templates</li>
+              <li><span>✓</span> PDF & ePub formats</li>
+              <li><span>✓</span> Lifetime access</li>
+            </ul>
+            <div class="product-pricing">
+              <div class="price">₹399</div>
+              <div class="price-note">instant download</div>
+            </div>
+            <div class="product-actions">
+              <a href="/products/daxini-stack" class="btn ghost">Preview</a>
+              <button class="btn accent" onclick="razorpayPay('daxini_stack',39900,'Daxini Stack PDF/ePub')">Buy Now</button>
+            </div>
+            <div class="product-trust">
+              <span>🇮🇳 Built by Dharam Daxini in Kutch</span>
+              <span>⚡ Instant Digital Delivery</span>
+            </div>
+          </div>
 
+          <!-- LogicHub Forge -->
+          <div class="product-card">
+            <div class="product-header">
+              <span class="product-badge">LogicHub.App</span>
+              <h3 class="product-title">LogicHub Forge</h3>
+            </div>
+            <p class="product-desc">AI-assisted product builder. Export production-ready code.</p>
+            <ul class="product-benefits">
+              <li><span>✓</span> Describe & compile apps</li>
+              <li><span>✓</span> UI production templates</li>
+              <li><span>✓</span> Full source code export</li>
+            </ul>
+            <div class="product-pricing">
+              <div class="price">₹899</div>
+              <div class="price-note">per project build</div>
+            </div>
+            <div class="product-actions">
+              <a href="https://logichub.app/forge" target="_blank" class="btn ghost">Open Forge</a>
+              <button class="btn accent" onclick="razorpayPay('forge_access',89900,'LogicHub Forge Access')">Buy Now</button>
+            </div>
+            <div class="product-trust">
+              <span>🇮🇳 Built by Dharam Daxini in Kutch</span>
+              <span>⚡ Direct Founder Support</span>
+            </div>
+          </div>
 
+          <!-- Production Scaffolds -->
+          <div class="product-card">
+            <div class="product-header">
+              <span class="product-badge">LogicHub.App</span>
+              <h3 class="product-title">Production Scaffolds</h3>
+            </div>
+            <p class="product-desc">Pre-hardened UI templates and system architecture starters.</p>
+            <ul class="product-benefits">
+              <li><span>✓</span> Drop in & wire up</li>
+              <li><span>✓</span> Fast deployment</li>
+              <li><span>✓</span> Clean code base</li>
+            </ul>
+            <div class="product-pricing">
+              <div class="price">₹149</div>
+              <div class="price-note">per template</div>
+            </div>
+            <div class="product-actions">
+              <a href="https://logichub.app" target="_blank" class="btn ghost">Browse</a>
+              <button class="btn accent" onclick="razorpayPay('scaffold',14900,'Production Scaffold')">Buy Now</button>
+            </div>
+            <div class="product-trust">
+              <span>🇮🇳 Built by Dharam Daxini in Kutch</span>
+              <span>⚡ Instant Digital Delivery</span>
+            </div>
+          </div>
 
-    <section class="manifesto" id="manifesto"><div class="container"><div class="eyebrow">THE APORAKSHA MANIFESTO</div><h2 class="section-title">Constraint is the architecture.</h2><p>We build with hard limits: single-file outputs, local compute, and zero external dependency chains. Every decision in Aporaksha exists to reduce fragility and increase user control. Sovereignty is not a feature layer — it is the default execution model.</p><a class="btn ghost" href="https://daxini.xyz" target="_blank">Read the full manifesto &#8594;</a></div></section>
+          <!-- Architecture Audit -->
+          <div class="product-card">
+            <div class="product-header">
+              <span class="product-badge">Hanuman.Solutions</span>
+              <h3 class="product-title">Architecture Audit</h3>
+            </div>
+            <p class="product-desc">Security and resilience hardening. Written report with fix plan.</p>
+            <ul class="product-benefits">
+              <li><span>✓</span> Infra debugging</li>
+              <li><span>✓</span> Vulnerability check</li>
+              <li><span>✓</span> Fixed-scope review</li>
+            </ul>
+            <div class="product-pricing">
+              <div class="price">₹4,999</div>
+              <div class="price-note">fixed-scope audit</div>
+            </div>
+            <div class="product-actions">
+              <a href="/products/orchade" class="btn ghost">Learn More</a>
+              <button class="btn accent" onclick="razorpayPay('arch_audit',499900,'Architecture Audit')">Book Now</button>
+            </div>
+            <div class="product-trust">
+              <span>🇮🇳 Built by Dharam Daxini in Kutch</span>
+              <span>📞 Direct Priority Support</span>
+            </div>
+          </div>
+          
+          <!-- PrintByDD Configurator / Custom Services -->
+          <div class="product-card">
+            <div class="product-header">
+              <span class="product-badge">Daxini.Space</span>
+              <h3 class="product-title">PrintByDD / System Repair</h3>
+            </div>
+            <p class="product-desc">Custom CAD configurators & emergency infra repairs.</p>
+            <ul class="product-benefits">
+              <li><span>✓</span> Hardware fabrication</li>
+              <li><span>✓</span> Silent token drops fix</li>
+              <li><span>✓</span> Diagnosis in 12 hours</li>
+            </ul>
+            <div class="product-pricing">
+              <div class="price" style="color:#7a8f8e;font-size:20px;">Custom Quote</div>
+              <div class="price-note">project-based</div>
+            </div>
+            <div class="product-actions" style="grid-template-columns: 1fr;">
+              <a href="https://hanuman.solutions" target="_blank" class="btn ghost" style="border-color: #7a8f8e; color: #7a8f8e;">Send Issue Details</a>
+            </div>
+            <div class="product-trust">
+              <span>🇮🇳 Built by Dharam Daxini in Kutch</span>
+            </div>
+          </div>
+        </div>
 
-    <section class="cta-foot"><div class="container"><h2 class="section-title">Ready to own your AI stack?</h2><p>No sign-up on third-party services. Create your sovereign Aporaksha Passport and access the full ecosystem.</p><div class="hero-actions" style="justify-content:center;"><a class="btn accent" href="/passport">Create Passport</a><a class="btn ghost" href="/dashboard">Dashboard &#8594;</a></div><p style="margin-top:16px;font-size:13px;">Already have a passport? <a href="/passport" style="color:var(--accent);">Log in</a></p></div></section>
+        <div class="product-trust-global">
+          <span>🔒 256-bit Encrypted Checkout</span>
+          <span style="color: rgba(255,255,255,0.2);">|</span>
+          <span>💳 Processed by Razorpay</span>
+          <span style="color: rgba(255,255,255,0.2);">|</span>
+          <span>📧 Direct Founder Support (support@aporaksha.com)</span>
+        </div>
+      </div>
+    </section>
+<!-- Legacy Stats and Philosophy (Cleaned up alignment) -->
+    <section class="container" style="border-top: 1px solid var(--border); padding: 78px 0;">
+      <div class="philosophy">
+        <blockquote>"If your AI stack phones home, it's not your stack."</blockquote>
+        <div class="points">
+          <div class="point"><strong>1. Own your compute.</strong> Every model runs on your hardware. No usage fees, no rate limits, no outage dependencies.</div>
+          <div class="point"><strong>2. Own your data.</strong> IndexedDB, local files, local vector store. Nothing leaves your machine unless you decide.</div>
+          <div class="point"><strong>3. Own your audit trail.</strong> Every inference, every prompt, every response — logged locally in formats you control.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="container" style="padding-bottom: 78px;">
+      <div class="stats">
+        <div class="stat"><div class="num" style="font-size:2.5rem;font-weight:700;">Kutch</div><div class="label">Built in India</div></div>
+        <div class="stat"><div class="num" style="font-size:2.5rem;font-weight:700;">2026</div><div class="label">Running Since</div></div>
+        <div class="stat"><div class="num" style="font-size:2.5rem;font-weight:700;">&#8734;</div><div class="label">Local Inferences</div></div>
+        <div class="stat"><div class="num" style="font-size:2.5rem;font-weight:700;">100%</div><div class="label">Offline Sovereignty</div></div>
+      </div>
+    </section>
+
+    <section class="cta-foot" style="border-top: 1px solid var(--border); border-bottom: 0; padding: 78px 0;">
+      <div class="container">
+        <h2 class="section-title">Ready to own your AI stack?</h2>
+        <p>No sign-up on third-party services. Create your sovereign Aporaksha Passport and access the full ecosystem.</p>
+        <div class="hero-actions" style="justify-content:center;">
+          <a class="btn accent" href="/passport">Create Passport</a>
+          <a class="btn ghost" href="/dashboard">Dashboard &#8594;</a>
+        </div>
+        <p style="margin-top:16px;font-size:13px;">Already have a passport? <a href="/passport" style="color:var(--accent);">Log in</a></p>
+      </div>
+    </section>
   </main>
 
-  <footer><div class="container"><div class="footer-grid"><div><a class="brand" href="https://aporaksha.com"><span class="glyph">&#x25C6;</span><span><span class="dot">A</span>poraksha</span></a><p style="color:#9c9c9c;max-width:420px;line-height:1.7;">Sovereign AI infrastructure designed for builders who need local-first systems that remain auditable, controllable, and cloud-independent.</p></div><div class="footer-links"><div><h5>Ecosystem Map</h5><div style="font-family:monospace;color:#8ac8ca;line-height:1.8;font-size:13px;margin-top:12px;">Aporaksha<br/> &#x251C;&#x2500; Zayvora<br/> &#x251C;&#x2500; Nex<br/> &#x251C;&#x2500; Orchade<br/> &#x2514;&#x2500; StudyOS</div></div><div><h5>Products</h5><a href="https://daxini.space" target="_blank">daxini.space</a><a href="https://logichub.app" target="_blank">logichub.app</a><a href="https://hanuman.solutions" target="_blank">hanuman.solutions</a></div><div><h5>Account</h5><a href="/passport">Login</a><a href="/passport">Create Passport</a><a href="/dashboard">Dashboard</a><a href="https://linkedin.com/in/dharamdaxini" target="_blank">LinkedIn</a><a href="https://github.com/via-decide" target="_blank">GitHub</a></div></div></div><div class="footbar"><span>&#169; 2026 Dharam Daxini &middot; aporaksha.com &middot; Made in Kutch &#127470;&#127475;</span><span>Sovereign &middot; Local-First &middot; Zero Cloud</span></div></div></footer>
-
-  <script></script>
-
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a class="brand" href="https://aporaksha.com">
+            <span class="glyph">&#x25C6;</span><span><span class="dot">A</span>poraksha</span>
+          </a>
+          <p style="color:#9c9c9c;max-width:420px;line-height:1.7;font-size:14px;margin-top:12px;text-align:left;">
+            Sovereign AI infrastructure designed for builders who need local-first systems that remain auditable, controllable, and cloud-independent.
+          </p>
+          <div style="margin-top: 16px; font-size: 13px; color: var(--muted); text-align:left;">
+            <strong>Support:</strong> <a href="mailto:support@aporaksha.com" style="color:#fff;">support@aporaksha.com</a>
+          </div>
+        </div>
+        
+        <div class="footer-links">
+          <div>
+            <h5>Ecosystem Map</h5>
+            <div style="font-family:monospace;color:#8ac8ca;line-height:1.8;font-size:13px;margin-top:12px;text-align:left;">
+              Aporaksha<br/>
+              &#x251C;&#x2500; Zayvora<br/>
+              &#x251C;&#x2500; Nex<br/>
+              &#x251C;&#x2500; Orchade<br/>
+              &#x2514;&#x2500; StudyOS
+            </div>
+          </div>
+          <div>
+            <h5>Links</h5>
+            <a href="https://daxini.space" target="_blank">daxini.space</a>
+            <a href="https://logichub.app" target="_blank">logichub.app</a>
+            <a href="https://hanuman.solutions" target="_blank">hanuman.solutions</a>
+            <a href="https://daxini.xyz/log.html" target="_blank">Public Build Logs</a>
+            <a href="https://daxini.xyz/deploy.html" target="_blank">Deploy Docs</a>
+          </div>
+          <div>
+            <h5>Legitimacy & Policies</h5>
+            <a href="/passport">Login / Create Passport</a>
+            <a href="/contact.html">Contact Us</a>
+            <a href="/terms.html">Terms of Service</a>
+            <a href="/privacy.html">Privacy Policy</a>
+            <a href="/refunds.html">Refund & Cancellation</a>
+          </div>
+        </div>
+      </div>
+      <div class="footbar">
+        <span>&#169; 2026 Dharam Daxini &middot; aporaksha.com &middot; Made in Kutch &#127470;&#127475;</span>
+        <span>Sovereign &middot; Local-First &middot; Zero Cloud</span>
+      </div>
+    </div>
+  </footer>
 </div>
 
 <!-- Razorpay Checkout SDK -->
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
 <script>
+// Telemetry tracking integration
+function trackConversionEvent(type, payload) {
+  fetch('/api/logs', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type, payload })
+  }).catch(e => console.error('Telemetry failed', e));
+}
+
+// Observe product grid for 'product_viewed'
+document.addEventListener('DOMContentLoaded', () => {
+  const mktGrid = document.querySelector('.mkt-cards-grid');
+  if (mktGrid) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          trackConversionEvent('product_viewed', { location: 'marketplace_grid', timestamp: Date.now() });
+          observer.unobserve(mktGrid);
+        }
+      });
+    }, { threshold: 0.2 });
+    observer.observe(mktGrid);
+  }
+});
+
 /**
  * razorpayPay — 3-step real payment flow
  *
@@ -516,6 +1370,7 @@ function razorpayPay(productId, _amountPaise, productName) {
   };
 
   // ── Step 1: Create order on server ─────────────────────────────────────
+  trackConversionEvent('buy_clicked', { product_id: productId });
   fetch('/api/payments/create-order', {
     method:  'POST',
     headers: { 
@@ -525,7 +1380,7 @@ function razorpayPay(productId, _amountPaise, productName) {
     body:    JSON.stringify({ product_id: productId, email: customerEmail })
   })
   .then(function(r) {
-    if (!r.ok) return r.json().then(function(e) { throw new Error(e.error || 'Order creation failed'); });
+    if (!r.ok) return r.json().then(function(e) { throw e; }); // Pass full error object
     return r.json();
   })
   .then(function(order) {
@@ -583,16 +1438,21 @@ function razorpayPay(productId, _amountPaise, productName) {
       _showPaymentError(resp.error.description || 'Payment failed. No charge was made.');
       resetBtn();
     });
+    trackConversionEvent('payment_started', { order_id: order.order_id, product_id: productId });
     rzp.open();
   })
   .catch(function(err) {
-    _showPaymentError(err.message || 'Could not reach payment server. Please try again.');
+    _showPaymentError({
+      text: err.error || err.message || 'Payment system unavailable. Please try again.',
+      ref: err.reference || ''
+    });
     resetBtn();
   });
 }
 
-function _showPaymentError(msg) {
-  // Show a non-blocking error banner rather than alert()
+function _showPaymentError(msgObj) {
+  let text = typeof msgObj === 'string' ? msgObj : (msgObj.text || 'Payment error');
+  let ref = typeof msgObj === 'string' ? '' : (msgObj.ref || '');
   let banner = document.getElementById('pay-error-banner');
   if (!banner) {
     banner = document.createElement('div');
@@ -600,15 +1460,22 @@ function _showPaymentError(msg) {
     banner.style.cssText = [
       'position:fixed', 'bottom:24px', 'left:50%', 'transform:translateX(-50%)',
       'background:#1a1010', 'border:1px solid #5a2020', 'color:#f8a0a0',
-      'font-size:13px', 'padding:12px 20px', 'border-radius:6px',
-      'z-index:9999', 'max-width:480px', 'text-align:center',
-      'box-shadow:0 4px 24px rgba(0,0,0,0.5)'
+      'font-size:13px', 'padding:16px 24px', 'border-radius:8px',
+      'z-index:9999', 'width:90%', 'max-width:480px', 'text-align:center',
+      'box-shadow:0 8px 32px rgba(0,0,0,0.6)', 'display:flex', 'flex-direction:column', 'gap:10px', 'align-items:center'
     ].join(';');
     document.body.appendChild(banner);
   }
-  banner.textContent = msg;
-  banner.style.display = 'block';
-  setTimeout(function() { banner.style.display = 'none'; }, 8000);
+  banner.innerHTML = `
+    <div style="font-weight:600;font-size:14px;">${text}</div>
+    ${ref ? `<div style="font-family:monospace;font-size:12px;color:#d47b7b;background:#3a1010;padding:4px 8px;border-radius:4px;">Reference: ${ref}</div>` : ''}
+    <div style="display:flex;gap:12px;margin-top:4px;">
+      <button onclick="document.getElementById('pay-error-banner').style.display='none';" style="background:#5a2020;color:#fff;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;font-size:13px;font-weight:600;">Retry / Dismiss</button>
+      <a href="mailto:support@aporaksha.com?subject=Payment%20Error%20${ref}" style="background:transparent;color:#f8a0a0;border:1px solid #5a2020;padding:8px 16px;border-radius:4px;text-decoration:none;font-size:13px;font-weight:600;">Contact Support</a>
+    </div>
+  `;
+  banner.style.display = 'flex';
+  // Note: we don't auto-hide so the user can read the reference and click contact support.
 }
 </script>
 <script type="module" src="/static/main.js"></script>

@@ -79,6 +79,48 @@
     </div>
 
     <a href="/#marketplace" class="btn">Get Zayvora OS</a>
+
+    <!-- Navigation Ladder (Task 006) -->
+    <div class="nav-ladder-wrapper" style="margin-top: 5rem; border-top: 1px solid var(--border); padding-top: 3rem;">
+      <div style="font-family: monospace; font-size: 0.75rem; letter-spacing: 0.1em; color: var(--accent); text-transform: uppercase; margin-bottom: 0.5rem; text-align: center;">Recommended Journey</div>
+      <h3 style="font-size: 1.5rem; color: var(--text); margin: 0 0 1.5rem; text-align: center; font-weight: 700; letter-spacing: -0.5px;">Ecosystem Navigation Ladder</h3>
+      
+      <div class="ladder-flex" style="display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap;">
+        <a href="/#manifesto" style="background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 20px; font-size: 0.9rem; font-weight: 600; color: var(--muted); text-decoration: none; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+          <span>1. Manifesto</span>
+        </a>
+        <span style="color: rgba(255, 255, 255, 0.25); font-weight: 700;">&rarr;</span>
+        <a href="https://logichub.app/forge" target="_blank" style="background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 20px; font-size: 0.9rem; font-weight: 600; color: var(--muted); text-decoration: none; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+          <span>2. Forge</span>
+        </a>
+        <span style="color: rgba(255, 255, 255, 0.25); font-weight: 700;">&rarr;</span>
+        <a href="/products/zayvora" class="ladder-active-step" style="background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 20px; font-size: 0.9rem; font-weight: 600; color: var(--muted); text-decoration: none; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+          <span>3. Zayvora</span>
+        </a>
+        <span style="color: rgba(255, 255, 255, 0.25); font-weight: 700;">&rarr;</span>
+        <a href="https://daxini.xyz/deploy.html" target="_blank" style="background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 20px; font-size: 0.9rem; font-weight: 600; color: var(--muted); text-decoration: none; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+          <span>4. Deploy</span>
+        </a>
+      </div>
+      
+      <style>
+        .ladder-flex a:hover {
+          border-color: var(--accent);
+          color: var(--text);
+          transform: translateY(-1px);
+          box-shadow: 0 0 12px rgba(255, 103, 31, 0.15);
+        }
+        .ladder-active-step {
+          border-color: var(--accent) !important;
+          color: #fff !important;
+          box-shadow: 0 0 12px rgba(255, 103, 31, 0.15);
+        }
+        @media (max-width: 600px) {
+          .ladder-flex { flex-direction: column; align-items: stretch; }
+          .ladder-flex span { text-align: center; transform: rotate(90deg); margin: 4px 0; }
+        }
+      </style>
+    </div>
   </main>
 </body>
 </html>

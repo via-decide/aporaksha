@@ -88,6 +88,12 @@ export default async function handler(req, res) {
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [razorpay_order_id, 0, 'INR', 'paid', razorpay_payment_id, 1, email || verification.payload.email, userId]
     );
+
+    // Telemetry log
+    await db.run(
+      `INSERT INTO events (type, payload) VALUES (?, ?)`,
+      ['payment_completed', JSON.stringify({ razorpay_order_id, razorpay_payment_id, product_id, user_id: userId })]
+    );
   } catch (dbErr) {
     console.error("[Razorpay] Failed to save order to DB:", dbErr);
     // Proceed to return 200 since the actual payment succeeded
