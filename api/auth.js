@@ -3,34 +3,6 @@ import crypto from "crypto";
 // In-memory user store (serverless-compatible, resets per cold start)
 // For production: migrate to Vercel KV or Postgres
 const users = new Map();
-const requestCounter = new Map(); // Tracks request frequency per identity
-const hotPool = new Map(); // "Replicated" cache for hot keys to distribute load
-
-// In-memory OTP store (for production, move to Redis/KV)
-const otps = new Map();
-
-function trackHotKey(identity) {
-  const now = Math.floor(Date.now() / 1000);
-  const data = requestCounter.get(identity) || { count: 0, lastReset: now };
-  
-  if (now - data.lastReset > 60) {
-    data.count = 1;
-    data.lastReset = now;
-  } else {
-    data.count++;
-  }
-  
-  requestCounter.set(identity, data);
-  
-  // If > 50 requests per minute, replicate to hotPool
-  if (data.count > 50) {
-    const user = users.get(identity);
-    if (user) {
-      hotPool.set(identity, { ...user, replicatedAt: now });
-      console.log(`[HOT_KEY] Replicating session for: ${identity}`);
-    }
-  }
-}
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{12,}$/;
@@ -76,32 +48,16 @@ const REFRESH_SECRET = process.env.REFRESH_SECRET_KEY || "zayvora_dev_refresh_se
 
 function issueTokens(user, deviceId) {
   const jti = crypto.randomBytes(16).toString("hex");
-  const now = Math.floor(Date.now() / 1000);
-  const sessionId = `sess_${crypto.randomBytes(8).toString("hex")}`;
-  
   return {
     accessToken: signJWT({
-      ecosystem_uid: user.email,
-      display_name: user.display_name || user.email.split('@')[0],
-      roles: [user.role || "student"],
-      session_id: sessionId,
-      jti, 
-      type: "access", 
-      issued_at: now,
-      expires_at: now + 900,
-      exp: now + 900,
-      iat: now
+      userId: user.id, email: user.email, role: user.role || "user",
+      jti, type: "access", exp: Math.floor(Date.now() / 1000) + 900,
     }, ACCESS_SECRET),
     refreshToken: signJWT({
-      ecosystem_uid: user.email,
-      session_id: sessionId,
-      deviceId: deviceId || "unknown",
-      type: "refresh", 
-      exp: now + 604800,
-      iat: now
+      userId: user.id, deviceId: deviceId || "unknown",
+      type: "refresh", exp: Math.floor(Date.now() / 1000) + 604800,
     }, REFRESH_SECRET),
-    ecosystem_uid: user.email,
-    session_id: sessionId,
+    userId: user.id,
     expiresIn: 900,
   };
 }
@@ -133,9 +89,7 @@ export default async function handler(req, res) {
   if (action === "login") {
     if (!identity || !password)
       return res.status(400).json({ error: "Email and password required" });
-    
-    trackHotKey(identity);
-    const user = hotPool.get(identity) || users.get(identity);
+    const user = users.get(identity);
     if (!user || !comparePassword(password, user.password_hash))
       return res.status(401).json({ error: "Invalid credentials" });
 
@@ -151,112 +105,19 @@ export default async function handler(req, res) {
     if (!v.valid || v.payload?.type !== "refresh")
       return res.status(401).json({ error: "Invalid token" });
 
-    const user = Array.from(users.values()).find((u) => u.email === v.payload.ecosystem_uid);
+    const user = Array.from(users.values()).find((u) => u.id === v.payload.userId);
     if (!user) return res.status(401).json({ error: "User not found" });
 
     const tokens = issueTokens(user, v.payload.deviceId);
     return res.json(tokens);
   }
 
-  // VERIFY / VALIDATE (check if token is valid)
-  if (action === "verify" || action === "validate") {
+  // VERIFY (check if token is valid)
+  if (action === "verify") {
     const token = (req.headers.authorization || "").replace("Bearer ", "");
     const v = verifyJWT(token, ACCESS_SECRET);
-    
-    // Track verify hits to see if this user becomes hot
-    if (v.valid && v.payload?.ecosystem_uid) {
-      trackHotKey(v.payload.ecosystem_uid);
-    }
-    
-    return res.json({ valid: v.valid, ecosystem_uid: v.payload?.ecosystem_uid || null, session_id: v.payload?.session_id || null });
+    return res.json({ valid: v.valid, userId: v.payload?.userId || null });
   }
 
-  // LOGOUT
-  if (action === "logout") {
-    // In a full implementation, you'd add the token to a Revocation List (Redis).
-    // For now, we instruct the client to discard tokens.
-    return res.json({ success: true, message: "Logged out successfully. Please clear your local tokens." });
-  }
-
-  // INTROSPECT
-  if (action === "introspect") {
-    const token = (req.headers.authorization || "").replace("Bearer ", "");
-    const v = verifyJWT(token, ACCESS_SECRET);
-    if (!v.valid) return res.status(401).json({ active: false });
-    
-    // Track verify hits to see if this user becomes hot
-    if (v.payload?.ecosystem_uid) {
-      trackHotKey(v.payload.ecosystem_uid);
-    }
-    
-    return res.json({ active: true, ...v.payload });
-  }
-
-  // SEND OTP
-  if (action === "send_otp") {
-    const uid = req.body.uid;
-    if (!uid) return res.status(400).json({ error: "UID required" });
-
-    const now = Math.floor(Date.now() / 1000);
-    const existing = otps.get(uid);
-
-    // Rate limiting: max 1 per minute
-    if (existing && now < existing.createdAt + 60) {
-      return res.status(429).json({ error: "Please wait 60 seconds before requesting a new OTP." });
-    }
-
-    // Generate secure 6 digit OTP
-    const otp = Math.floor(100000 + crypto.randomInt(900000)).toString();
-    otps.set(uid, {
-      otp,
-      createdAt: now,
-      expiresAt: now + 300, // 5 minutes expiry
-      attempts: 0
-    });
-
-    // In production, this dispatches to the Zayvora SMS Gateway (Twilio/FastAPI)
-    console.log(`[ZAYVORA SMS GATEWAY] Dispatching OTP ${otp} to authority bound to UID: ${uid}`);
-
-    return res.json({ success: true, message: "OTP sent" });
-  }
-
-  // VERIFY OTP
-  if (action === "verify_otp") {
-    const { uid, otp } = req.body;
-    if (!uid || !otp) return res.status(400).json({ error: "UID and OTP required" });
-
-    const record = otps.get(uid);
-    const now = Math.floor(Date.now() / 1000);
-
-    if (!record || now > record.expiresAt) {
-      return res.status(401).json({ error: "OTP expired or invalid" });
-    }
-
-    if (record.attempts >= 3) {
-      otps.delete(uid);
-      return res.status(401).json({ error: "Too many failed attempts. Request a new OTP." });
-    }
-
-    if (record.otp !== otp) {
-      record.attempts++;
-      otps.set(uid, record);
-      return res.status(401).json({ error: "Invalid OTP" });
-    }
-
-    // OTP matched! Destroy the OTP record.
-    otps.delete(uid);
-
-    // Ensure the user exists in the local map (or create them)
-    let user = users.get(uid);
-    if (!user) {
-      const id = crypto.randomUUID();
-      user = { id, email: uid, role: "user" }; // UID acts as email/identifier
-      users.set(uid, user);
-    }
-
-    const tokens = issueTokens(user, req.headers["x-device-id"] || "web");
-    return res.json(tokens);
-  }
-
-  return res.status(400).json({ error: "Unknown action. Use: signup, login, refresh, verify, validate, logout, introspect, send_otp, verify_otp" });
+  return res.status(400).json({ error: "Unknown action. Use: signup, login, refresh, verify" });
 }

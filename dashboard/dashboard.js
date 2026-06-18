@@ -155,47 +155,6 @@
     });
   }
 
-  async function loadInvoices() {
-    var tbody = document.getElementById('invoices-tbody');
-    if (!tbody) return;
-    try {
-      var response = await withTimeout(fetch('/api/invoices'), 5000);
-      if (!response.ok) throw new Error('Invoices API status ' + response.status);
-      var invoices = await response.json();
-      
-      if (!invoices || invoices.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="padding: 2rem; text-align: center; color: #666;">No invoices found.</td></tr>';
-        return;
-      }
-      
-      tbody.innerHTML = invoices.map(function (inv) {
-        var dateStr = new Date(inv.created_at).toLocaleDateString("en-US", {
-          year: "numeric", month: "short", day: "numeric"
-        });
-        var priceSymbol = inv.currency === "INR" ? "₹" : "$";
-        var amountStr = priceSymbol + (inv.total_amount / 100).toFixed(2);
-        
-        return '<tr style="border-bottom: 1px solid #111;">' +
-          '<td style="padding: 0.75rem 0.5rem; font-family: monospace; color: #ff671f; font-weight: bold;">' + inv.invoice_number + '</td>' +
-          '<td style="padding: 0.75rem 0.5rem; color: #ccc;">' + dateStr + '</td>' +
-          '<td style="padding: 0.75rem 0.5rem;">' +
-            '<div style="color: #fff; font-weight: 500;">' + inv.customer_name + '</div>' +
-            '<div style="color: #666; font-size: 0.8rem;">' + inv.customer_email + '</div>' +
-          '</td>' +
-          '<td style="padding: 0.75rem 0.5rem; color: #fff; font-weight: bold;">' + amountStr + '</td>' +
-          '<td style="padding: 0.75rem 0.5rem; font-family: monospace; color: #888;">' + inv.payment_id + '</td>' +
-          '<td style="padding: 0.75rem 0.5rem; text-align: right; white-space: nowrap;">' +
-            '<a href="/api/invoices/' + inv.invoice_id + '" class="btn" style="padding: 0.25rem 0.6rem; font-size: 0.8rem; text-decoration: none; display: inline-block; margin-right: 0.4rem;" target="_blank">PDF</a>' +
-            '<a href="/api/invoices/' + inv.invoice_id + '?format=json" class="btn" style="padding: 0.25rem 0.6rem; font-size: 0.8rem; text-decoration: none; display: inline-block; background: #222;" target="_blank">JSON</a>' +
-          '</td>' +
-        '</tr>';
-      }).join('');
-    } catch (error) {
-      tbody.innerHTML = '<tr><td colspan="6" style="padding: 2rem; text-align: center; color: #ff4444;">Failed to load invoices.</td></tr>';
-      console.error(error);
-    }
-  }
-
   document.addEventListener('DOMContentLoaded', function () {
     if (!isAuthenticated()) {
       global.location.href = '../index.html?login=required&redirect=dashboard';
@@ -209,6 +168,5 @@
     loadPassportIdentity();
     bindOrderActions();
     renderOrders();
-    loadInvoices();
   });
 })(window);
