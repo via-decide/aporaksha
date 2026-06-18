@@ -65,7 +65,8 @@ export default async function handler(req, res) {
       const absolutePath = path.resolve(invoice.pdf_path);
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader("Content-Disposition", `inline; filename="${invoice.invoice_number}.pdf"`);
-      return res.sendFile(absolutePath);
+      const fileBuffer = fs.readFileSync(absolutePath);
+      return res.status(200).send(fileBuffer);
     } else {
       // PDF still unavailable (e.g. storage error) -> return JSON metadata as fallback
       return res.status(500).json({
