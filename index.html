@@ -460,46 +460,124 @@
 
 </div>
 
-<!-- Razorpay Payment Handler -->
+<!-- Razorpay Checkout SDK -->
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-  function razorpayPay(packageId, amountPaise, productName) {
-    // Detect geo for currency label
-    const isIndia = navigator.language.startsWith('en-IN') ||
-      Intl.DateTimeFormat().resolvedOptions().timeZone.startsWith('Asia/');
+/**
+ * razorpayPay — 3-step real payment flow
+ *
+ * Step 1: POST /api/payments/create-order   → server creates Razorpay order, returns order_id + key_id
+ * Step 2: Razorpay checkout modal opens     → customer pays → Razorpay calls handler(response)
+ * Step 3: POST /api/payments/verify         → server verifies HMAC signature → confirms payment
+ */
+function razorpayPay(productId, _amountPaise, productName) {
+  // Collect email if user is logged in (from passport session)
+  let customerEmail = '';
+  try {
+    const session = JSON.parse(localStorage.getItem('aporaksha_session') || '{}');
+    customerEmail = session.email || '';
+  } catch (_) {}
 
-    // Post to checkout API (LogicHub Vercel endpoint)
-    fetch('https://logichub.app/api/checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ package_id: packageId, email: '' })
-    })
-    .then(r => r.json())
-    .then(data => {
-      const options = {
-        key: 'rzp_live_zayvora',  // replace with your live key from Razorpay Dashboard
-        amount: amountPaise,
-        currency: 'INR',
-        name: 'Aporaksha',
-        description: productName,
-        order_id: data.order_id || undefined,
-        theme: { color: '#1D4D4F' },
-        prefill: { contact: '', email: '' },
-        handler: function(response) {
-          alert('Payment successful. ID: ' + response.razorpay_payment_id);
-        }
-      };
-      const rzp = new Razorpay(options);
-      rzp.on('payment.failed', function(resp) {
-        alert('Payment failed: ' + resp.error.description);
-      });
-      rzp.open();
-    })
-    .catch(() => {
-      // Fallback: open Razorpay payment page directly
-      window.open('https://rzp.io/l/aporaksha-' + packageId, '_blank');
+  // ── Visual: disable the clicked button while processing ────────────────
+  const activeBtn = document.activeElement;
+  if (activeBtn) { activeBtn.disabled = true; activeBtn.textContent = 'Opening…'; }
+
+  const resetBtn = () => {
+    if (activeBtn) {
+      activeBtn.disabled = false;
+      activeBtn.textContent = productId === 'arch_audit' ? 'Book ↗' : 'Buy ↗';
+    }
+  };
+
+  // ── Step 1: Create order on server ─────────────────────────────────────
+  fetch('/api/payments/create-order', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ product_id: productId, email: customerEmail })
+  })
+  .then(function(r) {
+    if (!r.ok) return r.json().then(function(e) { throw new Error(e.error || 'Order creation failed'); });
+    return r.json();
+  })
+  .then(function(order) {
+    // ── Step 2: Open Razorpay checkout modal ───────────────────────────
+    const options = {
+      key:         order.key_id,          // server returns public key — never hardcoded
+      amount:      order.amount,          // in paise, as returned by Razorpay
+      currency:    order.currency,
+      name:        'Aporaksha',
+      description: order.product_name || productName,
+      order_id:    order.order_id,        // real Razorpay order ID
+      prefill: {
+        email:   customerEmail,
+        contact: ''
+      },
+      theme: { color: '#1D4D4F' },
+      modal: {
+        ondismiss: function() { resetBtn(); }
+      },
+
+      // ── Step 3: Verify payment signature server-side ─────────────────
+      handler: function(response) {
+        fetch('/api/payments/verify', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            razorpay_order_id:   response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature:  response.razorpay_signature,
+            product_id:          productId,
+            email:               customerEmail
+          })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(result) {
+          if (result.success) {
+            // Payment confirmed — redirect to dashboard with receipt
+            window.location.href = '/dashboard?payment=success&pid=' + response.razorpay_payment_id;
+          } else {
+            _showPaymentError('Signature verification failed. Contact support with ID: ' + response.razorpay_payment_id);
+          }
+        })
+        .catch(function() {
+          // Verification network error — payment may have gone through, log it
+          _showPaymentError('Payment received but verification timed out. Keep your Payment ID: ' + response.razorpay_payment_id + '. Contact support@aporaksha.com.');
+        });
+      }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.on('payment.failed', function(resp) {
+      _showPaymentError(resp.error.description || 'Payment failed. No charge was made.');
+      resetBtn();
     });
+    rzp.open();
+  })
+  .catch(function(err) {
+    _showPaymentError(err.message || 'Could not reach payment server. Please try again.');
+    resetBtn();
+  });
+}
+
+function _showPaymentError(msg) {
+  // Show a non-blocking error banner rather than alert()
+  let banner = document.getElementById('pay-error-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'pay-error-banner';
+    banner.style.cssText = [
+      'position:fixed', 'bottom:24px', 'left:50%', 'transform:translateX(-50%)',
+      'background:#1a1010', 'border:1px solid #5a2020', 'color:#f8a0a0',
+      'font-size:13px', 'padding:12px 20px', 'border-radius:6px',
+      'z-index:9999', 'max-width:480px', 'text-align:center',
+      'box-shadow:0 4px 24px rgba(0,0,0,0.5)'
+    ].join(';');
+    document.body.appendChild(banner);
   }
+  banner.textContent = msg;
+  banner.style.display = 'block';
+  setTimeout(function() { banner.style.display = 'none'; }, 8000);
+}
 </script>
 <script type="module" src="/static/main.js"></script>
 </body>
