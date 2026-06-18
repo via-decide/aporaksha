@@ -1,13 +1,13 @@
 @import url("https://daxini.xyz/assets/css/daxini-brand-kit.css");
 
 :root {
-  --bg: #0B1414;
-  --surface: #162424;
-  --border: #1C3433;
-  --accent: #C49A3C;
-  --gold: #C49A3C;
-  --text: #E8E3DC;
-  --muted: #7A8F8E;
+  --bg: #0B1120;
+  --surface: #1E293B;
+  --border: #334155;
+  --accent: #FF671F;
+  --gold: #FF671F;
+  --text: #F8FAFC;
+  --muted: #94A3B8;
 }
 
 * {
@@ -44,7 +44,7 @@ a {
   position: sticky;
   top: 0;
   z-index: 12;
-  background: rgba(11, 12, 15, 0.9);
+  background: rgba(11, 17, 32, 0.9);
   border: 1px solid var(--border);
   border-radius: 12px;
   backdrop-filter: blur(8px);
@@ -90,7 +90,7 @@ main,
   align-content: center;
   gap: 1rem;
   border: 1px solid var(--border);
-  background: linear-gradient(160deg, rgba(91, 140, 255, 0.1), rgba(11, 12, 15, 0.4) 45%);
+  background: linear-gradient(160deg, rgba(56, 189, 248, 0.1), rgba(11, 17, 32, 0.4) 45%);
   margin-top: 1rem;
   border-radius: 14px;
   padding: 2.5rem 1.25rem;
@@ -207,7 +207,7 @@ h1 {
 .layer {
   text-align: left;
   border: 1px solid var(--border);
-  background: #0f1117;
+  background: #111827;
   color: var(--text);
   padding: 0.8rem 1rem;
   border-radius: 10px;
@@ -217,7 +217,7 @@ h1 {
 
 .layer.active {
   border-color: var(--accent);
-  background: rgba(91, 140, 255, 0.12);
+  background: rgba(255, 103, 31, 0.12);
 }
 
 .activity-feed {
@@ -246,8 +246,8 @@ h1 {
 .activity-badge {
   display: inline-flex;
   align-items: center;
-  border: 1px solid rgba(201, 168, 76, 0.5);
-  background: rgba(201, 168, 76, 0.1);
+  border: 1px solid rgba(255, 103, 31, 0.5);
+  background: rgba(255, 103, 31, 0.1);
   color: var(--gold);
   border-radius: 999px;
   padding: 0.16rem 0.55rem;
