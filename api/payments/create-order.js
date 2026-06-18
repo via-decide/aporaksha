@@ -20,6 +20,22 @@ const PRODUCTS = {
   arch_audit:   { amount: 499900, name: 'Architecture Audit — Hanuman.Solutions', currency: 'INR' },
 };
 
+const ACCESS_SECRET = process.env.SECRET_KEY || "zayvora_dev_access_secret";
+function verifyJWT(token) {
+  try {
+    const [header, body, sig] = (token || "").split(".");
+    if (!header || !body || !sig) return { valid: false };
+    const data = `${header}.${body}`;
+    const expected = crypto.createHmac("sha256", ACCESS_SECRET).update(data).digest("base64url");
+    if (expected !== sig) return { valid: false };
+    const payload = JSON.parse(Buffer.from(body, "base64url").toString("utf8"));
+    if (!payload.exp || Math.floor(Date.now() / 1000) > payload.exp) return { valid: false };
+    return { valid: true, payload };
+  } catch (e) {
+    return { valid: false };
+  }
+}
+
 export default async function handler(req, res) {
   // ── CORS ────────────────────────────────────────────────────────────────
   const ALLOWED = ['https://aporaksha.com', 'https://www.aporaksha.com'];
@@ -28,11 +44,21 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   }
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Vary', 'Origin');
 
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST')   return res.status(405).json({ error: 'Method not allowed' });
+
+  // ── Auth Validation ───────────────────────────────────────────────────────
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.replace('Bearer ', '');
+  const verification = verifyJWT(token);
+
+  if (!verification.valid) {
+    return res.status(401).json({ error: 'Unauthorized. Passport authentication required.' });
+  }
+  const userId = verification.payload.userId;
 
   // ── Validate keys are present ───────────────────────────────────────────
   const KEY_ID     = process.env.RAZORPAY_KEY_ID;
@@ -69,7 +95,8 @@ export default async function handler(req, res) {
       notes: {
         product_id,
         product_name: product.name,
-        customer_email: email || '',
+        customer_email: email || verification.payload.email || '',
+        user_id: userId,
       },
     });
 

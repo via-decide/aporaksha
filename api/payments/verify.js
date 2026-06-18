@@ -10,7 +10,24 @@
  */
 
 import crypto from 'crypto';
+import { getDB } from '../../lib/db.js';
+import { initDB } from '../../lib/initDb.js';
 
+const ACCESS_SECRET = process.env.SECRET_KEY || "zayvora_dev_access_secret";
+function verifyJWT(token) {
+  try {
+    const [header, body, sig] = (token || "").split(".");
+    if (!header || !body || !sig) return { valid: false };
+    const data = `${header}.${body}`;
+    const expected = crypto.createHmac("sha256", ACCESS_SECRET).update(data).digest("base64url");
+    if (expected !== sig) return { valid: false };
+    const payload = JSON.parse(Buffer.from(body, "base64url").toString("utf8"));
+    if (!payload.exp || Math.floor(Date.now() / 1000) > payload.exp) return { valid: false };
+    return { valid: true, payload };
+  } catch (e) {
+    return { valid: false };
+  }
+}
 export default async function handler(req, res) {
   // ── CORS ────────────────────────────────────────────────────────────────
   const ALLOWED = ['https://aporaksha.com', 'https://www.aporaksha.com'];
@@ -19,7 +36,7 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   }
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Vary', 'Origin');
 
   if (req.method === 'OPTIONS') return res.status(204).end();
@@ -30,6 +47,16 @@ export default async function handler(req, res) {
   if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
     return res.status(400).json({ error: 'Missing payment verification fields' });
   }
+
+  // ── Auth Validation ───────────────────────────────────────────────────────
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.replace('Bearer ', '');
+  const verification = verifyJWT(token);
+
+  if (!verification.valid) {
+    return res.status(401).json({ error: 'Unauthorized. Passport authentication required.' });
+  }
+  const userId = verification.payload.userId;
 
   const KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
   if (!KEY_SECRET) {
@@ -53,13 +80,25 @@ export default async function handler(req, res) {
   }
 
   // ── Payment verified ────────────────────────────────────────────────────
-  // In production: record to DB, send receipt email, unlock product access.
-  // This stub logs and returns success — wire to your DB when ready.
-  console.log('[Razorpay] Payment verified', {
+  try {
+    await initDB();
+    const db = await getDB();
+    await db.run(
+      `INSERT INTO orders (id, amount, currency, status, payment_id, verified, email, user_id) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [razorpay_order_id, 0, 'INR', 'paid', razorpay_payment_id, 1, email || verification.payload.email, userId]
+    );
+  } catch (dbErr) {
+    console.error("[Razorpay] Failed to save order to DB:", dbErr);
+    // Proceed to return 200 since the actual payment succeeded
+  }
+
+  console.log('[Razorpay] Payment verified and linked to user', {
     order_id:   razorpay_order_id,
     payment_id: razorpay_payment_id,
     product_id,
-    email,
+    user_id:    userId,
+    email:      email || verification.payload.email,
     verified_at: new Date().toISOString(),
   });
 

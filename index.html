@@ -489,12 +489,20 @@
  * Step 3: POST /api/payments/verify         → server verifies HMAC signature → confirms payment
  */
 function razorpayPay(productId, _amountPaise, productName) {
-  // Collect email if user is logged in (from passport session)
+  // Collect email and token if user is logged in (from passport session)
   let customerEmail = '';
+  let accessToken = '';
   try {
     const session = JSON.parse(localStorage.getItem('aporaksha_session') || '{}');
     customerEmail = session.email || '';
+    accessToken = session.accessToken || '';
   } catch (_) {}
+
+  if (!accessToken) {
+    _showPaymentError('You must create a Passport before buying. Redirecting...');
+    setTimeout(() => { window.location.href = '/passport'; }, 2000);
+    return;
+  }
 
   // ── Visual: disable the clicked button while processing ────────────────
   const activeBtn = document.activeElement;
@@ -510,7 +518,10 @@ function razorpayPay(productId, _amountPaise, productName) {
   // ── Step 1: Create order on server ─────────────────────────────────────
   fetch('/api/payments/create-order', {
     method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + accessToken
+    },
     body:    JSON.stringify({ product_id: productId, email: customerEmail })
   })
   .then(function(r) {
@@ -539,7 +550,10 @@ function razorpayPay(productId, _amountPaise, productName) {
       handler: function(response) {
         fetch('/api/payments/verify', {
           method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + accessToken
+          },
           body: JSON.stringify({
             razorpay_order_id:   response.razorpay_order_id,
             razorpay_payment_id: response.razorpay_payment_id,
