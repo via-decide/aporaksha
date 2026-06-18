@@ -1,2 +1,17 @@
+# Environment (NEVER commit secrets)
 .env
+.env.*
+!.env.example
+
+# Dependencies
 node_modules/
+
+# Data
+*.db
+data.db
+
+# OS
+.DS_Store
+
+# Vercel
+.vercel/

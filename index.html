@@ -1365,7 +1365,7 @@ function razorpayPay(productId, _amountPaise, productName) {
   const resetBtn = () => {
     if (activeBtn) {
       activeBtn.disabled = false;
-      activeBtn.textContent = productId === 'arch_audit' ? 'Book ↗' : 'Buy ↗';
+      activeBtn.textContent = productId === 'arch_audit' ? 'Book Now' : 'Buy Now';
     }
   };
 
@@ -1423,19 +1423,19 @@ function razorpayPay(productId, _amountPaise, productName) {
             // Payment confirmed — redirect to dashboard with receipt
             window.location.href = '/dashboard?payment=success&pid=' + response.razorpay_payment_id;
           } else {
-            _showPaymentError('Signature verification failed. Contact support with ID: ' + response.razorpay_payment_id);
+            _showPaymentError({ text: 'Signature verification failed. Contact support.', ref: response.razorpay_payment_id });
           }
         })
         .catch(function() {
           // Verification network error — payment may have gone through, log it
-          _showPaymentError('Payment received but verification timed out. Keep your Payment ID: ' + response.razorpay_payment_id + '. Contact support@aporaksha.com.');
+          _showPaymentError({ text: 'Payment received but verification timed out. Contact support@aporaksha.com.', ref: response.razorpay_payment_id });
         });
       }
     };
 
     const rzp = new Razorpay(options);
     rzp.on('payment.failed', function(resp) {
-      _showPaymentError(resp.error.description || 'Payment failed. No charge was made.');
+      _showPaymentError({ text: resp.error.description || 'Payment failed. No charge was made.' });
       resetBtn();
     });
     trackConversionEvent('payment_started', { order_id: order.order_id, product_id: productId });
