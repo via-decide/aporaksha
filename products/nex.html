@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nex — Research Engine | Aporaksha</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap");
+    :root {
+      --bg: #0B1414; --surface: #162424; --border: #1C3433;
+      --text: #E8E3DC; --muted: #7A8F8E; --accent: #C49A3C;
+      --font: 'DM Sans', system-ui, sans-serif;
+    }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      font-family: var(--font); line-height: 1.6;
+    }
+    .topbar {
+      padding: 1rem 2rem; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .topbar a { color: var(--muted); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
+    .topbar a:hover { color: var(--text); }
+    .container { max-width: 800px; margin: 0 auto; padding: 4rem 2rem; }
+    .icon { font-size: 3rem; color: #C49A3C; margin-bottom: 1rem; }
+    h1 { font-size: 3rem; margin: 0 0 1rem; letter-spacing: -1px; }
+    .subtitle { font-size: 1.25rem; color: var(--muted); margin-bottom: 3rem; }
+    .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 4rem; }
+    .feature { background: var(--surface); padding: 2rem; border-radius: 12px; border: 1px solid var(--border); }
+    .feature h3 { margin: 0 0 0.5rem; color: var(--accent); }
+    .feature p { margin: 0; font-size: 0.95rem; color: var(--muted); }
+    .terminal {
+      background: #000; border: 1px solid var(--border); padding: 1.5rem; border-radius: 8px;
+      font-family: monospace; color: #a5d6a7; font-size: 0.9rem; margin-bottom: 3rem;
+    }
+    .btn {
+      display: inline-block; background: var(--accent); color: #000; font-weight: 600;
+      padding: 0.8rem 2rem; border-radius: 8px; text-decoration: none; transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.8; }
+    @media (max-width: 600px) { .feature-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <nav class="topbar">
+    <a href="/">&larr; Back to Ecosystem</a>
+    <a href="/" style="font-weight:700;color:var(--text);">Aporaksha</a>
+  </nav>
+  <main class="container">
+    <div class="icon">&#x2B21;</div>
+    <h1>Nex Memory</h1>
+    <p class="subtitle">A sovereign hybrid RAG engine. Feed it your notes, PDFs, and codebase. It finds what matters and keeps it completely local.</p>
+    
+    <div class="feature-grid">
+      <div class="feature">
+        <h3>Hybrid Retrieval</h3>
+        <p>Combines sparse (BM25) and dense (Vector) retrieval for pinpoint accuracy across massive local datasets.</p>
+      </div>
+      <div class="feature">
+        <h3>Local Embedding</h3>
+        <p>Uses local embedding models to vectorize your sensitive documents. No data is sent to external APIs.</p>
+      </div>
+      <div class="feature">
+        <h3>Citation Ready</h3>
+        <p>Synthesizes answers via Zayvora with exact source citations mapping back to your original local files.</p>
+      </div>
+      <div class="feature">
+        <h3>Format Agnostic</h3>
+        <p>Parses Markdown, PDF, ePub, and source code out of the box into clean context windows.</p>
+      </div>
+    </div>
+
+    <div class="terminal">
+      $ nex query "how does the async handler work in the API?"<br/>
+      > Searching local corpus: codebase_v2<br/>
+      > Hybrid BM25 + vector match: 96.4%<br/>
+      > Found 3 relevant contexts.<br/>
+      > Context injected.
+    </div>
+
+    <a href="/#marketplace" class="btn">Explore the Stack</a>
+  </main>
+</body>
+</html>

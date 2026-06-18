@@ -55,13 +55,9 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: `Unknown product: ${product_id}` });
   }
 
-  // ── Geofence (Razorpay INR only for now) ────────────────────────────────
-  const country = req.headers['x-vercel-ip-country'] || 'IN';
-  if (country !== 'IN') {
-    return res.status(403).json({
-      error: 'INR payments are available for Indian accounts only. International checkout coming soon.',
-    });
-  }
+  // ── Country Logging (Geofencing relaxed for global access) ───────────────
+  const country = req.headers['x-vercel-ip-country'] || 'UNKNOWN';
+  console.log(`[Razorpay] Order initiated from country: ${country}`);
 
   try {
     const razorpay = new Razorpay({ key_id: KEY_ID, key_secret: KEY_SECRET });
