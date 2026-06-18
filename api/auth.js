@@ -1,8 +1,33 @@
 import crypto from "crypto";
 
-// In-memory user store (serverless-compatible, resets per cold start)
-// For production: migrate to Vercel KV or Postgres
-const users = new Map();
+import fs from "fs";
+import path from "path";
+
+// File-based user store to prevent identity loss on serverless cold starts
+const DATA_FILE = path.join(process.cwd(), "aporaksha_users.json");
+
+function loadUsers() {
+  try {
+    if (fs.existsSync(DATA_FILE)) {
+      const data = JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
+      return new Map(Object.entries(data));
+    }
+  } catch (e) {
+    console.error("Failed to load users", e);
+  }
+  return new Map();
+}
+
+function saveUsers(usersMap) {
+  try {
+    const obj = Object.fromEntries(usersMap);
+    fs.writeFileSync(DATA_FILE, JSON.stringify(obj, null, 2), "utf8");
+  } catch (e) {
+    console.error("Failed to save users", e);
+  }
+}
+
+let users = loadUsers();
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{12,}$/;
@@ -62,9 +87,24 @@ function issueTokens(user, deviceId) {
   };
 }
 
+const ALLOWED_ORIGINS = [
+  'https://logichub.app', 
+  'https://viadecide.com', 
+  'https://aporaksha.com', 
+  'https://daxini.space', 
+  'http://localhost:3000', 
+  'http://localhost:7004'
+];
+
 export default async function handler(req, res) {
-  // CORS
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  // Strict CORS Validation
+  const origin = req.headers.origin;
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  } else {
+    // Default to the first allowed origin to prevent wildcard credential errors
+    res.setHeader("Access-Control-Allow-Origin", ALLOWED_ORIGINS[0]);
+  }
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   if (req.method === "OPTIONS") return res.status(200).end();
@@ -82,6 +122,7 @@ export default async function handler(req, res) {
 
     const id = crypto.randomUUID();
     users.set(identity, { id, email: identity, password_hash: hashPassword(password), role: "user" });
+    saveUsers(users);
     return res.status(201).json({ success: true, userId: id, email: identity });
   }
 
