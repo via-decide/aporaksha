@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "validate": "node tests/validate_commerce_lifecycle.js"
+    "validate": "node tests/validate_commerce_lifecycle.js",
+    "validate:safe": "./scripts/backup-and-validate.sh"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
