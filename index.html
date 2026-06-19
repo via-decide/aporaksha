@@ -101,8 +101,8 @@
     .terminal .ok { color: #a9ff8f; }
     .terminal .step { color: var(--accent); }
 
-    #t1:checked ~ .tab-labels label[for="t1"], #t2:checked ~ .tab-labels label[for="t2"], #t3:checked ~ .tab-labels label[for="t3"], #t4:checked ~ .tab-labels label[for="t4"] { border-color: #ff671f66; background: var(--accent-dim); color: #ffd7bf; }
-    #t1:checked ~ .panels #p1, #t2:checked ~ .panels #p2, #t3:checked ~ .panels #p3, #t4:checked ~ .panels #p4 { display: grid; }
+    #t1:checked ~ .tab-labels label[for="t1"], #t2:checked ~ .tab-labels label[for="t2"], #t3:checked ~ .tab-labels label[for="t3"], #t4:checked ~ .tab-labels label[for="t4"], #t5:checked ~ .tab-labels label[for="t5"] { border-color: #ff671f66; background: var(--accent-dim); color: #ffd7bf; }
+    #t1:checked ~ .panels #p1, #t2:checked ~ .panels #p2, #t3:checked ~ .panels #p3, #t4:checked ~ .panels #p4, #t5:checked ~ .panels #p5 { display: grid; }
 
     .manifesto, .cta-foot { text-align: center; background: #0d0d0d; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
     .manifesto p, .cta-foot p { max-width: 720px; margin: 0 auto 20px; color: #ababab; line-height: 1.7; }
@@ -694,24 +694,38 @@
       </div>
       <h1 style="max-width: 15ch;">Sovereign AI Infrastructure Gateway</h1>
       
-      <div style="display: flex; flex-direction: column; gap: 8px; margin: 20px 0 28px; text-align: left; font-size: 18px; font-weight: 500; color: #e2e8f0; max-width: 600px; margin-left: auto; margin-right: auto;">
+      <div style="display: flex; flex-direction: column; gap: 8px; margin: 20px 0 28px; text-align: left; font-size: 18px; font-weight: 500; color: #e2e8f0; max-width: 650px; margin-left: auto; margin-right: auto;">
         <div style="display: flex; align-items: center; gap: 10px; justify-content: center;">
-          <span style="color: var(--accent);">✦</span> <span>Build apps.</span>
+          <span style="color: var(--accent);">✦</span> <span>Build AI systems.</span>
           <span style="color: rgba(255,255,255,0.2); margin: 0 4px;">|</span>
-          <span style="color: var(--accent);">✦</span> <span>Run workflows.</span>
+          <span style="color: var(--accent);">✦</span> <span>Run them locally when possible.</span>
         </div>
         <div style="display: flex; align-items: center; gap: 10px; justify-content: center;">
-          <span style="color: var(--accent);">✦</span> <span>Deploy AI systems.</span>
-          <span style="color: rgba(255,255,255,0.2); margin: 0 4px;">|</span>
-          <span style="color: var(--accent);">✦</span> <span>Own the stack.</span>
+          <span style="color: var(--accent);">✦</span> <span>Use your own API keys when needed.</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; justify-content: center; margin-top: 6px;">
+          <span style="color: var(--accent);">✦</span> <span style="font-weight: 700;">Own your workflows. Own your data. Own your future stack.</span>
         </div>
       </div>
 
       <div class="hero-actions" style="justify-content: center;">
-        <a class="btn accent" href="https://logichub.app/forge" target="_blank">Open Forge</a>
-        <a class="btn ghost" href="/products/zayvora">Explore Zayvora</a>
-        <a class="btn ghost" href="#manifesto">Read Manifesto</a>
-        <a class="btn ghost" href="https://daxini.xyz/workspace.html" target="_blank">View Workspace</a>
+        <a class="btn accent" href="#products">Start Building</a>
+        <a class="btn ghost" href="#marketplace">Browse Marketplace</a>
+        <a class="btn ghost" href="#orchestration-narrative">Explore Workflows</a>
+      </div>
+
+      <!-- Trust / Sovereignty Roadmap Banner (Task 8) -->
+      <div class="trust-banner" style="max-width: 800px; margin: 36px auto 0; padding: 24px; background: rgba(30, 41, 59, 0.45); border: 1px solid var(--border); border-radius: var(--radius-card); text-align: left; display: flex; flex-direction: column; gap: 10px; backdrop-filter: blur(12px);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 20px; color: var(--accent);">🛡️</span>
+          <strong style="color: #fff; font-size: 15.5px;">Sovereignty is a Journey, Not a Lock-in</strong>
+        </div>
+        <ul style="margin: 0; padding-left: 20px; font-size: 13.5px; color: #acacac; line-height: 1.6;">
+          <li><strong style="color: #fff;">Bring Your Own API Key:</strong> Connect to Anthropic or OpenAI today.</li>
+          <li><strong style="color: #fff;">No Token Markup:</strong> You pay base API costs directly to the provider.</li>
+          <li><strong style="color: #fff;">Local-first Architecture:</strong> Your logic executes offline and on-device.</li>
+          <li><strong style="color: #fff;">Sovereignty Roadmap in Progress:</strong> Move towards fully offline open-weights.</li>
+        </ul>
       </div>
 
       <!-- Trust / Razorpay Legitimacy Strip (Task 008, within first 2 scrolls) -->
@@ -731,13 +745,13 @@
 
   <div class="marquee"><div class="track"><span class="pill">Zayvora LLM</span><span class="pill">6-Stage Reasoning</span><span class="pill">Nex RAG Engine</span><span class="pill">Orchade Asyncio</span><span class="pill">StudyOS</span><span class="pill">IndexedDB Auth</span><span class="pill">PWA Native</span><span class="pill">Offline First</span><span class="pill">LoRA Fine-tuning</span><span class="pill">No Cloud Bills</span><span class="pill">Local-First</span><span class="pill">daxini.space</span><span class="pill">Zayvora LLM</span><span class="pill">6-Stage Reasoning</span><span class="pill">Nex RAG Engine</span><span class="pill">Orchade Asyncio</span><span class="pill">StudyOS</span><span class="pill">IndexedDB Auth</span><span class="pill">PWA Native</span><span class="pill">Offline First</span><span class="pill">LoRA Fine-tuning</span><span class="pill">No Cloud Bills</span><span class="pill">Local-First</span><span class="pill">daxini.space</span></div></div>
 
-  <main>
-    <!-- Section 2: What Can I Do Here? (Task 007) -->
+    <main>
+    <!-- 2. What You Can Build (Task 2) -->
     <section class="container" style="border-bottom: 1px solid var(--border); padding-bottom: 78px;">
       <div class="eyebrow" style="text-align: center;">CAPABILITIES</div>
-      <h2 class="section-title" style="text-align: center;">What Can I Do Here?</h2>
+      <h2 class="section-title" style="text-align: center;">What You Can Build</h2>
       <p style="text-align: center; color: var(--muted); max-width: 600px; margin: -10px auto 36px; font-size: 15px;">
-        Aporaksha operates as a local-first interface coordinates. Use these integrated environments to run local model logic securely.
+        Aporaksha operates as a local-first interface root. Own your AI stack, run logic locally, and scale dependency on your own terms.
       </p>
       
       <div class="tabs">
@@ -745,21 +759,24 @@
         <input id="t2" name="tabs" type="radio">
         <input id="t3" name="tabs" type="radio">
         <input id="t4" name="tabs" type="radio">
+        <input id="t5" name="tabs" type="radio">
         <div class="tab-labels" style="justify-content: center;">
-          <label for="t1">AI Research</label>
-          <label for="t2">Study & Learning</label>
-          <label for="t3">Developer Tools</label>
-          <label for="t4">Local Agents</label>
+          <label for="t1">Research Faster</label>
+          <label for="t2">Automate Workflows</label>
+          <label for="t3">Build AI Apps</label>
+          <label for="t4">Learn Smarter</label>
+          <label for="t5">Deploy Systems</label>
         </div>
         <div class="panels">
           <article class="panel" id="p1">
             <div>
-              <h4>AI Research</h4>
+              <h4>Research Faster</h4>
               <ul>
                 <li>Query local corpora without exposing sources.</li>
                 <li>Blend vector and lexical retrieval for precision.</li>
                 <li>Synthesize answers with citation-ready context.</li>
               </ul>
+              <div style="margin-top: 16px; font-size: 12px; font-weight: 700; color: var(--accent);">POWERED BY NEX</div>
             </div>
             <div class="terminal">$ nex query "protein folding mechanisms"
               <span class="step">▶</span> Searching local corpus...
@@ -769,27 +786,13 @@
           </article>
           <article class="panel" id="p2">
             <div>
-              <h4>Study & Learning</h4>
-              <ul>
-                <li>Run study sessions fully offline.</li>
-                <li>Track notes and revisions in local-first storage.</li>
-                <li>Build reusable learning loops with no SaaS lock-in.</li>
-              </ul>
-            </div>
-            <div class="terminal">$ studyos start --mode focused
-              <span class="step">▶</span> Loading local decks...
-              <span class="step">▶</span> Session timer: 45 min
-              <span class="step">▶</span> Prompting with Zayvora tutor mode...
-              <span class="ok">✓</span> Session synced to local ledger</div>
-          </article>
-          <article class="panel" id="p3">
-            <div>
-              <h4>Developer Tools</h4>
+              <h4>Automate Workflows</h4>
               <ul>
                 <li>Orchestrate CLI workflows with Orchade.</li>
                 <li>Chain local models for coding, review, and refactor.</li>
                 <li>Maintain full logs for audit and replay.</li>
               </ul>
+              <div style="margin-top: 16px; font-size: 12px; font-weight: 700; color: var(--accent);">POWERED BY ORCHADE</div>
             </div>
             <div class="terminal">$ orchade run build-agent
               <span class="step">▶</span> Task graph initialized
@@ -797,14 +800,47 @@
               <span class="step">▶</span> Local sandbox execution...
               <span class="ok">✓</span> Build completed with zero remote calls</div>
           </article>
+          <article class="panel" id="p3">
+            <div>
+              <h4>Build AI Apps</h4>
+              <ul>
+                <li>Describe your application and compile production code.</li>
+                <li>Export pre-hardened UI templates and architecture.</li>
+                <li>Rapid prototyping without cloud lock-in.</li>
+              </ul>
+              <div style="margin-top: 16px; font-size: 12px; font-weight: 700; color: var(--accent);">POWERED BY LOGICHUB FORGE</div>
+            </div>
+            <div class="terminal">$ forge scaffold "Sovereign Chat Interface"
+              <span class="step">▶</span> Generating components...
+              <span class="step">▶</span> Wiring local indexedDB...
+              <span class="step">▶</span> Exporting React bundle...
+              <span class="ok">✓</span> UI ready for deployment</div>
+          </article>
           <article class="panel" id="p4">
             <div>
-              <h4>Local Agents</h4>
+              <h4>Learn Smarter</h4>
+              <ul>
+                <li>Run study sessions fully offline.</li>
+                <li>Track notes and revisions in local-first storage.</li>
+                <li>Build reusable learning loops with no SaaS lock-in.</li>
+              </ul>
+              <div style="margin-top: 16px; font-size: 12px; font-weight: 700; color: var(--accent);">POWERED BY STUDYOS</div>
+            </div>
+            <div class="terminal">$ studyos start --mode focused
+              <span class="step">▶</span> Loading local decks...
+              <span class="step">▶</span> Session timer: 45 min
+              <span class="step">▶</span> Prompting with Zayvora tutor mode...
+              <span class="ok">✓</span> Session synced to local ledger</div>
+          </article>
+          <article class="panel" id="p5">
+            <div>
+              <h4>Deploy Systems</h4>
               <ul>
                 <li>Deploy autonomous assistants in private environments.</li>
                 <li>Schedule periodic tasks with deterministic logs.</li>
                 <li>Control access with machine-local permissions.</li>
               </ul>
+              <div style="margin-top: 16px; font-size: 12px; font-weight: 700; color: var(--accent);">POWERED BY ZAYVORA</div>
             </div>
             <div class="terminal">$ zayvora agent deploy ops-watch
               <span class="step">▶</span> Loading policy: local-only
@@ -816,194 +852,194 @@
       </div>
     </section>
 
-    <!-- Section 3: Ecosystem Map (Task 002, Task 007) -->
-    <section id="architecture-map" class="container" style="border-bottom: 1px solid var(--border); padding-bottom: 78px;">
+    <!-- 3. Why Not Just Use ChatGPT? (Task 3) -->
+    <section id="why-not-chatgpt" class="container" style="border-bottom: 1px solid var(--border); padding-top: 78px; padding-bottom: 78px;">
+      <div class="eyebrow" style="text-align: center;">THE CORE THESIS</div>
+      <h2 class="section-title" style="text-align: center;">Why Not Just Use ChatGPT?</h2>
+      
+      <div class="philosophy" style="margin-top: 36px; grid-template-columns: 1fr; max-width: 800px; margin-left: auto; margin-right: auto;">
+        <blockquote style="font-size: clamp(1.5rem, 2.8vw, 2.2rem); text-align: center; border-left: none; border-top: 3px solid var(--accent); padding-top: 36px;">
+          "Models answer questions.<br>Systems create leverage."
+        </blockquote>
+        <div style="text-align: center; color: #acacac; font-size: 16px; line-height: 1.7; padding: 0 20px;">
+          <p>Using standalone chat clients gives you isolated generations. Aporaksha helps you construct repeatable workflows, build local knowledge assets, configure logic guardrails, and execute systems that compound value over time.</p>
+          <p>Aporaksha helps you build <strong>workflows, knowledge systems, execution engines, and reusable assets around AI</strong>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Products (Task 7) -->
+    <section id="products" class="mkt-section" style="border-bottom: 1px solid var(--border); padding-bottom: 78px;">
+      <div class="container">
+        <div class="eyebrow" style="text-align: center;">PRODUCTS</div>
+        <h2 class="section-title" style="text-align: center;">Sovereign AI Infrastructure</h2>
+        <p style="text-align: center; color: var(--muted); max-width: 680px; margin: -10px auto 36px; font-size: 15px; line-height: 1.6;">
+          Tools for building and executing isolated reasoning loops.
+        </p>
+
+        <div class="mkt-cards-grid">
+          <!-- Zayvora OS -->
+          <div class="product-card">
+            <div class="product-header">
+              <h3 class="product-title">Zayvora OS</h3>
+            </div>
+            <p class="product-desc" style="min-height: auto;"><strong>What it is:</strong> Local-first reasoning IDE.</p>
+            <ul class="product-benefits">
+              <li><strong>Who:</strong> Developers & Researchers</li>
+              <li><strong>Outcome:</strong> Execute agents offline.</li>
+              <li><strong>Access:</strong> Instant Digital Download</li>
+            </ul>
+            <div class="product-pricing">
+              <div class="price">₹1,717</div>
+              <div class="price-note">one-time license</div>
+            </div>
+            <div class="product-actions" style="grid-template-columns: 1fr;">
+              <button class="btn accent" onclick="razorpayPay('zayvora_os',171700,'Zayvora OS License')">Get Access</button>
+            </div>
+          </div>
+
+          <!-- LogicHub Forge -->
+          <div class="product-card">
+            <div class="product-header">
+              <h3 class="product-title">LogicHub Forge</h3>
+            </div>
+            <p class="product-desc" style="min-height: auto;"><strong>What it is:</strong> AI-assisted product builder.</p>
+            <ul class="product-benefits">
+              <li><strong>Who:</strong> Product Engineers</li>
+              <li><strong>Outcome:</strong> Export production-ready code.</li>
+              <li><strong>Access:</strong> Cloud Platform (No-code)</li>
+            </ul>
+            <div class="product-pricing">
+              <div class="price">₹899</div>
+              <div class="price-note">per project build</div>
+            </div>
+            <div class="product-actions" style="grid-template-columns: 1fr;">
+              <button class="btn accent" onclick="razorpayPay('forge_access',89900,'LogicHub Forge Access')">Get Access</button>
+            </div>
+          </div>
+
+          <!-- Daxini Stack -->
+          <div class="product-card">
+            <div class="product-header">
+              <h3 class="product-title">Daxini Stack</h3>
+            </div>
+            <p class="product-desc" style="min-height: auto;"><strong>What it is:</strong> Complete engineering manual.</p>
+            <ul class="product-benefits">
+              <li><strong>Who:</strong> Infrastructure Architects</li>
+              <li><strong>Outcome:</strong> Design local-first software.</li>
+              <li><strong>Access:</strong> PDF & ePub Download</li>
+            </ul>
+            <div class="product-pricing">
+              <div class="price">₹399</div>
+              <div class="price-note">lifetime access</div>
+            </div>
+            <div class="product-actions" style="grid-template-columns: 1fr;">
+              <button class="btn accent" onclick="razorpayPay('daxini_stack',39900,'Daxini Stack PDF/ePub')">Get Access</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Marketplace Moat (Task 4) -->
+    <section id="marketplace" class="container" style="border-bottom: 1px solid var(--border); padding-top: 78px; padding-bottom: 78px;">
+      <div class="eyebrow" style="text-align: center;">THE MOAT</div>
+      <h2 class="section-title" style="text-align: center;">Anyone Can Access Models.<br>Few People Build Assets.</h2>
+      <p style="text-align: center; color: var(--muted); max-width: 680px; margin: 20px auto 36px; font-size: 16px; line-height: 1.7;">
+        Prompts disappear. Systems compound. The Marketplace turns your workflows, agents, and execution systems into reusable assets. <strong>This is your moat. Not model access.</strong>
+      </p>
+
+      <div class="mkt-cards-grid">
+        <!-- Production Scaffolds -->
+        <div class="product-card" style="background: #0d1117;">
+          <div class="product-header">
+            <h3 class="product-title">Production Scaffolds</h3>
+          </div>
+          <p class="product-desc" style="min-height: auto;"><strong>What it is:</strong> Pre-hardened UI templates.</p>
+          <ul class="product-benefits">
+            <li><strong>Who:</strong> Web Developers</li>
+            <li><strong>Outcome:</strong> Fast deployment.</li>
+            <li><strong>Access:</strong> Code Bundle</li>
+          </ul>
+          <div class="product-pricing">
+            <div class="price">₹149</div>
+            <div class="price-note">per template</div>
+          </div>
+          <div class="product-actions" style="grid-template-columns: 1fr;">
+            <a href="https://logichub.app" target="_blank" class="btn accent">Browse Marketplace</a>
+          </div>
+        </div>
+
+        <!-- Architecture Audit -->
+        <div class="product-card" style="background: #0d1117;">
+          <div class="product-header">
+            <h3 class="product-title">Architecture Audit</h3>
+          </div>
+          <p class="product-desc" style="min-height: auto;"><strong>What it is:</strong> Security and resilience hardening.</p>
+          <ul class="product-benefits">
+            <li><strong>Who:</strong> Startups & Enterprises</li>
+            <li><strong>Outcome:</strong> Fixed-scope infra review.</li>
+            <li><strong>Access:</strong> Remote Audit</li>
+          </ul>
+          <div class="product-pricing">
+            <div class="price">₹4,999</div>
+            <div class="price-note">fixed-scope audit</div>
+          </div>
+          <div class="product-actions" style="grid-template-columns: 1fr;">
+            <button class="btn accent" onclick="razorpayPay('arch_audit',499900,'Architecture Audit')">Get Access</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Ecosystem Map (Task 6) -->
+    <section id="architecture-map" class="container" style="border-bottom: 1px solid var(--border); padding-top: 78px; padding-bottom: 78px;">
       <div class="eyebrow" style="text-align: center;">SYSTEM ARCHITECTURE</div>
-      <h2 class="section-title" style="text-align: center;">Ecosystem Architecture</h2>
-      <p style="text-align: center; color: var(--muted); max-width: 600px; margin: -10px auto 36px; font-size: 15px;">
-        Aporaksha serves as the identity root, powering and connecting each sovereign system on your device.
-      </p>
+      <h2 class="section-title" style="text-align: center;">Ecosystem Map</h2>
 
-      <div class="eco-map-container">
-        <!-- Node 1: Aporaksha -->
-        <a href="https://aporaksha.com" class="eco-node-card">
-          <div class="eco-node-info">
-            <div class="eco-node-title">Aporaksha <span class="eco-node-badge">Identity Root</span></div>
-            <div class="eco-node-desc">Unified authentication, security certificates, and payment authorization layer.</div>
-          </div>
-          <div class="eco-node-go">&#8594;</div>
-        </a>
+      <div class="eco-map-container" style="flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: stretch; gap: 24px; max-width: 1000px; padding: 20px 0;">
+        
+        <div class="eco-node-card" style="flex: 1; min-width: 180px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; max-width: 200px;">
+          <div class="eco-node-title" style="justify-content: center;">Forge</div>
+          <div class="eco-node-badge" style="margin: 0;">Build</div>
+          <div class="eco-node-desc">Design and compile applications</div>
+        </div>
 
-        <div class="eco-arrow">&#8595;</div>
+        <div class="eco-arrow" style="transform: rotate(-90deg); align-self: center; animation: float-right 2.2s ease-in-out infinite;">&#8595;</div>
 
-        <!-- Node 2: LogicHub Forge -->
-        <a href="https://logichub.app/forge" target="_blank" class="eco-node-card">
-          <div class="eco-node-info">
-            <div class="eco-node-title">LogicHub Forge <span class="eco-node-badge">Build</span></div>
-            <div class="eco-node-desc">No-code builder. Describe your application and compile code interfaces instantly.</div>
-          </div>
-          <div class="eco-node-go">&#8594;</div>
-        </a>
+        <div class="eco-node-card" style="flex: 1; min-width: 180px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; max-width: 200px;">
+          <div class="eco-node-title" style="justify-content: center;">Zayvora</div>
+          <div class="eco-node-badge" style="margin: 0;">Execute</div>
+          <div class="eco-node-desc">Local reasoning OS</div>
+        </div>
 
-        <div class="eco-arrow">&#8595;</div>
+        <div class="eco-arrow" style="transform: rotate(-90deg); align-self: center; animation: float-right 2.2s ease-in-out infinite;">&#8595;</div>
 
-        <!-- Node 3: Zayvora -->
-        <a href="/products/zayvora" class="eco-node-card">
-          <div class="eco-node-info">
-            <div class="eco-node-title">Zayvora <span class="eco-node-badge">Execute</span></div>
-            <div class="eco-node-desc">Local-first reasoning OS. Executes model inferences and schedules agent threads.</div>
-          </div>
-          <div class="eco-node-go">&#8594;</div>
-        </a>
+        <div class="eco-node-card" style="flex: 1; min-width: 180px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; max-width: 200px;">
+          <div class="eco-node-title" style="justify-content: center;">Marketplace</div>
+          <div class="eco-node-badge" style="margin: 0;">Distribute</div>
+          <div class="eco-node-desc">Share and monetize assets</div>
+        </div>
 
-        <div class="eco-arrow">&#8595;</div>
+        <div class="eco-arrow" style="transform: rotate(-90deg); align-self: center; animation: float-right 2.2s ease-in-out infinite;">&#8595;</div>
 
-        <!-- Node 4: Daxini Space -->
-        <a href="https://daxini.space" target="_blank" class="eco-node-card">
-          <div class="eco-node-info">
-            <div class="eco-node-title">Daxini Space <span class="eco-node-badge">Distribute</span></div>
-            <div class="eco-node-desc">Distributed marketplace vault containing APK files, custom modules, and tools.</div>
-          </div>
-          <div class="eco-node-go">&#8594;</div>
-        </a>
+        <div class="eco-node-card" style="flex: 1; min-width: 180px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; max-width: 200px; border-color: var(--accent);">
+          <div class="eco-node-title" style="justify-content: center;">Aporaksha</div>
+          <div class="eco-node-badge" style="margin: 0;">Own</div>
+          <div class="eco-node-desc">Identity and logic root</div>
+        </div>
 
-        <div class="eco-arrow">&#8595;</div>
-
-        <!-- Node 5: VIA -->
-        <a href="https://daxini.xyz/VIA/" target="_blank" class="eco-node-card">
-          <div class="eco-node-info">
-            <div class="eco-node-title">VIA <span class="eco-node-badge">Connect</span></div>
-            <div class="eco-node-desc">Peer-to-peer WebRTC encrypted mesh connecting sibling nodes across devices.</div>
-          </div>
-          <div class="eco-node-go">&#8594;</div>
-        </a>
       </div>
+      <style>
+        @keyframes float-right {
+          0%, 100% { transform: rotate(-90deg) translateX(0); }
+          50% { transform: rotate(-90deg) translateX(-5px); }
+        }
+      </style>
     </section>
 
-    <!-- Section 4: What Exists Today (Task 003, Task 007) -->
-    <section id="exists" class="container" style="border-bottom: 1px solid var(--border); padding-bottom: 78px;">
-      <div class="eyebrow" style="text-align: center;">PROOF & EVIDENCE</div>
-      <h2 class="section-title" style="text-align: center;">What Exists Today</h2>
-      <p style="text-align: center; color: var(--muted); max-width: 600px; margin: -10px auto 36px; font-size: 15px;">
-        Explore the tangible systems already deployed, running, and supporting user computation across our network.
-      </p>
-
-      <div class="exists-grid">
-        <!-- 1. LogicHub Forge -->
-        <article class="exists-card">
-          <div class="exists-img-wrapper">
-            <img src="/static/images/logichub_forge_preview.png" alt="LogicHub Forge interface preview">
-          </div>
-          <div class="exists-content">
-            <div class="exists-name">LogicHub Forge</div>
-            <p class="exists-desc">AI-assisted application builder. Describe your application and compile production-ready code instantly.</p>
-            <a href="https://logichub.app/forge" target="_blank" class="exists-link">Open Forge &rarr;</a>
-          </div>
-        </article>
-
-        <!-- 2. VIA -->
-        <article class="exists-card">
-          <div class="exists-img-wrapper">
-            <img src="/static/images/via_connect_preview.png" alt="VIA Connect secure messenger preview">
-          </div>
-          <div class="exists-content">
-            <div class="exists-name">VIA Connect</div>
-            <p class="exists-desc">Peer-to-peer encrypted communications platform. Multi-agent networking with absolute data privacy.</p>
-            <a href="https://daxini.xyz/VIA/" target="_blank" class="exists-link">Launch VIA &rarr;</a>
-          </div>
-        </article>
-
-        <!-- 3. Workspace -->
-        <article class="exists-card">
-          <div class="exists-img-wrapper">
-            <img src="/static/images/workspace_console_preview.png" alt="Daxini Workspace dashboard preview">
-          </div>
-          <div class="exists-content">
-            <div class="exists-name">Daxini Workspace</div>
-            <p class="exists-desc">Unified local interface. Coordinate reasoning loops, access stored modules, and view real-time logs.</p>
-            <a href="https://daxini.xyz/workspace.html" target="_blank" class="exists-link">Explore Workspace &rarr;</a>
-          </div>
-        </article>
-
-        <!-- 4. Journal -->
-        <article class="exists-card">
-          <div class="exists-img-wrapper">
-            <img src="/static/images/founder_journal_preview.png" alt="Founder blog journal preview">
-          </div>
-          <div class="exists-content">
-            <div class="exists-name">Founder's Journal</div>
-            <p class="exists-desc">Ecosystem dispatches and build logs. Technical writeups on local compute and sovereign architecture.</p>
-            <a href="https://daxini.xyz/journal.html" target="_blank" class="exists-link">Read Journal &rarr;</a>
-          </div>
-        </article>
-
-        <!-- 5. Zayvora -->
-        <article class="exists-card">
-          <div class="exists-img-wrapper">
-            <img src="/static/images/zayvora_ide_preview.png" alt="Zayvora OS model execution preview">
-          </div>
-          <div class="exists-content">
-            <div class="exists-name">Zayvora OS</div>
-            <p class="exists-desc">Sovereign local reasoning IDE. Runs offline-first on top of Ollama and MLX architectures.</p>
-            <a href="/products/zayvora" class="exists-link">Explore Zayvora &rarr;</a>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <!-- Section 5: Choose Your Path (Task 005, Task 007) -->
-    <section class="container" style="border-bottom: 1px solid var(--border); padding-bottom: 78px;">
-      <div class="eyebrow" style="text-align: center;">ONBOARDING ENGINE</div>
-      <h2 class="section-title" style="text-align: center;">Choose Your Path</h2>
-      <p style="text-align: center; color: var(--muted); max-width: 600px; margin: -10px auto 36px; font-size: 15px;">
-        We build for builders, engineers, and thinkers. Select your profile below to get your specific onboarding instructions.
-      </p>
-
-      <div class="path-grid">
-        <!-- Builder -->
-        <a href="https://logichub.app/forge" target="_blank" class="path-card">
-          <div class="path-icon">🏗️</div>
-          <div class="path-role">Builder</div>
-          <p class="path-desc">Build interfaces, draft prompts, and scaffold applications instantly.</p>
-          <button class="path-btn">Open Forge &rarr;</button>
-        </a>
-
-        <!-- Infrastructure Engineer -->
-        <a href="https://daxini.xyz/deploy.html" target="_blank" class="path-card">
-          <div class="path-icon">⚙️</div>
-          <div class="path-role">Infra Engineer</div>
-          <p class="path-desc">Configure local-first node networks, hardware, and tunnels.</p>
-          <button class="path-btn">Deploy Stack &rarr;</button>
-        </a>
-
-        <!-- Researcher -->
-        <a href="#manifesto" class="path-card">
-          <div class="path-icon">📖</div>
-          <div class="path-role">Researcher</div>
-          <p class="path-desc">Explore our sovereign local compute design thesis and protocols.</p>
-          <button class="path-btn">Read Manifesto &rarr;</button>
-        </a>
-
-        <!-- Founder -->
-        <a href="https://daxini.xyz/journal.html" target="_blank" class="path-card">
-          <div class="path-icon">✍️</div>
-          <div class="path-role">Founder</div>
-          <p class="path-desc">Read Dharam's daily logs, strategy updates, and build lessons.</p>
-          <button class="path-btn">Read Journal &rarr;</button>
-        </a>
-
-        <!-- Curious Visitor -->
-        <a href="https://daxini.xyz/workspace.html" target="_blank" class="path-card">
-          <div class="path-icon">🧭</div>
-          <div class="path-role">Curious Visitor</div>
-          <p class="path-desc">Launch the demo workspace interface and inspect live logs.</p>
-          <button class="path-btn">View Workspace &rarr;</button>
-        </a>
-      </div>
-    </section>
-
-    <!-- Section 6: Founder Block (Task 004, Task 007) -->
-    <section id="founder" class="container" style="border-bottom: 1px solid var(--border); padding-bottom: 78px;">
+    <!-- 7. Trust Layer / Founder -->
+    <section id="founder" class="container" style="border-bottom: 1px solid var(--border); padding-top: 78px; padding-bottom: 78px;">
       <div class="eyebrow" style="text-align: center;">SOCIETY</div>
       <h2 class="section-title" style="text-align: center;">Founder Verification Layer</h2>
       
@@ -1024,245 +1060,13 @@
       </div>
     </section>
 
-    <!-- Section 7: Manifesto & Navigation Ladder (Task 006, Task 007) -->
-    <section class="manifesto" id="manifesto" style="padding: 78px 0;">
-      <div class="container">
-        <div class="eyebrow">THE APORAKSHA MANIFESTO</div>
-        <h2 class="section-title">Constraint is the architecture.</h2>
-        <p>
-          We build with hard limits: single-file outputs, local compute, and zero external dependency chains. Every decision in Aporaksha exists to reduce fragility and increase user control. Sovereignty is not a feature layer — it is the default execution model. If your AI stack phones home, it is not your stack.
-        </p>
-        <a class="btn ghost" href="https://daxini.xyz" target="_blank" style="margin-bottom: 30px;">Read the full manifesto &#8594;</a>
-
-        <div style="margin-top: 56px; border-top: 1px solid var(--border); padding-top: 36px;">
-          <div class="eyebrow">RECOMMENDED JOURNEY</div>
-          <h3 style="font-size: 20px; color: #fff; margin-bottom: 12px;">The Navigation Ladder</h3>
-          
-          <div class="nav-ladder">
-            <a href="#manifesto" class="nav-ladder-step active">
-              <span>1. Manifesto</span>
-            </a>
-            <div class="nav-ladder-connector">&#8594;</div>
-            <a href="https://logichub.app/forge" target="_blank" class="nav-ladder-step">
-              <span>2. Forge</span>
-            </a>
-            <div class="nav-ladder-connector">&#8594;</div>
-            <a href="/products/zayvora" class="nav-ladder-step">
-              <span>3. Zayvora</span>
-            </a>
-            <div class="nav-ladder-connector">&#8594;</div>
-            <a href="https://daxini.xyz/deploy.html" target="_blank" class="nav-ladder-step">
-              <span>4. Deploy</span>
-            </a>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Software & Services Marketplace (Retained from original code, customized for theme) -->
-    
-    <!-- Software & Services Marketplace -->
-    <section id="marketplace" class="mkt-section" style="border-top: 1px solid var(--border); background: #080d1a;">
-      <div class="container">
-        <div class="eyebrow" style="text-align: center;">SOFTWARE & SERVICES</div>
-        <h2 class="section-title" style="text-align: center;">What we build. What we sell.</h2>
-        <p style="text-align: center; color: var(--muted); max-width: 600px; margin: -10px auto 36px; font-size: 15px;">
-          Three studios. One engineering philosophy. Own your stack, own your data, own your outcomes.
-        </p>
-
-        <div class="mkt-cards-grid">
-          <!-- Zayvora OS -->
-          <div class="product-card">
-            <div class="product-header">
-              <span class="product-badge">Daxini.Space</span>
-              <h3 class="product-title">Zayvora OS</h3>
-            </div>
-            <p class="product-desc">6-stage local agent loop. Runs entirely offline on Ollama.</p>
-            <ul class="product-benefits">
-              <li><span>✓</span> Reasoning IDE</li>
-              <li><span>✓</span> No API keys or cloud calls</li>
-              <li><span>✓</span> Absolute data privacy</li>
-            </ul>
-            <div class="product-pricing">
-              <div class="price">₹1,717</div>
-              <div class="price-note">one-time license</div>
-            </div>
-            <div class="product-actions">
-              <a href="/products/zayvora" class="btn ghost">Learn More</a>
-              <button class="btn accent" onclick="razorpayPay('zayvora_os',171700,'Zayvora OS License')">Buy Now</button>
-            </div>
-            <div class="product-trust">
-              <span>🇮🇳 Built by Dharam Daxini in Kutch</span>
-              <span>⚡ Instant Digital Delivery</span>
-            </div>
-          </div>
-
-          <!-- Daxini Stack -->
-          <div class="product-card">
-            <div class="product-header">
-              <span class="product-badge">Daxini.Space</span>
-              <h3 class="product-title">Daxini Stack</h3>
-            </div>
-            <p class="product-desc">Complete engineering manual for building local-first software.</p>
-            <ul class="product-benefits">
-              <li><span>✓</span> Architecture templates</li>
-              <li><span>✓</span> PDF & ePub formats</li>
-              <li><span>✓</span> Lifetime access</li>
-            </ul>
-            <div class="product-pricing">
-              <div class="price">₹399</div>
-              <div class="price-note">instant download</div>
-            </div>
-            <div class="product-actions">
-              <a href="/products/daxini-stack" class="btn ghost">Preview</a>
-              <button class="btn accent" onclick="razorpayPay('daxini_stack',39900,'Daxini Stack PDF/ePub')">Buy Now</button>
-            </div>
-            <div class="product-trust">
-              <span>🇮🇳 Built by Dharam Daxini in Kutch</span>
-              <span>⚡ Instant Digital Delivery</span>
-            </div>
-          </div>
-
-          <!-- LogicHub Forge -->
-          <div class="product-card">
-            <div class="product-header">
-              <span class="product-badge">LogicHub.App</span>
-              <h3 class="product-title">LogicHub Forge</h3>
-            </div>
-            <p class="product-desc">AI-assisted product builder. Export production-ready code.</p>
-            <ul class="product-benefits">
-              <li><span>✓</span> Describe & compile apps</li>
-              <li><span>✓</span> UI production templates</li>
-              <li><span>✓</span> Full source code export</li>
-            </ul>
-            <div class="product-pricing">
-              <div class="price">₹899</div>
-              <div class="price-note">per project build</div>
-            </div>
-            <div class="product-actions">
-              <a href="https://logichub.app/forge" target="_blank" class="btn ghost">Open Forge</a>
-              <button class="btn accent" onclick="razorpayPay('forge_access',89900,'LogicHub Forge Access')">Buy Now</button>
-            </div>
-            <div class="product-trust">
-              <span>🇮🇳 Built by Dharam Daxini in Kutch</span>
-              <span>⚡ Direct Founder Support</span>
-            </div>
-          </div>
-
-          <!-- Production Scaffolds -->
-          <div class="product-card">
-            <div class="product-header">
-              <span class="product-badge">LogicHub.App</span>
-              <h3 class="product-title">Production Scaffolds</h3>
-            </div>
-            <p class="product-desc">Pre-hardened UI templates and system architecture starters.</p>
-            <ul class="product-benefits">
-              <li><span>✓</span> Drop in & wire up</li>
-              <li><span>✓</span> Fast deployment</li>
-              <li><span>✓</span> Clean code base</li>
-            </ul>
-            <div class="product-pricing">
-              <div class="price">₹149</div>
-              <div class="price-note">per template</div>
-            </div>
-            <div class="product-actions">
-              <a href="https://logichub.app" target="_blank" class="btn ghost">Browse</a>
-              <button class="btn accent" onclick="razorpayPay('scaffold',14900,'Production Scaffold')">Buy Now</button>
-            </div>
-            <div class="product-trust">
-              <span>🇮🇳 Built by Dharam Daxini in Kutch</span>
-              <span>⚡ Instant Digital Delivery</span>
-            </div>
-          </div>
-
-          <!-- Architecture Audit -->
-          <div class="product-card">
-            <div class="product-header">
-              <span class="product-badge">Hanuman.Solutions</span>
-              <h3 class="product-title">Architecture Audit</h3>
-            </div>
-            <p class="product-desc">Security and resilience hardening. Written report with fix plan.</p>
-            <ul class="product-benefits">
-              <li><span>✓</span> Infra debugging</li>
-              <li><span>✓</span> Vulnerability check</li>
-              <li><span>✓</span> Fixed-scope review</li>
-            </ul>
-            <div class="product-pricing">
-              <div class="price">₹4,999</div>
-              <div class="price-note">fixed-scope audit</div>
-            </div>
-            <div class="product-actions">
-              <a href="/products/orchade" class="btn ghost">Learn More</a>
-              <button class="btn accent" onclick="razorpayPay('arch_audit',499900,'Architecture Audit')">Book Now</button>
-            </div>
-            <div class="product-trust">
-              <span>🇮🇳 Built by Dharam Daxini in Kutch</span>
-              <span>📞 Direct Priority Support</span>
-            </div>
-          </div>
-          
-          <!-- PrintByDD Configurator / Custom Services -->
-          <div class="product-card">
-            <div class="product-header">
-              <span class="product-badge">Daxini.Space</span>
-              <h3 class="product-title">PrintByDD / System Repair</h3>
-            </div>
-            <p class="product-desc">Custom CAD configurators & emergency infra repairs.</p>
-            <ul class="product-benefits">
-              <li><span>✓</span> Hardware fabrication</li>
-              <li><span>✓</span> Silent token drops fix</li>
-              <li><span>✓</span> Diagnosis in 12 hours</li>
-            </ul>
-            <div class="product-pricing">
-              <div class="price" style="color:#7a8f8e;font-size:20px;">Custom Quote</div>
-              <div class="price-note">project-based</div>
-            </div>
-            <div class="product-actions" style="grid-template-columns: 1fr;">
-              <a href="https://hanuman.solutions" target="_blank" class="btn ghost" style="border-color: #7a8f8e; color: #7a8f8e;">Send Issue Details</a>
-            </div>
-            <div class="product-trust">
-              <span>🇮🇳 Built by Dharam Daxini in Kutch</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="product-trust-global">
-          <span>🔒 256-bit Encrypted Checkout</span>
-          <span style="color: rgba(255,255,255,0.2);">|</span>
-          <span>💳 Processed by Razorpay</span>
-          <span style="color: rgba(255,255,255,0.2);">|</span>
-          <span>📧 Direct Founder Support (dharam@viadecide.com)</span>
-        </div>
-      </div>
-    </section>
-<!-- Legacy Stats and Philosophy (Cleaned up alignment) -->
-    <section class="container" style="border-top: 1px solid var(--border); padding: 78px 0;">
-      <div class="philosophy">
-        <blockquote>"If your AI stack phones home, it's not your stack."</blockquote>
-        <div class="points">
-          <div class="point"><strong>1. Own your compute.</strong> Every model runs on your hardware. No usage fees, no rate limits, no outage dependencies.</div>
-          <div class="point"><strong>2. Own your data.</strong> IndexedDB, local files, local vector store. Nothing leaves your machine unless you decide.</div>
-          <div class="point"><strong>3. Own your audit trail.</strong> Every inference, every prompt, every response — logged locally in formats you control.</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="container" style="padding-bottom: 78px;">
-      <div class="stats">
-        <div class="stat"><div class="num" style="font-size:2.5rem;font-weight:700;">Kutch</div><div class="label">Built in India</div></div>
-        <div class="stat"><div class="num" style="font-size:2.5rem;font-weight:700;">2026</div><div class="label">Running Since</div></div>
-        <div class="stat"><div class="num" style="font-size:2.5rem;font-weight:700;">&#8734;</div><div class="label">Local Inferences</div></div>
-        <div class="stat"><div class="num" style="font-size:2.5rem;font-weight:700;">100%</div><div class="label">Offline Sovereignty</div></div>
-      </div>
-    </section>
-
+    <!-- 8/9. CTA -->
     <section class="cta-foot" style="border-top: 1px solid var(--border); border-bottom: 0; padding: 78px 0;">
       <div class="container">
         <h2 class="section-title">Ready to own your AI stack?</h2>
         <p>No sign-up on third-party services. Create your sovereign Aporaksha Passport and access the full ecosystem.</p>
         <div class="hero-actions" style="justify-content:center;">
-          <a class="btn accent" href="/passport">Create Passport</a>
-          <a class="btn ghost" href="/dashboard">Dashboard &#8594;</a>
+          <a class="btn accent" href="/passport">Get Access</a>
         </div>
         <p style="margin-top:16px;font-size:13px;">Already have a passport? <a href="/passport" style="color:var(--accent);">Log in</a></p>
       </div>
@@ -1315,7 +1119,7 @@
       </div>
       <div class="footbar">
         <span>&#169; 2026 Dharam Daxini &middot; aporaksha.com &middot; Made in Kutch &#127470;&#127475;</span>
-        <span>Sovereign &middot; Local-First &middot; Zero Cloud</span>
+        <span>Sovereign &middot; Local-First &middot; Cloud-Optional</span>
       </div>
     </div>
   </footer>
@@ -1384,6 +1188,10 @@ function razorpayPay(productId, _amountPaise, productName) {
     }
   };
 
+  // ── Capture Geo Signals ────────────────────────────────────────────────
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const locale = navigator.language;
+
   // ── Step 1: Create order on server ─────────────────────────────────────
   trackConversionEvent('buy_clicked', { product_id: productId });
   fetch('/api/payments/create-order', {
@@ -1392,10 +1200,26 @@ function razorpayPay(productId, _amountPaise, productName) {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + accessToken
     },
-    body:    JSON.stringify({ product_id: productId, email: customerEmail })
+    body:    JSON.stringify({ product_id: productId, email: customerEmail, timezone, locale })
   })
   .then(function(r) {
-    if (!r.ok) return r.json().then(function(e) { throw e; }); // Pass full error object
+    if (!r.ok) {
+      return r.text().then(function(text) {
+        let errBody = {};
+        try { 
+          errBody = JSON.parse(text); 
+        } catch (e) {
+          errBody = { error: 'Payment gateway unavailable. Please try again.' };
+        }
+        
+        if (errBody.error) {
+          _showPaymentError(errBody.error);
+        } else {
+          _showPaymentError('Order creation failed. Please try again.');
+        }
+        throw new Error(errBody.error || 'Server error');
+      });
+    }
     return r.json();
   })
   .then(function(order) {
