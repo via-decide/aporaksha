@@ -1202,25 +1202,20 @@ function razorpayPay(productId, _amountPaise, productName) {
     },
     body:    JSON.stringify({ product_id: productId, email: customerEmail, timezone, locale })
   })
-  .then(function(r) {
-    if (!r.ok) {
-      return r.text().then(function(text) {
-        let errBody = {};
-        try { 
-          errBody = JSON.parse(text); 
-        } catch (e) {
-          errBody = { error: 'Payment gateway unavailable. Please try again.' };
-        }
-        
-        if (errBody.error) {
-          _showPaymentError(errBody.error);
-        } else {
-          _showPaymentError('Order creation failed. Please try again.');
-        }
-        throw new Error(errBody.error || 'Server error');
-      });
+  .then(async function(r) {
+    const text = await r.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      // If the response is not valid JSON (e.g. Vercel 504 "A server error occurred")
+      throw new Error('Payment gateway unavailable. Please try again.');
     }
-    return r.json();
+    
+    if (!r.ok) {
+      throw new Error(data.error || 'Order creation failed. Please try again.');
+    }
+    return data;
   })
   .then(function(order) {
     // ── Step 2: Open Razorpay checkout modal ───────────────────────────
