@@ -21,6 +21,7 @@ const PRODUCTS = {
   forge_access: { amount: 89900,  name: 'LogicHub Forge Access',             currency: 'INR' },
   scaffold:     { amount: 14900,  name: 'Production Scaffold',               currency: 'INR' },
   arch_audit:   { amount: 499900, name: 'Architecture Audit — Hanuman.Solutions', currency: 'INR' },
+  test_product: { amount: 100,    name: 'Validation Product',               currency: 'INR' },
 };
 
 const ACCESS_SECRET = process.env.SECRET_KEY || "zayvora_dev_access_secret";

@@ -51,4 +51,3 @@ function detectAnomaly(userId, ip) {
 }
 
 module.exports = { createSession, validateSession, revokeSession, detectAnomaly, checkThrottle, blockUser, isBlocked };
-module.exports = { createSession, validateSession, revokeSession, detectAnomaly, checkThrottle };
