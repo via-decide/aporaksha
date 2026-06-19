@@ -4,12 +4,15 @@
  * POST /api/payments/create-order
  *
  * Creates a real Razorpay order using the server-side SDK.
- * Returns { order_id, amount, currency, key_id } to the client.
- * Client opens Razorpay checkout modal, then calls /api/payments/verify.
+ * Includes Geo-Fencing Compliance Gate and Commerce Readiness Gate.
  */
 
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
+import { COUNTRY_POLICY, PRODUCT_GEO_OVERRIDES } from '../../lib/commerceConfig.js';
+import { checkHealth as checkSmtpHealth } from '../../lib/emailService.js';
+import { checkHealth as checkPassportHealth, getProductMetadata } from '../../lib/passportEngine.js';
+import { getDB } from '../../lib/db.js';
 
 // ── Product catalogue (amounts in paise = INR × 100) ──────────────────────
 const PRODUCTS = {
@@ -36,6 +39,19 @@ function verifyJWT(token) {
   }
 }
 
+async function logWaitlist(email, product_id, reason) {
+  try {
+    if (!email) return;
+    const db = await getDB();
+    await db.run(
+      `INSERT INTO events (type, payload) VALUES (?, ?)`,
+      ['waitlist_due_to_outage', JSON.stringify({ email, product_id, reason, ts: new Date().toISOString() })]
+    );
+  } catch (e) {
+    console.error("[Waitlist] Failed to log waitlist event:", e);
+  }
+}
+
 export default async function handler(req, res) {
   // ── CORS ────────────────────────────────────────────────────────────────
   const ALLOWED = ['https://aporaksha.com', 'https://www.aporaksha.com'];
@@ -50,27 +66,14 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST')   return res.status(405).json({ error: 'Method not allowed' });
 
-  // ── Auth Validation ───────────────────────────────────────────────────────
-  const authHeader = req.headers.authorization || '';
-  const token = authHeader.replace('Bearer ', '');
-  const verification = verifyJWT(token);
-
-  if (!verification.valid) {
-    return res.status(401).json({ error: 'Unauthorized. Passport authentication required.' });
-  }
-  const userId = verification.payload.userId;
-
-  // ── Validate keys are present ───────────────────────────────────────────
-  const KEY_ID     = process.env.RAZORPAY_KEY_ID;
-  const KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
-
-  if (!KEY_ID || !KEY_SECRET) {
-    console.error('[Razorpay] RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET not set in env');
-    return res.status(500).json({ error: 'Payment gateway not configured. Contact support.' });
-  }
-
   // ── Parse body ──────────────────────────────────────────────────────────
-  const { product_id, email } = req.body || {};
+  const { product_id, email, timezone, locale } = req.body || {};
+
+  // ── 0. Payment Kill Switch ──────────────────────────────────────────────
+  if (process.env.ACCEPT_PAYMENTS === 'OFF') {
+    await logWaitlist(email, product_id, 'kill_switch');
+    return res.status(503).json({ error: 'Purchases are temporarily unavailable. We are performing system maintenance. We will send an update to your email when payments return.' });
+  }
 
   if (!product_id) {
     return res.status(400).json({ error: 'product_id is required' });
@@ -81,10 +84,71 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: `Unknown product: ${product_id}` });
   }
 
-  // ── Country Logging (Geofencing relaxed for global access) ───────────────
+  // ── 1. Geo-Fencing & Compliance Gate ─────────────────────────────────────
   const country = req.headers['x-vercel-ip-country'] || 'UNKNOWN';
-  console.log(`[Razorpay] Order initiated from country: ${country}`);
+  console.log(`[Geo-Fence] Order initiated: ${product_id} from ${country} | TZ: ${timezone} | Locale: ${locale}`);
 
+  // Product specific overrides or default policy
+  const policy = PRODUCT_GEO_OVERRIDES[product_id] || COUNTRY_POLICY;
+  
+  if (policy.BLOCKED && policy.BLOCKED.includes(country)) {
+    console.error(`[Geo-Fence] BLOCKED transaction from ${country}`);
+    return res.status(403).json({ error: 'Purchases are currently unavailable in your region.', code: 'GEO_BLOCKED' });
+  }
+
+  if (policy.ALLOWED && !policy.ALLOWED.includes(country)) {
+    console.warn(`[Geo-Fence] RESTRICTED transaction from ${country} (Not in allowed list)`);
+    // For now we block them, returning a manual review message
+    return res.status(403).json({ error: 'Manual Review Required. Your region requires compliance verification.', code: 'GEO_RESTRICTED' });
+  }
+
+  // ── 2. Commerce Readiness Engine ─────────────────────────────────────────
+  // Auth Check
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.replace('Bearer ', '');
+  const verification = verifyJWT(token);
+
+  if (!verification.valid) {
+    return res.status(401).json({ error: 'Unauthorized. Passport authentication required.' });
+  }
+  const userId = verification.payload.userId;
+  const userEmail = email || verification.payload.email;
+
+  // Passport Check (DB Health)
+  const isPassportHealthy = await checkPassportHealth();
+  if (!isPassportHealthy) {
+    console.error('[Readiness] Passport DB is offline.');
+    await logWaitlist(userEmail, product_id, 'db_offline');
+    return res.status(503).json({ error: 'Purchases are temporarily unavailable. We are updating delivery infrastructure. We will send an update to your email when payments return.' });
+  }
+
+  // SMTP Check
+  const isSmtpHealthy = await checkSmtpHealth();
+  if (!isSmtpHealthy) {
+    console.error('[Readiness] SMTP is offline. Cannot deliver emails.');
+    await logWaitlist(userEmail, product_id, 'smtp_offline');
+    return res.status(503).json({ error: 'Purchases are temporarily unavailable. We are updating delivery infrastructure. We will send an update to your email when payments return.' });
+  }
+
+  // Product Check (Verify deliverable exists)
+  const meta = getProductMetadata(product_id);
+  if (!meta || !meta.downloadLink) {
+    console.error('[Readiness] Product deliverable missing for:', product_id);
+    await logWaitlist(userEmail, product_id, 'missing_deliverable');
+    return res.status(503).json({ error: 'Purchases are temporarily unavailable. We are updating delivery infrastructure. We will send an update to your email when payments return.' });
+  }
+
+  // ── 3. Validate keys are present ─────────────────────────────────────────
+  const KEY_ID     = process.env.RAZORPAY_KEY_ID;
+  const KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
+
+  if (!KEY_ID || !KEY_SECRET) {
+    console.error('[Razorpay] RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET not set in env');
+    await logWaitlist(userEmail, product_id, 'missing_keys');
+    return res.status(500).json({ error: 'Payment gateway not configured. Contact support.' });
+  }
+
+  // ── 4. Create Order ──────────────────────────────────────────────────────
   try {
     const razorpay = new Razorpay({ key_id: KEY_ID, key_secret: KEY_SECRET });
 
@@ -95,15 +159,19 @@ export default async function handler(req, res) {
       notes: {
         product_id,
         product_name: product.name,
-        customer_email: email || verification.payload.email || '',
+        customer_email: userEmail || '',
         user_id: userId,
+        country: country,
+        timezone: timezone || 'unknown',
+        locale: locale || 'unknown'
       },
     });
 
     console.log('[Telemetry] order_created:', {
       order_id: order.id,
       product_id: product_id,
-      user_id: userId
+      user_id: userId,
+      country
     });
 
     return res.status(200).json({
