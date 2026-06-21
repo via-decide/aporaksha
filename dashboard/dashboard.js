@@ -155,6 +155,43 @@
     });
   }
 
+  async function loadDigitalPurchases() {
+    var list = document.getElementById('entitlements-list');
+    if (!list) return;
+    
+    var sessionStr = localStorage.getItem('aporaksha_session');
+    var email = sessionStr ? JSON.parse(sessionStr).email : null;
+    
+    if (!email) {
+      list.innerHTML = '<li>Log in to view purchases.</li>';
+      return;
+    }
+    
+    try {
+      var response = await withTimeout(fetch('../api/passport/verify?email=' + encodeURIComponent(email)), 5000);
+      var data = await response.json();
+      
+      if (!data.entitlements || data.entitlements.length === 0) {
+        list.innerHTML = '<li>No digital purchases found on this passport.</li>';
+      } else {
+        list.innerHTML = data.entitlements.map(function(e) { 
+          return '<li><strong style="color:var(--text)">' + e + '</strong> — Lifetime Digital License</li>'; 
+        }).join('');
+      }
+    } catch (err) {
+      list.innerHTML = '<li>Unable to load purchases. <a href="" onclick="location.reload();return false;" style="color:var(--accent)">Retry</a></li>';
+    }
+  }
+
+  function bindStoreActions() {
+    var btn = document.getElementById('btn-purchase-architect');
+    if (!btn) return;
+    
+    btn.addEventListener('click', function() {
+      global.location.href = '../passport/checkout.html';
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     if (!isAuthenticated()) {
       global.location.href = '../index.html?login=required&redirect=dashboard';
@@ -168,5 +205,7 @@
     loadPassportIdentity();
     bindOrderActions();
     renderOrders();
+    loadDigitalPurchases();
+    bindStoreActions();
   });
 })(window);

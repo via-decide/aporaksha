@@ -8,6 +8,7 @@ require('dotenv').config();
 const razorpayRoutes = require('./routes/razorpay');
 const authRoutes = require('../auth/login');
 const { authMiddleware } = require('../auth/middleware');
+const tokenRoutes = require('./routes/tokenRoutes');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -67,6 +68,7 @@ app.use('/api', generalLimiter);
 app.use('/api/auth/login', authLimiter);
 app.use('/api', authRoutes);
 app.use('/api', razorpayRoutes);
+app.use('/api', tokenRoutes);
 
 app.use('/api/protected', authMiddleware);
 app.get('/api/protected/me', (req, res) => {

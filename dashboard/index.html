@@ -105,6 +105,32 @@
         <div class="section-head"><h2 id="nfc-order-title">NFC Card Orders</h2></div>
         <div class="surface" id="nfc-dashboard-state">No NFC orders yet.</div>
       </section>
+      <section class="section" aria-labelledby="store-title">
+        <div class="section-head"><h2 id="store-title">Digital Store & Bundles</h2></div>
+        <div class="surface" style="padding: 1.5rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+            <div>
+              <h3 style="margin-bottom: 0.5rem;">Sovereign Digital Architect Bundle</h3>
+              <p style="color:var(--muted); font-size: 0.9rem;">Includes LogicHub Founder Pass (Lifetime), Premium OS Features, and App modules.</p>
+              <p style="color:var(--muted); font-size: 0.8rem; margin-top: 0.5rem;">No subscriptions. One-time digital license.</p>
+            </div>
+            <div>
+              <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem;">$149</div>
+              <button class="btn" style="background:var(--accent); color:#fff;" id="btn-purchase-architect">Purchase Bundle</button>
+            </div>
+          </div>
+          <div id="checkout-msg" style="margin-top:1rem; font-size:0.85rem;"></div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="purchases-title">
+        <div class="section-head"><h2 id="purchases-title">My Digital Purchases</h2></div>
+        <div class="surface" id="purchases-dashboard-state">
+          <ul id="entitlements-list" style="padding-left:1.5rem; color:var(--muted);">
+            <li>Loading entitlements...</li>
+          </ul>
+        </div>
+      </section>
     </main>
   </body>
 </html>

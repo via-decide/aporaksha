@@ -1,375 +1,377 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Zayvora Passport — Aporaksha</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-     :root {
-      --bg:       #0B1120;
-      --surface:  #1E293B;
-      --border:   #334155;
-      --text:     #F8FAFC;
-      --muted:    #94A3B8;
-      --accent:   #FF671F;
-      --radius:   10px;
-      --font:     'DM Sans', system-ui, sans-serif;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zayvora Passport — Aporaksha</title>
+  <link rel="stylesheet" href="https://daxini.xyz/assets/css/daxini-brand-kit.css" />
+  <style>
+    :root {
+      --bg: var(--dx-bg-base, #0b0c10);
+      --surface: var(--dx-bg-surface, #121826);
+      --border: var(--dx-border, #1e293b);
+      --accent: var(--dx-accent-aporaksha, #ff671f);
+      --accent-dim: rgba(255, 103, 31, 0.15);
+      --text: var(--dx-text-primary, #f5f5f5);
+      --muted: var(--dx-text-secondary, #94a3b8);
+      --radius-card: var(--dx-radius-md, 12px);
+      --radius-btn: var(--dx-radius-sm, 6px);
     }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: system-ui,-apple-system,sans-serif; height: 100%; }
+    a { color: inherit; text-decoration: none; }
+    .container { width: min(1120px, 92vw); margin: 0 auto; }
 
-    html, body {
-      height: 100%;
-    }
+    .nav {
+      position: sticky; top: 0; z-index: 50;
+      border-bottom: 1px solid var(--border);
+      background: #0a0a0ab0;
+      backdrop-filter: blur(12px);
+    }
+    .nav-inner { height: 72px; display: flex; align-items: center; justify-content: space-between; }
+    .brand { font-weight: 700; letter-spacing: 0.2px; display: inline-flex; align-items: center; gap: 8px; }
+    .brand .glyph { color: var(--accent); font-size: 14px; transform: translateY(-1px); }
+    .brand .dot { color: var(--accent); }
+    .nav-links { display: flex; align-items: center; gap: 20px; color: #cfcfcf; font-size: 14px; }
+    
+    .btn { border: 1px solid var(--border); padding: 11px 16px; border-radius: var(--radius-btn); font-size: 14px; font-weight: 600; transition: .15s ease; display: inline-block; cursor: pointer; text-align: center; }
+    .btn:hover:not(:disabled) { transform: translateY(-1px); }
+    .btn.accent { background: var(--accent); color: #120b08; border-color: var(--accent); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--font);
-      font-size: 15px;
-      line-height: 1.6;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 1.5rem;
-    }
+    .hero {
+      min-height: calc(100vh - 72px);
+      display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;
+      padding: 2rem;
+    }
+    .hero::before {
+      content: ""; position: absolute; inset: -20%;
+      background: radial-gradient(circle at 50% 45%, #ff671f14 0%, #ff671f08 20%, transparent 60%);
+      animation: pulse-glow 8s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes pulse-glow { 0%,100% { opacity: .7; } 50% { opacity: 1; } }
 
-    /* ── Top bar ── */
-    .topbar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 52px;
-      background: var(--bg);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      padding: 0 1.5rem;
-      z-index: 100;
-    }
-
-    .topbar a {
-      color: var(--muted);
-      text-decoration: none;
-      font-size: 0.85rem;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      transition: color 0.15s;
-    }
-
-    .topbar a:hover { color: var(--text); }
-
-    .topbar-logo {
-      margin-left: auto;
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--text);
-      text-decoration: none;
-    }
-
-    /* ── Card ── */
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 2.5rem 2rem;
-      width: 100%;
-      max-width: 420px;
-      margin-top: 52px;
-    }
-
-    .card-header {
-      margin-bottom: 2rem;
-    }
-
-     .passport-icon {
-      width: 40px;
-      height: 40px;
-      background: rgba(196, 154, 60, 0.15);
-      border-radius: 8px;
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); padding: 40px; transition: border-color .2s, box-shadow .2s; width: 100%; max-width: 440px; position: relative; z-index: 2; }
+    .card:hover { border-color: #ff671f44; box-shadow: 0 0 24px #ff671f11; }
+    
+    .passport-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--accent-dim);
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.2rem;
-      margin-bottom: 1rem;
+      font-size: 1.5rem;
+      margin-bottom: 1.25rem;
+      border: 1px solid rgba(255, 103, 31, 0.3);
     }
 
-    h1 {
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 0.3rem;
-    }
+    h1 { margin: 0 0 8px; font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+    .subtitle { color: var(--muted); font-size: 14.5px; line-height: 1.5; margin: 0 0 24px 0; }
 
-    .subtitle {
-      font-size: 0.85rem;
-      color: var(--muted);
-    }
+    .field { margin-bottom: 16px; text-align: left; }
+    label { display: block; font-size: 12px; font-weight: 600; color: #a1a1aa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    input { width: 100%; background: #0b0c10; border: 1px solid var(--border); border-radius: var(--radius-btn); color: var(--text); font-family: inherit; font-size: 14.5px; padding: 12px 14px; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+    input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+    input::placeholder { color: #52525b; }
 
-    /* ── Form ── */
-    .field {
-      margin-bottom: 1.1rem;
-    }
+    .btn-primary { width: 100%; margin-top: 8px; padding: 14px; font-size: 15px; }
 
-    label {
-      display: block;
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      margin-bottom: 0.4rem;
-    }
+    #msg { margin-top: 14px; font-size: 13.5px; text-align: center; min-height: 20px; color: var(--muted); }
+    #msg.error  { color: #ef4444; }
+    #msg.success { color: #22c55e; }
 
-    input {
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--text);
-      font-family: var(--font);
-      font-size: 0.9rem;
-      padding: 0.65rem 0.85rem;
-      outline: none;
-      transition: border-color 0.15s, box-shadow 0.15s;
-      -webkit-appearance: none;
-    }
+    .card-footer { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); text-align: center; font-size: 14px; color: var(--muted); }
+    .card-footer a { color: var(--accent); font-weight: 600; }
+    .card-footer a:hover { text-decoration: underline; }
 
-    input::placeholder { color: #444; }
+    .trust { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; justify-content: center; }
+    .badge { font-size: 11.5px; color: #a1a1aa; background: #18181b; border: 1px solid #27272a; border-radius: 100px; padding: 4px 12px; }
 
-     input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(196, 154, 60, 0.15);
+    @media (max-width: 480px) {
+      .card { padding: 30px 24px; }
+      h1 { font-size: 24px; }
     }
-
-    /* ── Button ── */
-    .btn-primary {
-      width: 100%;
-      background: var(--accent);
-      color: #fff;
-      font-family: var(--font);
-      font-size: 0.9rem;
-      font-weight: 600;
-      border: none;
-      border-radius: 6px;
-      padding: 0.75rem;
-      cursor: pointer;
-      margin-top: 0.5rem;
-      transition: opacity 0.15s, transform 0.1s;
-      letter-spacing: 0.01em;
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      opacity: 0.88;
-    }
-
-    .btn-primary:active:not(:disabled) {
-      transform: scale(0.99);
-    }
-
-    .btn-primary:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
-
-    /* ── Message ── */
-    #msg {
-      margin-top: 0.9rem;
-      font-size: 0.82rem;
-      text-align: center;
-      min-height: 1.1rem;
-      color: var(--muted);
-    }
-
-    #msg.error  { color: #ff4d4d; }
-    #msg.success { color: #4dff91; }
-
-    /* ── Divider + login link ── */
-    .card-footer {
-      margin-top: 1.5rem;
-      padding-top: 1.25rem;
-      border-top: 1px solid var(--border);
-      text-align: center;
-      font-size: 0.83rem;
-      color: var(--muted);
-    }
-
-    .card-footer a {
-      color: var(--accent);
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    .card-footer a:hover { text-decoration: underline; }
-
-    /* ── Trust badges ── */
-    .trust {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-      margin-top: 1rem;
-      justify-content: center;
-    }
-
-    .badge {
-      font-size: 0.72rem;
-      color: #555;
-      background: #141414;
-      border: 1px solid #1e1e1e;
-      border-radius: 100px;
-      padding: 0.25rem 0.65rem;
-    }
-
-    /* ── Mobile ── */
-    @media (max-width: 480px) {
-      .card { padding: 1.75rem 1.25rem; }
-      h1 { font-size: 1.25rem; }
-    }
-  </style>
+  </style>
+  <script src="./passport-id-generator.js"></script>
+  <script src="./passport-model.js"></script>
+  <script src="./passport-store.js"></script>
+  <script src="./passport-auth.js"></script>
+  <script src="./nfc/nfc-passport-reader.js"></script>
 </head>
 <body>
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="../index.html">
+        <span class="glyph">&#x25C6;</span><span><span class="dot">A</span>poraksha</span>
+      </a>
+      <div class="nav-links">
+        <a href="../index.html" style="font-size: 14px; color: #cfcfcf;">&#8592; Back to Gateway</a>
+      </div>
+    </div>
+  </nav>
 
-  <nav class="topbar">
-    <a href="../index.html">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9 11L5 7l4-4"/>
-      </svg>
-      Back
-    </a>
-    <a href="../index.html" class="topbar-logo">Aporaksha</a>
-  </nav>
+  <div class="hero">
+    <div class="card">
+      <div class="passport-icon">🪪</div>
+      <h1>Create Passport</h1>
+      <p class="subtitle">Your sovereign identity across the ecosystem. Skills, reputation, and assets follow you everywhere.</p>
 
-  <div class="card">
-    <div class="card-header">
-      <div class="passport-icon">🪪</div>
-      <h1>Create Passport</h1>
-      <p class="subtitle">Your sovereign identity across the ecosystem. Skills, reputation, and assets follow you everywhere.</p>
-    </div>
+      <div class="field" id="name-field">
+        <label for="name">Display Name</label>
+        <input type="text" id="name" placeholder="e.g. Dharam Daxini" autocomplete="off" />
+      </div>
 
-    <div class="field" id="name-field">
-      <label for="name">Display Name</label>
-      <input type="text" id="name" placeholder="e.g. Dharam Daxini" autocomplete="off" />
-    </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="you@example.com" autocomplete="off" />
+      </div>
 
-    <div class="field">
-      <label for="email">Email</label>
-      <input type="email" id="email" placeholder="you@example.com" autocomplete="off" />
-    </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Minimum 8 characters" />
+      </div>
 
-    <div class="field">
-      <label for="password">Password</label>
-      <input type="password" id="password" placeholder="Minimum 8 characters" />
-    </div>
+      <div class="field" id="nfc-field">
+        <label for="nfc-input">NFC Chip ID (Optional)</label>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="nfc-input" placeholder="Tap card or type ID" autocomplete="off" />
+          <button class="btn" id="nfc-scan-btn" type="button" style="padding: 12px; font-size: 14px; white-space: nowrap; border-color: var(--border);">Scan NFC</button>
+        </div>
+      </div>
 
-    <button class="btn-primary" id="create-btn">Create Passport</button>
-    <div id="msg"></div>
+      <button class="btn accent btn-primary" id="create-btn">Create Passport</button>
+      <div id="msg"></div>
 
-    <div class="card-footer" id="toggle-container">
-      Already have a passport? <a href="#" id="toggle-mode">Log in</a>
-    </div>
+      <div id="nfc-login-container" style="display: none; margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--border); text-align: center;">
+        <p class="subtitle" style="margin-bottom: 12px; font-size: 13.5px;">Or log in instantly via hardware:</p>
+        <button class="btn" id="nfc-login-btn" type="button" style="width: 100%; border-color: var(--accent); background: transparent; color: var(--accent); padding: 12px;">Log In with NFC Passport</button>
+      </div>
 
-    <div class="trust">
-      <span class="badge">✦ Sovereign identity</span>
-      <span class="badge">✦ No third-party auth</span>
-      <span class="badge">✦ Aporaksha Stack</span>
-    </div>
-  </div>
+      <div class="card-footer" id="toggle-container">
+        Already have a passport? <a href="#" id="toggle-mode">Log in</a>
+      </div>
 
-  <script>
-    const btn = document.getElementById('create-btn');
-    const msg = document.getElementById('msg');
+      <div class="trust">
+        <span class="badge">✦ Sovereign identity</span>
+        <span class="badge">✦ No third-party auth</span>
+        <span class="badge">✦ Aporaksha Stack</span>
+      </div>
+    </div>
+  </div>
 
-    function setMsg(text, type) {
-      msg.textContent = text;
-      msg.className = type || '';
-    }
+  <script>
+    const btn = document.getElementById('create-btn');
+    const msg = document.getElementById('msg');
 
-    let isLogin = false;
-    const toggleLink = document.getElementById('toggle-mode');
-    const nameField = document.getElementById('name-field');
-    const headerTitle = document.querySelector('h1');
-    const headerSubtitle = document.querySelector('.subtitle');
+    function setMsg(text, type) {
+      msg.textContent = text;
+      msg.className = type || '';
+    }
 
-    toggleLink.addEventListener('click', function(e) {
-      e.preventDefault();
-      isLogin = !isLogin;
-      if (isLogin) {
-        nameField.style.display = 'none';
-        headerTitle.textContent = 'Log In';
-        headerSubtitle.textContent = 'Access your sovereign identity and ecosystem assets.';
-        btn.textContent = 'Log In';
-        document.getElementById('toggle-container').innerHTML = 'Need a passport? <a href="#" id="toggle-mode">Create one</a>';
-      } else {
-        nameField.style.display = 'block';
-        headerTitle.textContent = 'Create Passport';
-        headerSubtitle.textContent = 'Your sovereign identity across the ecosystem. Skills, reputation, and assets follow you everywhere.';
-        btn.textContent = 'Create Passport';
-        document.getElementById('toggle-container').innerHTML = 'Already have a passport? <a href="#" id="toggle-mode">Log in</a>';
-      }
-      document.getElementById('toggle-mode').addEventListener('click', arguments.callee);
-    });
+    let isLogin = false;
+    const toggleLink = document.getElementById('toggle-mode');
+    const nameField = document.getElementById('name-field');
+    const nfcField = document.getElementById('nfc-field');
+    const nfcLoginContainer = document.getElementById('nfc-login-container');
+    const headerTitle = document.querySelector('h1');
+    const headerSubtitle = document.querySelector('.subtitle');
 
-    btn.addEventListener('click', function () {
-      const name     = document.getElementById('name').value.trim();
-      const email    = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
+    toggleLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      isLogin = !isLogin;
+      if (isLogin) {
+        nameField.style.display = 'none';
+        nfcField.style.display = 'none';
+        nfcLoginContainer.style.display = 'block';
+        headerTitle.textContent = 'Log In';
+        headerSubtitle.textContent = 'Access your sovereign identity and ecosystem assets.';
+        btn.textContent = 'Log In';
+        document.getElementById('toggle-container').childNodes[0].nodeValue = 'Need a passport? ';
+        document.getElementById('toggle-mode').textContent = 'Create one';
+      } else {
+        nameField.style.display = 'block';
+        nfcField.style.display = 'block';
+        nfcLoginContainer.style.display = 'none';
+        headerTitle.textContent = 'Create Passport';
+        headerSubtitle.textContent = 'Your sovereign identity across the ecosystem. Skills, reputation, and assets follow you everywhere.';
+        btn.textContent = 'Create Passport';
+        document.getElementById('toggle-container').childNodes[0].nodeValue = 'Already have a passport? ';
+        document.getElementById('toggle-mode').textContent = 'Log in';
+      }
+    });
 
-      if ((!isLogin && !name) || !email || !password) {
-        setMsg('Please fill in all required fields.', 'error');
-        return;
-      }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        setMsg('Enter a valid email address.', 'error');
-        return;
-      }
-      if (!isLogin && password.length < 8) {
-        setMsg('Password must be at least 8 characters.', 'error');
-        return;
-      }
+    btn.addEventListener('click', function () {
+      const name      = document.getElementById('name').value.trim();
+      const email     = document.getElementById('email').value.trim();
+      const password  = document.getElementById('password').value;
+      const nfcChipId = document.getElementById('nfc-input').value.trim();
 
-      btn.disabled = true;
-      setMsg(isLogin ? 'Logging in…' : 'Creating passport…');
+      if ((!isLogin && !name) || !email || !password) {
+        setMsg('Please fill in all required fields.', 'error');
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setMsg('Enter a valid email address.', 'error');
+        return;
+      }
+      if (!isLogin && password.length < 8) {
+        setMsg('Password must be at least 8 characters.', 'error');
+        return;
+      }
 
-      fetch('../api/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: isLogin ? 'login' : 'signup', name: name, email: email, password: password })
-      })
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-          if (data.accessToken) {
-            localStorage.setItem('aporaksha_session', JSON.stringify({ email: email, accessToken: data.accessToken, refreshToken: data.refreshToken }));
-            setMsg('Success! Redirecting…', 'success');
-            setTimeout(function () {
-              window.location.href = '../dashboard/';
-            }, 1200);
-          } else {
-            setMsg(data.error || 'Authentication failed. Please try again.', 'error');
-            btn.disabled = false;
-          }
-        })
-        .catch(function () {
-          setMsg('Network error. Please try again.', 'error');
-          btn.disabled = false;
-        });
-    });
+      btn.disabled = true;
+      setMsg(isLogin ? 'Logging in…' : 'Creating passport…');
 
-    // Allow Enter key to submit
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' && !btn.disabled) btn.click();
-    });
-  </script>
+      fetch('../api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: isLogin ? 'login' : 'signup', name: name, email: email, password: password, nfc_chip_id: nfcChipId || null })
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.accessToken) {
+            localStorage.setItem('aporaksha_session', JSON.stringify({ email: email, accessToken: data.accessToken, refreshToken: data.refreshToken }));
+            localStorage.setItem('zayvora_token', data.accessToken);
+            
+            // Register local passport profile if NFC tag was supplied
+            if (nfcChipId && window.ZayvoraPassportStore) {
+              try {
+                window.ZayvoraPassportStore.createPassport({
+                  passport_id: email,
+                  handle: email.split('@')[0],
+                  nfc_chip_id: nfcChipId
+                });
+              } catch (e) {
+                console.error("Local registry save warning:", e);
+              }
+            }
+
+            if (window.ZayvoraPassportAuth) {
+              window.ZayvoraPassportAuth.bindSession({ passport_id: email, handle: email });
+            }
+            setMsg('Success! Redirecting…', 'success');
+            setTimeout(function () {
+              window.location.href = '../dashboard/';
+            }, 1200);
+          } else {
+            setMsg(data.error || 'Authentication failed. Please try again.', 'error');
+            btn.disabled = false;
+          }
+        })
+        .catch(function () {
+          setMsg('Network error. Please try again.', 'error');
+          btn.disabled = false;
+        });
+    });
+
+    // NFC Registration Scan
+    const nfcInput = document.getElementById('nfc-input');
+    const nfcScanBtn = document.getElementById('nfc-scan-btn');
+    const nfcLoginBtn = document.getElementById('nfc-login-btn');
+
+    nfcScanBtn.addEventListener('click', async function () {
+      if (!window.ZayvoraNfcPassportReader) {
+        setMsg('NFC reader library is not loaded.', 'error');
+        return;
+      }
+      nfcScanBtn.disabled = true;
+      nfcScanBtn.textContent = 'Scanning...';
+      setMsg('Tap your physical NFC card on your device reader...');
+      
+      try {
+        const result = await window.ZayvoraNfcPassportReader.readPassportFromNfc();
+        nfcScanBtn.disabled = false;
+        nfcScanBtn.textContent = 'Scan NFC';
+        
+        if (result.supported) {
+          if (result.serialNumber) {
+            const serial = result.serialNumber.replace(/:/g, '').toUpperCase();
+            nfcInput.value = serial;
+            setMsg('NFC tag read successfully: ' + serial, 'success');
+          } else {
+            setMsg(result.message || 'No card serial detected.', 'error');
+          }
+        } else {
+          setMsg(result.message || 'NFC not supported.', 'error');
+        }
+      } catch (err) {
+        nfcScanBtn.disabled = false;
+        nfcScanBtn.textContent = 'Scan NFC';
+        setMsg('NFC Error: ' + err.message, 'error');
+      }
+    });
+
+    // NFC Instant Login
+    nfcLoginBtn.addEventListener('click', async function () {
+      if (!window.ZayvoraNfcPassportReader) {
+        setMsg('NFC reader library is not loaded.', 'error');
+        return;
+      }
+      nfcLoginBtn.disabled = true;
+      const originalText = nfcLoginBtn.textContent;
+      nfcLoginBtn.textContent = 'Scanning...';
+      setMsg('Tap your physical NFC card on your device reader...');
+      
+      try {
+        const result = await window.ZayvoraNfcPassportReader.readPassportFromNfc();
+        nfcLoginBtn.disabled = false;
+        nfcLoginBtn.textContent = originalText;
+        
+        if (!result.supported) {
+          setMsg(result.message || 'NFC not supported.', 'error');
+          return;
+        }
+        
+        if (!result.serialNumber) {
+          setMsg('NFC scan cancelled or no ID read.', 'error');
+          return;
+        }
+        
+        const serial = result.serialNumber.replace(/:/g, '').toUpperCase();
+        setMsg('NFC read success! Authenticating via Aporaksha gateway...');
+        
+        fetch('../api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'nfc_login', nfc_chip_id: serial })
+        })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            if (data.accessToken) {
+              const email = data.email || 'nfc_user@aporaksha.com';
+              localStorage.setItem('aporaksha_session', JSON.stringify({ email: email, accessToken: data.accessToken, refreshToken: data.refreshToken }));
+              localStorage.setItem('zayvora_token', data.accessToken);
+              
+              if (window.ZayvoraPassportAuth) {
+                window.ZayvoraPassportAuth.loginWithNfcChipId(serial);
+              }
+              
+              setMsg('Identity verified! Redirecting...', 'success');
+              setTimeout(function () {
+                window.location.href = '../dashboard/';
+              }, 1200);
+            } else {
+              setMsg(data.error || 'No account mapped to this NFC Card. Try logging in with Email/Password to link it.', 'error');
+            }
+          })
+          .catch(function () {
+            setMsg('Network error authenticating NFC. Please try again.', 'error');
+          });
+      } catch (err) {
+        nfcLoginBtn.disabled = false;
+        nfcLoginBtn.textContent = originalText;
+        setMsg('NFC Login Error: ' + err.message, 'error');
+      }
+    });
+
+    // Allow Enter key to submit
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !btn.disabled && !isLogin) btn.click();
+    });
+  </script>
 
 </body>
 </html>

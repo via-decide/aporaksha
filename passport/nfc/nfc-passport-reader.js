@@ -22,7 +22,8 @@
         resolve({
           supported: true,
           message: passport ? 'Passport found.' : 'No passport mapped to NFC serial.',
-          passport: passport
+          passport: passport,
+          serialNumber: serialNumber
         });
       });
 

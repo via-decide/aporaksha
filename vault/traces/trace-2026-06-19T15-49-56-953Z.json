@@ -1,0 +1,34 @@
+{
+  "timestamp": "2026-06-19T15:49:56.953Z",
+  "mission": "Cockpit v0.2 Verification Mission",
+  "elapsedMs": 235,
+  "tokensEstimate": 24700,
+  "creditsSaved": 11.9,
+  "metrics": {
+    "filesScanned": 138,
+    "techDebtScore": 6,
+    "todosCount": 0,
+    "emptyCatchesCount": 2,
+    "evalsCount": 0,
+    "duplicatesCount": 0
+  },
+  "verification": {
+    "success": true,
+    "testsPassed": 4,
+    "testsFailed": 0,
+    "lintPassed": true
+  },
+  "planPath": "/Users/dharamdaxini/Downloads/via/aporaksha/IMPROVEMENT_PLAN.md",
+  "patchProposed": null,
+  "logs": [
+    "[9:19:56 PM] Mission Control Sequence Initiated: Cockpit v0.2 Verification Mission",
+    "[9:19:56 PM] Phase 1: Scanner (Measuring codebase)...",
+    "[9:19:56 PM] Scan Complete. Files: 138, Debt Score: 6",
+    "[9:19:56 PM] Phase 2: Planner (Formulating improvements)...",
+    "[9:19:56 PM] Plan Complete: /Users/dharamdaxini/Downloads/via/aporaksha/IMPROVEMENT_PLAN.md",
+    "[9:19:56 PM] Phase 3: Verifier (Running tests & syntax checks)...",
+    "[9:19:56 PM] Verification Passed ✅",
+    "[9:19:56 PM] Phase 4: Metrics (Computing token/time savings)...",
+    "[9:19:56 PM] Phase 5: Trace & Vault (Saving execution trace)..."
+  ]
+}

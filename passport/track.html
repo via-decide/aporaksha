@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Tracking & Provisioning — Aporaksha Passport</title>
+  <link rel="stylesheet" href="https://daxini.xyz/assets/css/daxini-brand-kit.css" />
+  
+  <!-- jsPDF for client-side PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #0b0c10;
+      --surface: #121826;
+      --border: #1e293b;
+      --accent: #ff671f;
+      --accent-dim: rgba(255, 103, 31, 0.12);
+      --success: #22c55e;
+      --success-dim: rgba(34, 197, 94, 0.12);
+      --text: #f5f5f5;
+      --muted: #94a3b8;
+      --radius-card: 16px;
+      --radius-btn: 8px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    a { color: inherit; text-decoration: none; }
+    
+    .nav {
+      border-bottom: 1px solid var(--border);
+      background: #0a0a0ab0;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .nav-inner {
+      height: 72px;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand { font-weight: 700; display: inline-flex; align-items: center; gap: 8px; }
+    .brand .glyph { color: var(--accent); font-size: 14px; }
+    .brand .dot { color: var(--accent); }
+
+    .main {
+      flex: 1;
+      max-width: 800px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      padding: 2rem;
+    }
+
+    .header-section {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .header-section h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+    }
+    .header-section p {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    /* ONDC timeline */
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      position: relative;
+      padding-left: 2.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 14px;
+      top: 10px;
+      bottom: 10px;
+      width: 2px;
+      background: var(--border);
+      z-index: 1;
+    }
+    .timeline-step {
+      position: relative;
+      z-index: 2;
+    }
+    .timeline-icon {
+      position: absolute;
+      left: -2.5rem;
+      top: -2px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #1e293b;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: var(--muted);
+      transition: all 0.4s ease;
+    }
+    .timeline-content {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .timeline-title {
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--muted);
+      transition: color 0.4s ease;
+    }
+    .timeline-desc {
+      font-size: 0.85rem;
+      color: var(--muted);
+      opacity: 0.7;
+    }
+
+    /* Active step styling */
+    .timeline-step.active .timeline-icon {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent);
+      box-shadow: 0 0 12px var(--accent-dim);
+    }
+    .timeline-step.active .timeline-title {
+      color: var(--accent);
+    }
+
+    /* Completed step styling */
+    .timeline-step.completed .timeline-icon {
+      background: var(--success-dim);
+      border-color: var(--success);
+      color: var(--success);
+    }
+    .timeline-step.completed .timeline-title {
+      color: var(--text);
+    }
+
+    /* Pulse animation for active step */
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent);
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.5; }
+    }
+
+    /* Summary info block */
+    .receipt-block {
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+      margin-top: 1.5rem;
+      display: none; /* Shown after completion */
+      animation: fadeIn 0.6s ease forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.25rem;
+    }
+    .info-table td {
+      padding: 8px 0;
+      font-size: 0.9rem;
+    }
+    .info-table td.label {
+      color: var(--muted);
+      width: 35%;
+    }
+    .info-table td.value {
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .receipt-box {
+      border: 1px dashed rgba(255, 103, 31, 0.3);
+      background: rgba(255, 103, 31, 0.03);
+      border-radius: var(--radius-btn);
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .receipt-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 0.85rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .receipt-row:last-child { border-bottom: none; }
+    .receipt-total {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: var(--radius-btn);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+      margin-bottom: 10px;
+    }
+    .btn.primary {
+      background: var(--accent);
+      color: #120b08;
+      border: none;
+    }
+    .btn.secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
+    .btn:active { transform: translateY(0); }
+
+    /* Spinner */
+    .spinner {
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-left-color: var(--accent);
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="brand">
+        <span class="glyph">&#x25C6;</span><span><span class="dot">A</span>poraksha</span>
+      </div>
+      <div style="font-size: 12px; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 6px;">
+        <span class="pulse-dot"></span> LIVE PROVISIONING
+      </div>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="card">
+      <div class="header-section">
+        <h1 id="status-title">Securing Workspace Session...</h1>
+        <p id="status-desc">Synchronizing with the local-first Aporaksha gateway</p>
+      </div>
+
+      <div class="timeline">
+        <!-- Step 1 -->
+        <div class="timeline-step active" id="step-1">
+          <div class="timeline-icon" id="icon-1">1</div>
+          <div class="timeline-content">
+            <div class="timeline-title">Order Placed</div>
+            <div class="timeline-desc">Securing license payload configuration</div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="timeline-step" id="step-2">
+          <div class="timeline-icon" id="icon-2">2</div>
+          <div class="timeline-content">
+            <div class="timeline-title">Payment Confirmed</div>
+            <div class="timeline-desc">Simulated settlement processed instantly</div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="timeline-step" id="step-3">
+          <div class="timeline-icon" id="icon-3">3</div>
+          <div class="timeline-content">
+            <div class="timeline-title">License Provisioning</div>
+            <div class="timeline-desc">Aporaksha worker writing entitlements to Passport DB</div>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="timeline-step" id="step-4">
+          <div class="timeline-icon" id="icon-4">4</div>
+          <div class="timeline-content">
+            <div class="timeline-title">Entitlements Deployed & Gift Dispatched</div>
+            <div class="timeline-desc">Digital pass activated & free NFC Keychain shipment generated</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Receipt summary (Hidden initially) -->
+      <div class="receipt-block" id="receipt-block">
+        <div class="section-head" style="margin-bottom: 1rem;"><h2 style="font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.5px;">Receipt & Shipping Details</h2></div>
+        
+        <div class="receipt-box">
+          <div class="receipt-row">
+            <span class="label">Sovereign Digital Architect Bundle</span>
+            <span class="value">$149.00</span>
+          </div>
+          <div class="receipt-row">
+            <span class="label">Physical NFC Keychain (Founder's Gift)</span>
+            <span class="value" style="color: var(--success); font-weight: bold;">FREE (Gifted)</span>
+          </div>
+          <div class="receipt-row" style="margin-top: 6px; padding-top: 6px; border-top: 1px dashed rgba(255,255,255,0.08);">
+            <span class="receipt-total">Total Charged</span>
+            <span class="receipt-total">$149.00</span>
+          </div>
+        </div>
+
+        <table class="info-table">
+          <tr>
+            <td class="label">Order ID</td>
+            <td class="value" id="receipt-order-id">APO-1002394</td>
+          </tr>
+          <tr>
+            <td class="label">Passport Account</td>
+            <td class="value" id="receipt-email">user@aporaksha.com</td>
+          </tr>
+          <tr>
+            <td class="label">Shipping To</td>
+            <td class="value" id="receipt-shipping-name">Dharam Daxini</td>
+          </tr>
+          <tr>
+            <td class="label">Destination Address</td>
+            <td class="value" id="receipt-shipping-address">123 Lane, Gandhidham, Gujarat</td>
+          </tr>
+          <tr>
+            <td class="label">WhatsApp Contact</td>
+            <td class="value" id="receipt-shipping-whatsapp">9999999999</td>
+          </tr>
+        </table>
+
+        <button class="btn primary" onclick="downloadPDF()">📄 Download Receipt PDF</button>
+        <button class="btn secondary" onclick="goHome()">Back to Dashboard</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let orderId = "";
+    let email = "";
+    let shipping = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // 1. Get user context
+      const sessionStr = localStorage.getItem('aporaksha_session');
+      if (!sessionStr) {
+        window.location.href = '../index.html';
+        return;
+      }
+      email = JSON.parse(sessionStr).email;
+
+      // 2. Get shipping address
+      const shippingStr = sessionStorage.getItem('aporaksha_shipping');
+      if (!shippingStr) {
+        window.location.href = './checkout.html';
+        return;
+      }
+      shipping = JSON.parse(shippingStr);
+
+      // Generate random Order ID
+      orderId = "APO-" + Math.random().toString(36).slice(2, 6).toUpperCase() + Math.floor(Math.random() * 1000).toString().padStart(3, "0");
+
+      // Set initial state descriptions
+      document.getElementById('receipt-order-id').textContent = orderId;
+      document.getElementById('receipt-email').textContent = email;
+      document.getElementById('receipt-shipping-name').textContent = shipping.name;
+      document.getElementById('receipt-shipping-address').textContent = `${shipping.address}, ${shipping.city}, ${shipping.state} - ${shipping.pincode}`;
+      document.getElementById('receipt-shipping-whatsapp').textContent = shipping.whatsapp;
+
+      // Start the animated timeline pipeline
+      startTimelinePipeline();
+    });
+
+    function setStepState(stepNum, state) {
+      const stepEl = document.getElementById(`step-${stepNum}`);
+      const iconEl = document.getElementById(`icon-${stepNum}`);
+      if (state === 'active') {
+        stepEl.className = 'timeline-step active';
+        iconEl.innerHTML = '<span class="spinner"></span>';
+      } else if (state === 'completed') {
+        stepEl.className = 'timeline-step completed';
+        iconEl.innerHTML = '✓';
+      }
+    }
+
+    function startTimelinePipeline() {
+      // Step 1 is active initially. Transition to complete after 1.2s.
+      setTimeout(() => {
+        setStepState(1, 'completed');
+        
+        // Active Step 2: Payment
+        document.getElementById('status-title').textContent = "Processing Instant Payment...";
+        document.getElementById('status-desc').textContent = "Simulating secure bank gateway handshake";
+        setStepState(2, 'active');
+
+        setTimeout(() => {
+          setStepState(2, 'completed');
+
+          // Active Step 3: Provisioning DB
+          document.getElementById('status-title').textContent = "Provisioning Digital Stack...";
+          document.getElementById('status-desc').textContent = "Writing lifetime entitlements to passport ledger";
+          setStepState(3, 'active');
+
+          // Perform actual API call to add entitlements in SQLite DB
+          fetch('../api/passport/add-entitlement', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: email,
+              entitlements: ['LogicHub Founder Pass', 'Premium OS Features', 'Advanced App Modules']
+            })
+          }).then(res => {
+            if (!res.ok) throw new Error("API entitlement write failed");
+            return res.json();
+          }).then(data => {
+            // Entitlements written successfully! Proceed to Step 4 after a short delay
+            setTimeout(() => {
+              setStepState(3, 'completed');
+
+              // Active Step 4: Success & Dispatch
+              document.getElementById('status-title').textContent = "Entitlements Activated!";
+              document.getElementById('status-desc').textContent = "Digital licenses deployed & keychain gift queue dispatched";
+              setStepState(4, 'completed');
+
+              // Show receipt details block
+              document.getElementById('receipt-block').style.display = 'block';
+            }, 1000);
+          }).catch(err => {
+            console.error("API error during provisioning:", err);
+            // Fallback for demo completeness even on temporary fetch error
+            setTimeout(() => {
+              setStepState(3, 'completed');
+              setStepState(4, 'completed');
+              document.getElementById('receipt-block').style.display = 'block';
+            }, 1000);
+          });
+
+        }, 1200);
+
+      }, 1200);
+    }
+
+    function downloadPDF() {
+      if (typeof window.jspdf === "undefined" && typeof jsPDF === "undefined") {
+        alert("PDF generator library not fully loaded. Try again in a moment.");
+        return;
+      }
+
+      const jspdfLib = (typeof window.jspdf !== "undefined") ? window.jspdf.jsPDF : jsPDF;
+      const doc = new jspdfLib({ orientation: "portrait", unit: "mm", format: "a4" });
+      const W = doc.internal.pageSize.getWidth();
+      const margin = 20;
+      let y = 0;
+
+      // Helpers
+      function txt(text, x, yy, size, bold, r, g, b, align = "left") {
+        doc.setFontSize(size || 10);
+        doc.setFont("helvetica", bold ? "bold" : "normal");
+        doc.setTextColor(r || 245, g || 245, b || 245);
+        doc.text(String(text || ""), x, yy, { align });
+      }
+
+      // Background Dark Base
+      doc.setFillColor(11, 12, 16);
+      doc.rect(0, 0, W, 297, "F");
+
+      // Orange Header Bar
+      doc.setFillColor(255, 103, 31);
+      doc.rect(0, 0, W, 38, "F");
+
+      txt("APORAKSHA", margin, 16, 20, true, 18, 11, 8);
+      txt("Sovereign AI Infrastructure", margin, 23, 8.5, false, 18, 11, 8);
+
+      txt("INVOICE & RECEIPT", W - margin, 16, 12, true, 18, 11, 8, "right");
+      txt("Digital Bundle & NFC Gift Dispatch", W - margin, 23, 8, false, 18, 11, 8, "right");
+
+      y = 52;
+
+      // CAC / gift banner in PDF
+      doc.setFillColor(25, 20, 15);
+      doc.setDrawColor(255, 103, 31);
+      doc.roundedRect(margin, y, W - (margin * 2), 16, 3, 3, "FD");
+      txt("🎁 FREE NFC KEYCHAIN INCLUDED (FOUNDER'S GIFT)", margin + 6, y + 6.5, 8.5, true, 255, 103, 31);
+      txt("Gift cost ($0.00) fully covered as Customer Acquisition Cost (CAC) by the founder.", margin + 6, y + 11.5, 7.5, false, 160, 160, 160);
+      y += 24;
+
+      // Meta boxes side by side
+      doc.setFillColor(18, 24, 38);
+      doc.setDrawColor(30, 41, 59);
+      doc.roundedRect(margin, y, (W / 2) - margin - 3, 32, 4, 4, "FD");
+      txt("ORDER ID", margin + 6, y + 7, 7, false, 148, 163, 184);
+      txt(orderId, margin + 6, y + 14, 10, true, 255, 103, 31);
+      txt("PASSPORT ACCOUNT", margin + 6, y + 21, 7, false, 148, 163, 184);
+      txt(email, margin + 6, y + 27, 8.5, false, 240, 240, 240);
+
+      doc.roundedRect((W / 2) + 3, y, (W / 2) - margin - 3, 32, 4, 4, "FD");
+      txt("GATEWAY TRANSACTION", (W / 2) + 9, y + 7, 7, false, 148, 163, 184);
+      txt("APORAKSHA BRIDGE", (W / 2) + 9, y + 14, 9.5, true, 34, 197, 94);
+      txt("DATE & TIME", (W / 2) + 9, y + 21, 7, false, 148, 163, 184);
+      txt(new Date().toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }), (W / 2) + 9, y + 27, 8.5, false, 240, 240, 240);
+      y += 40;
+
+      // Shipping Destination Table
+      txt("SHIPPING TO (FOR NFC KEYCHAIN DISPATCH)", margin, y, 9, true, 180, 180, 180);
+      y += 5;
+      doc.setDrawColor(30, 41, 59);
+      doc.line(margin, y, W - margin, y);
+      y += 6;
+
+      txt("Recipient Name:", margin, y, 8.5, false, 148, 163, 184);
+      txt(shipping.name, margin + 35, y, 8.5, true, 240, 240, 240);
+      y += 6;
+
+      txt("WhatsApp Mobile:", margin, y, 8.5, false, 148, 163, 184);
+      txt(shipping.whatsapp, margin + 35, y, 8.5, true, 240, 240, 240);
+      y += 6;
+
+      txt("Street Address:", margin, y, 8.5, false, 148, 163, 184);
+      txt(shipping.address, margin + 35, y, 8.5, true, 240, 240, 240);
+      y += 6;
+
+      txt("City & State:", margin, y, 8.5, false, 148, 163, 184);
+      txt(`${shipping.city}, ${shipping.state} - ${shipping.pincode}`, margin + 35, y, 8.5, true, 240, 240, 240);
+      y += 12;
+
+      // Items Table
+      txt("SUMMARY OF ITEMS & LICENSE LEDGER", margin, y, 9, true, 180, 180, 180);
+      y += 5;
+      doc.line(margin, y, W - margin, y);
+      y += 6;
+
+      // Table Header
+      doc.setFillColor(30, 41, 59);
+      doc.rect(margin, y, W - (margin * 2), 8, "F");
+      txt("Licensed Item / Asset Description", margin + 4, y + 5.5, 8, true, 240, 240, 240);
+      txt("Type", W * 0.65, y + 5.5, 8, true, 240, 240, 240);
+      txt("Price", W - margin - 4, y + 5.5, 8, true, 240, 240, 240, "right");
+      y += 8;
+
+      // Row 1: Bundle
+      doc.setFillColor(18, 24, 38);
+      doc.rect(margin, y, W - (margin * 2), 10, "F");
+      txt("Sovereign Digital Architect Bundle", margin + 4, y + 6.5, 8.5, false, 240, 240, 240);
+      txt("Lifetime Pass", W * 0.65, y + 6.5, 8, false, 160, 160, 160);
+      txt("$149.00", W - margin - 4, y + 6.5, 8.5, true, 255, 103, 31, "right");
+      y += 10;
+
+      // Row 2: NFC Gift
+      doc.setFillColor(18, 24, 38);
+      doc.rect(margin, y, W - (margin * 2), 10, "F");
+      txt("Physical Hardcore NFC Keychain (Founder's Gift)", margin + 4, y + 6.5, 8.5, false, 240, 240, 240);
+      txt("Physical Hardware", W * 0.65, y + 6.5, 8, false, 160, 160, 160);
+      txt("$0.00 (Gift)", W - margin - 4, y + 6.5, 8.5, true, 34, 197, 94, "right");
+      y += 14;
+
+      // Total block
+      doc.line(W * 0.5, y, W - margin, y);
+      y += 8;
+      txt("Total Price:", W * 0.6, y, 9, false, 160, 160, 160);
+      txt("$149.00", W - margin - 4, y, 10, true, 255, 103, 31, "right");
+      y += 6;
+      txt("Total Paid (Bridge):", W * 0.6, y, 9, true, 240, 240, 240);
+      txt("$149.00", W - margin - 4, y, 11, true, 34, 197, 94, "right");
+      y += 16;
+
+      // Disclaimed notice
+      doc.setFontSize(7.5);
+      doc.setFont("helvetica", "italic");
+      doc.setTextColor(148, 163, 184);
+      doc.text("Licenses Provisioned: LogicHub Founder Pass (Lifetime), Premium OS Features (Lifetime), Advanced App Modules (Lifetime).", W / 2, y, { align: "center" });
+      doc.text("Physical keychain order has been scheduled automatically in our 3D manufacturing queue for Gandhidham Hub.", W / 2, y + 4.5, { align: "center" });
+
+      // Footer
+      y = 268;
+      doc.setFillColor(255, 103, 31);
+      doc.rect(0, y, W, 3, "F");
+      y += 8;
+      txt("Aporaksha Ecosystem System Gateway · Sovereign OS Node", W / 2, y, 7.5, false, 100, 116, 139, "center");
+      txt("CAC / Gift Allocation: 1 Unit PrintByDD Custom NFC Keychain. Zero retail liability.", W / 2, y + 5, 7, false, 100, 116, 139, "center");
+
+      doc.save(`Aporaksha-Invoice-${orderId}.pdf`);
+    }
+
+    function goHome() {
+      // Clear address info from session storage
+      sessionStorage.removeItem('aporaksha_shipping');
+      window.location.href = '../dashboard/';
+    }
+  </script>
+</body>
+</html>

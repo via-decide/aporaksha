@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SSO Bridge</title>
+</head>
+<body>
+  <script>
+    const TRUSTED_ORIGIN_REGEX = /^(https:\/\/(daxini\.space|logichub\.app|daxini\.xyz|hanuman\.solutions|viadecide\.com)|http:\/\/localhost:700[1-6]|http:\/\/localhost:3000)$/;
+
+    window.addEventListener('message', (event) => {
+      // Validate incoming message origin
+      if (!TRUSTED_ORIGIN_REGEX.test(event.origin)) {
+        console.warn('[SSO Bridge] Blocked unauthorized origin:', event.origin);
+        return;
+      }
+
+      const { action, key, value } = event.data || {};
+
+      if (action === 'get') {
+        const itemValue = localStorage.getItem(key);
+        event.source.postMessage({
+          type: 'SSO_RESPONSE',
+          action: 'get',
+          key,
+          value: itemValue
+        }, event.origin);
+      } else if (action === 'set') {
+        if (value) {
+          localStorage.setItem(key, value);
+        } else {
+          localStorage.removeItem(key);
+        }
+        event.source.postMessage({
+          type: 'SSO_RESPONSE',
+          action: 'set',
+          key,
+          success: true
+        }, event.origin);
+      } else if (action === 'clear') {
+        localStorage.removeItem('via_access_token');
+        localStorage.removeItem('via_refresh_token');
+        localStorage.removeItem('aporaksha_access');
+        localStorage.removeItem('aporaksha_refresh');
+        localStorage.removeItem('ecosystem_uid');
+        localStorage.removeItem('via_session_id');
+        event.source.postMessage({
+          type: 'SSO_RESPONSE',
+          action: 'clear',
+          success: true
+        }, event.origin);
+      }
+    });
+  </script>
+</body>
+</html>

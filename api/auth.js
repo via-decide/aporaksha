@@ -111,7 +111,7 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { action, email, password, refreshToken } = req.body || {};
+  const { action, email, password, refreshToken, nfc_chip_id } = req.body || {};
   const identity = (email || "").trim().toLowerCase();
 
   // SIGNUP
@@ -122,11 +122,23 @@ export default async function handler(req, res) {
       return res.status(409).json({ error: "Account exists" });
 
     const id = crypto.randomUUID();
-    const newUser = { id, email: identity, password_hash: hashPassword(password), role: "user" };
+    const newUser = { id, email: identity, password_hash: hashPassword(password), role: "user", nfc_chip_id: nfc_chip_id || null };
     users.set(identity, newUser);
     saveUsers(users);
     const tokens = issueTokens(newUser, req.headers["x-device-id"] || "web");
     return res.status(201).json(tokens);
+  }
+
+  // NFC LOGIN
+  if (action === "nfc_login") {
+    if (!nfc_chip_id)
+      return res.status(400).json({ error: "NFC chip ID required" });
+    const user = Array.from(users.values()).find((u) => u.nfc_chip_id === nfc_chip_id);
+    if (!user)
+      return res.status(401).json({ error: "No passport associated with this NFC Card." });
+
+    const tokens = issueTokens(user, req.headers["x-device-id"] || "web");
+    return res.json({ ...tokens, email: user.email });
   }
 
   // LOGIN
