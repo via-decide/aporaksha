@@ -15,7 +15,7 @@
     { "source": "/passport", "destination": "/passport/index.html" },
     { "source": "/dashboard", "destination": "/dashboard/index.html" },
     { "source": "/ecosystem", "destination": "/ecosystem/index.html" },
-    { "source": "/redeem", "destination": "/passport/redeem.html" }
+    { "source": "/redeem", "destination": "/passport/redeem" }
   ],
   "headers": [
     {
