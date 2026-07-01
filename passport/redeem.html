@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redeem Gift Code — Aporaksha Passport</title>
+  <link rel="stylesheet" href="https://daxini.xyz/assets/css/daxini-brand-kit.css" />
+  <style>
+    :root {
+      --bg: #0b0c10;
+      --surface: #121826;
+      --border: #1e293b;
+      --accent: #ff671f;
+      --accent-dim: rgba(255, 103, 31, 0.12);
+      --text: #f5f5f5;
+      --muted: #94a3b8;
+      --radius-card: 16px;
+      --radius-btn: 8px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
+    }
+    
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      padding: 2.5rem;
+      max-width: 440px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--accent), #ff9f1c);
+    }
+
+    .brand {
+      font-weight: 700;
+      font-size: 1.25rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 2rem;
+    }
+    .brand .glyph { color: var(--accent); }
+    .brand .dot { color: var(--accent); }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.5px;
+    }
+    p.desc {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin-bottom: 2rem;
+    }
+
+    .form-group {
+      text-align: left;
+      margin-bottom: 1.5rem;
+    }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+    input {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      background: #0b0c10;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-btn);
+      color: var(--text);
+      font-size: 1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      text-align: center;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 0.9rem 1.5rem;
+      background: var(--accent);
+      color: #120b08;
+      border: none;
+      border-radius: var(--radius-btn);
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn:hover {
+      background: #ff7e3d;
+      transform: translateY(-1px);
+    }
+    .btn:active {
+      transform: translateY(0);
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn.secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      margin-top: 1rem;
+    }
+    .btn.secondary:hover {
+      background: #1a2233;
+    }
+
+    #error-msg {
+      margin-top: 1rem;
+      color: #ef4444;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .success-badge {
+      width: 64px;
+      height: 64px;
+      background: #10b981;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+    }
+    .success-badge svg {
+      width: 32px;
+      height: 32px;
+      color: white;
+    }
+
+    .celebrate {
+      animation: zoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes zoomIn {
+      0% { transform: scale(0.9); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .pulse {
+      animation: pulse-glow 2s infinite;
+    }
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.7; }
+      50% { opacity: 1; }
+    }
+
+    .user-info {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: -1.25rem;
+      margin-bottom: 1.5rem;
+      background: #0f1422;
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: 1px solid #1a2233;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card" id="redeem-card">
+    <div class="brand">
+      <span class="glyph">✦</span> Aporaksha <span class="dot">.</span>
+    </div>
+
+    <!-- State 1: Auth Required -->
+    <div id="auth-state" style="display: none;">
+      <h2>🔒 Identity Verification Required</h2>
+      <p class="desc">You must log in to your Aporaksha Passport before claiming your SmartTag gift.</p>
+      
+      <button class="btn" onclick="redirectToLogin()">
+        Log In to Passport
+      </button>
+    </div>
+
+    <!-- State 2: Ready to Redeem -->
+    <div id="claim-state" style="display: none;">
+      <h2>Surprise Gift Found?</h2>
+      <p class="desc">Enter the secret code included in your SmartTag packaging to unlock complete lifetime access.</p>
+      
+      <div class="user-info" id="user-email">Logged in as: ...</div>
+
+      <form id="redeem-form" onsubmit="event.preventDefault(); submitRedemption();">
+        <div class="form-group">
+          <label for="redeem-code">VIP Access Code</label>
+          <input type="text" id="redeem-code" placeholder="VIP-XXXXXX" required />
+        </div>
+
+        <button class="btn" id="claim-btn" type="submit">
+          Unlock Everything
+        </button>
+      </form>
+      
+      <div id="error-msg"></div>
+    </div>
+
+    <!-- State 3: Success Celebration -->
+    <div id="success-state" class="celebrate" style="display: none;">
+      <div class="success-badge">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+        </svg>
+      </div>
+      <h2>Access Granted</h2>
+      <p class="desc" id="success-msg">Welcome to the inner circle. Complete access unlocked.</p>
+      <p class="pulse" style="font-size: 0.8rem; color: var(--muted);">Redirecting to your vault...</p>
+    </div>
+  </div>
+
+  <script>
+    let session = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // Check query parameter
+      const params = new URLSearchParams(window.location.search);
+      const urlCode = params.get('code');
+      if (urlCode) {
+        document.getElementById('redeem-code').value = urlCode.toUpperCase();
+      }
+
+      // Check session
+      const sessionStr = localStorage.getItem('aporaksha_session');
+      if (!sessionStr) {
+        document.getElementById('auth-state').style.display = 'block';
+        return;
+      }
+
+      try {
+        session = JSON.parse(sessionStr);
+        document.getElementById('user-email').textContent = `Authenticated: ${session.email}`;
+        document.getElementById('claim-state').style.display = 'block';
+      } catch (e) {
+        console.error('Session parse failed:', e);
+        document.getElementById('auth-state').style.display = 'block';
+      }
+    });
+
+    function redirectToLogin() {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code') || '';
+      window.location.href = `./index.html?redirect=redeem&code=${encodeURIComponent(code)}`;
+    }
+
+    async function submitRedemption() {
+      const codeInput = document.getElementById('redeem-code');
+      const claimBtn = document.getElementById('claim-btn');
+      const errMsg = document.getElementById('error-msg');
+      const code = codeInput.value.trim();
+
+      if (!code) return;
+
+      errMsg.textContent = "";
+      claimBtn.disabled = true;
+      claimBtn.textContent = "Verifying Code...";
+
+      try {
+        const response = await fetch('../api/redeem', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + session.accessToken
+          },
+          body: JSON.stringify({ code: code })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Redemption failed');
+        }
+
+        // Transition to success state
+        document.getElementById('claim-state').style.display = 'none';
+        document.getElementById('success-msg').textContent = data.message;
+        document.getElementById('success-state').style.display = 'block';
+
+        setTimeout(() => {
+          window.location.href = '../dashboard/';
+        }, 3000);
+
+      } catch (err) {
+        errMsg.textContent = err.message;
+        claimBtn.disabled = false;
+        claimBtn.textContent = "Unlock Everything";
+      }
+    }
+  </script>
+</body>
+</html>

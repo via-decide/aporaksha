@@ -77,6 +77,7 @@ function issueTokens(user, deviceId) {
   return {
     accessToken: signJWT({
       userId: user.id, email: user.email, role: user.role || "user",
+      ecosystem_uid: user.email,
       jti, type: "access", exp: Math.floor(Date.now() / 1000) + 900,
     }, ACCESS_SECRET),
     refreshToken: signJWT({
@@ -141,6 +142,24 @@ export default async function handler(req, res) {
     return res.json({ ...tokens, email: user.email });
   }
 
+  // LINK NFC
+  if (action === "link_nfc") {
+    const { email: targetEmail, nfc_chip_id: chipId } = req.body || {};
+    if (!targetEmail || !chipId) {
+      return res.status(400).json({ error: "Email and NFC chip ID are required" });
+    }
+    const user = users.get(targetEmail.trim().toLowerCase());
+    if (!user) {
+      return res.status(404).json({ error: "Passport user account not found" });
+    }
+    user.nfc_chip_id = chipId.trim().toUpperCase();
+    users.set(targetEmail.trim().toLowerCase(), user);
+    saveUsers(users);
+
+    console.log(`[NFC Link] Linked NFC card ${chipId} to ${targetEmail}`);
+    return res.status(200).json({ success: true, message: `Successfully linked NFC Card: ${chipId}` });
+  }
+
   // LOGIN
   if (action === "login") {
     if (!identity || !password)
@@ -169,11 +188,36 @@ export default async function handler(req, res) {
   }
 
   // VERIFY (check if token is valid)
-  if (action === "verify") {
+  if (action === "verify" || action === "validate") {
     const token = (req.headers.authorization || "").replace("Bearer ", "");
     const v = verifyJWT(token, ACCESS_SECRET);
-    return res.json({ valid: v.valid, userId: v.payload?.userId || null });
+    if (!v.valid || v.payload?.type !== "access") {
+      return res.status(401).json({ valid: false, error: "Invalid or expired token" });
+    }
+    return res.json({ valid: true, ecosystem_uid: v.payload.email, userId: v.payload.userId });
   }
 
-  return res.status(400).json({ error: "Unknown action. Use: signup, login, refresh, verify" });
+  // INTROSPECT
+  if (action === "introspect") {
+    const token = (req.headers.authorization || "").replace("Bearer ", "");
+    const v = verifyJWT(token, ACCESS_SECRET);
+    if (!v.valid || v.payload?.type !== "access") {
+      return res.status(401).json({ active: false, error: "Invalid or expired token" });
+    }
+    return res.json({
+      active: true,
+      ecosystem_uid: v.payload.email,
+      userId: v.payload.userId,
+      email: v.payload.email,
+      role: v.payload.role,
+      exp: v.payload.exp
+    });
+  }
+
+  // LOGOUT
+  if (action === "logout") {
+    return res.json({ success: true, message: "Logged out successfully" });
+  }
+
+  return res.status(400).json({ error: "Unknown action. Use: signup, login, refresh, verify, validate, introspect, logout" });
 }

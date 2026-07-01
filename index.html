@@ -1169,7 +1169,7 @@ function razorpayPay(productId, _amountPaise, productName) {
     const session = JSON.parse(localStorage.getItem('aporaksha_session') || '{}');
     customerEmail = session.email || '';
     accessToken = session.accessToken || '';
-  } catch (_) {}
+  } catch (_) { try { if (typeof sovereignAnalytics !== 'undefined') sovereignAnalytics.log('[SILENT CATCH]', _); else console.warn('[SILENT CATCH]', _); } catch(__e) {} }
 
   if (!accessToken) {
     _showPaymentError('You must create a Passport before buying. Redirecting...');

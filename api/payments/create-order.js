@@ -22,6 +22,7 @@ const PRODUCTS = {
   scaffold:     { amount: 14900,  name: 'Production Scaffold',               currency: 'INR' },
   arch_audit:   { amount: 499900, name: 'Architecture Audit — Hanuman.Solutions', currency: 'INR' },
   test_product: { amount: 100,    name: 'Validation Product',               currency: 'INR' },
+  digital_architect: { amount: 1244100, name: 'Sovereign Digital Architect Bundle', currency: 'INR' },
 };
 
 const ACCESS_SECRET = process.env.SECRET_KEY || "zayvora_dev_access_secret";
@@ -142,50 +143,127 @@ export default async function handler(req, res) {
   // ── 3. Validate keys are present ─────────────────────────────────────────
   const KEY_ID     = process.env.RAZORPAY_KEY_ID;
   const KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
+  const region     = req.headers['x-pricing-region'] || 'GLOBAL';
 
   if (!KEY_ID || !KEY_SECRET) {
-    console.error('[Razorpay] RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET not set in env');
-    await logWaitlist(userEmail, product_id, 'missing_keys');
-    return res.status(500).json({ error: 'Payment gateway not configured. Contact support.' });
+    console.log('[Razorpay Sandbox] Missing API keys. Initializing simulated sandbox gateway.');
+    const db = await getDB();
+    if (region === 'IN') {
+      const subId = `sub_mock_${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+      await db.run(
+        `UPDATE passports SET razorpay_subscription_id = ?, billing_status = ? WHERE email = ?`,
+        [subId, 'PENDING', userEmail]
+      );
+      return res.status(200).json({
+        type: 'subscription',
+        subscription_id: subId,
+        amount: 9900,
+        currency: 'INR',
+        product_name: product.name,
+        key_id: 'rzp_test_mockkey123',
+        sandbox: true
+      });
+    } else {
+      const ordId = `order_mock_${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+      await db.run(
+        `UPDATE passports SET order_id = ?, billing_status = ? WHERE email = ?`,
+        [ordId, 'PENDING', userEmail]
+      );
+      return res.status(200).json({
+        type: 'order',
+        order_id: ordId,
+        amount: 1200,
+        currency: 'USD',
+        product_name: product.name,
+        key_id: 'rzp_test_mockkey123',
+        sandbox: true
+      });
+    }
   }
 
-  // ── 4. Create Order ──────────────────────────────────────────────────────
+  // ── 4. Create Order / Subscription ──────────────────────────────────────────
   try {
     const razorpay = new Razorpay({ key_id: KEY_ID, key_secret: KEY_SECRET });
+    const db = await getDB();
 
-    const order = await razorpay.orders.create({
-      amount:   product.amount,
-      currency: product.currency,
-      receipt:  `rcpt_${product_id}_${crypto.randomBytes(4).toString('hex')}`,
-      notes: {
-        product_id,
-        product_name: product.name,
-        customer_email: userEmail || '',
+    if (region === 'IN') {
+      const planId = process.env.RAZORPAY_PLAN_ID_INR || 'plan_INR_mock';
+      const subscription = await razorpay.subscriptions.create({
+        plan_id: planId,
+        customer_notify: 1,
+        total_count: 120, // 10 years
+        notes: {
+          product_id,
+          product_name: product.name,
+          customer_email: userEmail || '',
+          user_id: userId,
+          country: country,
+          timezone: timezone || 'unknown',
+          locale: locale || 'unknown'
+        }
+      });
+
+      await db.run(
+        `UPDATE passports SET razorpay_subscription_id = ?, billing_status = ? WHERE email = ?`,
+        [subscription.id, 'PENDING', userEmail]
+      );
+
+      console.log('[Telemetry] subscription_created:', {
+        subscription_id: subscription.id,
+        product_id: product_id,
         user_id: userId,
-        country: country,
-        timezone: timezone || 'unknown',
-        locale: locale || 'unknown'
-      },
-    });
+        country
+      });
 
-    console.log('[Telemetry] order_created:', {
-      order_id: order.id,
-      product_id: product_id,
-      user_id: userId,
-      country
-    });
+      return res.status(200).json({
+        type: 'subscription',
+        subscription_id: subscription.id,
+        amount: 9900,
+        currency: 'INR',
+        product_name: product.name,
+        key_id: KEY_ID
+      });
+    } else {
+      const order = await razorpay.orders.create({
+        amount: 1200, // $12.00
+        currency: 'USD',
+        receipt: `rcpt_${product_id}_${crypto.randomBytes(4).toString('hex')}`,
+        notes: {
+          product_id,
+          product_name: product.name,
+          customer_email: userEmail || '',
+          user_id: userId,
+          country: country,
+          timezone: timezone || 'unknown',
+          locale: locale || 'unknown'
+        }
+      });
 
-    return res.status(200).json({
-      order_id:    order.id,
-      amount:      order.amount,
-      currency:    order.currency,
-      product_name: product.name,
-      key_id:      KEY_ID,   // safe — this is the public key
-    });
+      await db.run(
+        `UPDATE passports SET order_id = ?, billing_status = ? WHERE email = ?`,
+        [order.id, 'PENDING', userEmail]
+      );
+
+      console.log('[Telemetry] order_created:', {
+        order_id: order.id,
+        product_id: product_id,
+        user_id: userId,
+        country
+      });
+
+      return res.status(200).json({
+        type: 'order',
+        order_id: order.id,
+        amount: 1200,
+        currency: 'USD',
+        product_name: product.name,
+        key_id: KEY_ID
+      });
+    }
 
   } catch (err) {
     const errorRef = `ORD-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
-    console.error(`[Razorpay] Order creation failed [Ref: ${errorRef}]:`, err);
+    console.error(`[Razorpay] Payment creation failed [Ref: ${errorRef}]:`, err);
     return res.status(500).json({ 
       error: 'Payment system unavailable.', 
       reference: errorRef, 

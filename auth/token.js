@@ -38,6 +38,7 @@ function issueAccessToken(user, jti) {
     userId: user.id,
     email: user.email || '',
     role: user.role || 'user',
+    ecosystem_uid: user.email || user.id || '',
     jti,
     type: 'access',
     exp: Math.floor(Date.now() / 1000) + ACCESS_TOKEN_TTL_SEC,

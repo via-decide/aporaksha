@@ -8,7 +8,7 @@
     <script defer src="../passport/passport-id-generator.js">
   (function () {
     var s = null;
-    try { s = localStorage.getItem('aporaksha_session'); } catch(e) {}
+    try { s = localStorage.getItem('aporaksha_session'); } catch (e) { try { if (typeof sovereignAnalytics !== 'undefined') sovereignAnalytics.log('[SILENT CATCH]', e); else console.warn('[SILENT CATCH]', e); } catch(__e) {} }
     if (!s) {
       document.body.innerHTML =
         '<div style="min-height:100vh;display:flex;flex-direction:column;' +
@@ -112,11 +112,14 @@
             <div>
               <h3 style="margin-bottom: 0.5rem;">Sovereign Digital Architect Bundle</h3>
               <p style="color:var(--muted); font-size: 0.9rem;">Includes LogicHub Founder Pass (Lifetime), Premium OS Features, and App modules.</p>
-              <p style="color:var(--muted); font-size: 0.8rem; margin-top: 0.5rem;">No subscriptions. One-time digital license.</p>
+              <p style="color:var(--muted); font-size: 0.8rem; margin-top: 0.5rem;" id="store-bundle-desc">One-time digital license.</p>
             </div>
-            <div>
-              <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem;">$149</div>
-              <button class="btn" style="background:var(--accent); color:#fff;" id="btn-purchase-architect">Purchase Bundle</button>
+            <div style="text-align: right;">
+              <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem;" id="store-bundle-price">$12</div>
+              <div style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center;">
+                <a href="../passport/redeem.html" class="btn" style="background:#1e293b; color:#fff; border: 1px solid var(--border); text-decoration: none; padding: 0.75rem 1.2rem; font-size: 0.9rem;">🎁 Redeem Secret Card</a>
+                <button class="btn" style="background:var(--accent); color:#fff;" id="btn-purchase-architect">Purchase Bundle</button>
+              </div>
             </div>
           </div>
           <div id="checkout-msg" style="margin-top:1rem; font-size:0.85rem;"></div>

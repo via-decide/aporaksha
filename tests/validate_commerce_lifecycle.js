@@ -25,6 +25,25 @@ Object.defineProperty(Razorpay.prototype, 'orders', {
   configurable: true
 });
 
+Object.defineProperty(Razorpay.prototype, 'subscriptions', {
+  set(val) {
+    this._subscriptions = {
+      create: async function(options) {
+        return {
+          id: 'sub_' + crypto.randomBytes(8).toString('hex'),
+          plan_id: options.plan_id,
+          customer_notify: options.customer_notify,
+          notes: options.notes
+        };
+      }
+    };
+  },
+  get() {
+    return this._subscriptions;
+  },
+  configurable: true
+});
+
 // 1. Configure test environment variables BEFORE importing core modules
 const DB_PATH = './data.test.db';
 if (fs.existsSync(DB_PATH)) {
@@ -560,8 +579,223 @@ async function runTests() {
     }
   }
 
+  // -------------------------------------------------------------
+  // PHASE 12: REGIONAL SUBSCRIPTION & ORDER BRANCHING VALIDATION
+  // -------------------------------------------------------------
+  logStep("Phase 12 — Regional Subscription & Order Branching Validation");
+
+  // 1. India resident: INR ₹99/month subscription
+  let testSubscriptionId;
+  {
+    const { req, res } = mockReqRes({
+      headers: {
+        'x-vercel-ip-country': 'IN',
+        'x-pricing-region': 'IN',
+        'authorization': `Bearer ${validToken}`
+      },
+      body: {
+        product_id: 'test_product',
+        email: testUser.email
+      }
+    });
+
+    await createOrderHandler(req, res);
+    
+    if (res.statusCode === 200 && res.body.type === 'subscription' && res.body.subscription_id) {
+      testSubscriptionId = res.body.subscription_id;
+      logPass(`IN region successfully creates subscription. Subscription ID: ${testSubscriptionId}`);
+    } else {
+      logFail(`IN region subscription creation failed. Code: ${res.statusCode}, Body: ${JSON.stringify(res.body)}`);
+    }
+
+    // Verify database shows billing_status PENDING
+    const passportRecord = await db.get("SELECT * FROM passports WHERE email = ?", [testUser.email]);
+    if (passportRecord && passportRecord.razorpay_subscription_id === testSubscriptionId && passportRecord.billing_status === 'PENDING') {
+      logPass("SQLite passport correctly stores subscription ID and PENDING billing status.");
+    } else {
+      logFail(`SQLite passport check failed. Passport: ${JSON.stringify(passportRecord)}`);
+    }
+  }
+
+  // 2. Deliver subscription.charged webhook to trigger activation
+  {
+    const subWebhookEventId = 'evt_sub_' + crypto.randomBytes(8).toString('hex');
+    const subWebhookPayload = {
+      id: subWebhookEventId,
+      event: 'subscription.charged',
+      payload: {
+        subscription: {
+          entity: {
+            id: testSubscriptionId,
+            plan_id: 'plan_INR_mock'
+          }
+        },
+        payment: {
+          entity: {
+            id: 'pay_sub_' + crypto.randomBytes(8).toString('hex'),
+            subscription_id: testSubscriptionId,
+            amount: 9900,
+            currency: 'INR',
+            email: testUser.email,
+            notes: {
+              product_id: 'test_product',
+              user_id: testUser.id,
+              customer_email: testUser.email
+            }
+          }
+        }
+      }
+    };
+
+    const subRawBody = JSON.stringify(subWebhookPayload);
+    const subSignature = crypto.createHmac('sha256', process.env.RAZORPAY_WEBHOOK_SECRET)
+      .update(subRawBody)
+      .digest('hex');
+
+    const { req, res } = mockWebhookReqRes(subRawBody, {
+      'x-razorpay-signature': subSignature,
+      'x-razorpay-event-id': subWebhookEventId
+    });
+
+    await webhookHandler(req, res);
+
+    // Verify passport status is ACTIVE
+    const passportRecord = await db.get("SELECT * FROM passports WHERE email = ?", [testUser.email]);
+    if (passportRecord && passportRecord.billing_status === 'ACTIVE') {
+      logPass("Subscription webhook successfully activates passport billing status to ACTIVE.");
+    } else {
+      logFail(`Subscription activation failed. Passport record: ${JSON.stringify(passportRecord)}`);
+    }
+  }
+
+  // 3. Global resident: USD $12 one-time order
+  {
+    const { req, res } = mockReqRes({
+      headers: {
+        'x-vercel-ip-country': 'LU',
+        'x-pricing-region': 'GLOBAL',
+        'authorization': `Bearer ${validToken}`
+      },
+      body: {
+        product_id: 'test_product',
+        email: 'global_buyer@zayvora.space'
+      }
+    });
+
+    // Create a new valid token for global buyer
+    const globalToken = signJWT({
+      userId: 'usr_global123',
+      email: 'global_buyer@zayvora.space',
+      exp: Math.floor(Date.now() / 1000) + 3600
+    }, process.env.SECRET_KEY);
+
+    req.headers.authorization = `Bearer ${globalToken}`;
+
+    // Seed global buyer passport
+    await passportEngine.createOrUpdatePassport({
+      email: 'global_buyer@zayvora.space',
+      name: 'Global Buyer',
+      productId: 'test_product'
+    });
+
+    await createOrderHandler(req, res);
+
+    if (res.statusCode === 200 && res.body.type === 'order' && res.body.order_id && res.body.currency === 'USD' && res.body.amount === 1200) {
+      logPass(`GLOBAL region successfully creates $12 USD order. Order ID: ${res.body.order_id}`);
+    } else {
+      logFail(`GLOBAL region order creation failed. Code: ${res.statusCode}, Body: ${JSON.stringify(res.body)}`);
+    }
+  }
+
+  // -------------------------------------------------------------
+  // PHASE 13: PHYGITAL GIFT REDEMPTION VALIDATION
+  // -------------------------------------------------------------
+  logStep("Phase 13 — Phygital Gift Redemption Validation");
+
+  const { default: redeemHandler } = await import('../api/redeem.js');
+
+  // Seed a test redemption code
+  const testCode = 'VIP-TESTCODE123';
+  await db.run("INSERT INTO redemption_codes (code, is_used) VALUES (?, 0)", [testCode]);
+
+  // 1. Redeem with invalid code
+  {
+    const { req, res } = mockReqRes({
+      headers: {
+        'authorization': `Bearer ${validToken}`
+      },
+      body: {
+        code: 'VIP-INVALIDCODE'
+      }
+    });
+
+    await redeemHandler(req, res);
+
+    if (res.statusCode === 404 && res.body.error === 'Invalid or unrecognized code.') {
+      logPass("Invalid code rejected correctly (404 Not Found).");
+    } else {
+      logFail(`Invalid code check failed. Code: ${res.statusCode}, Body: ${JSON.stringify(res.body)}`);
+    }
+  }
+
+  // 2. Redeem with valid code
+  {
+    const { req, res } = mockReqRes({
+      headers: {
+        'authorization': `Bearer ${validToken}`
+      },
+      body: {
+        code: testCode
+      }
+    });
+
+    await redeemHandler(req, res);
+
+    if (res.statusCode === 200 && res.body.success === true) {
+      logPass("Valid code claimed successfully (200 OK).");
+    } else {
+      logFail(`Valid code claim failed. Code: ${res.statusCode}, Body: ${JSON.stringify(res.body)}`);
+    }
+
+    // Verify DB modifications
+    const codeRecord = await db.get("SELECT * FROM redemption_codes WHERE code = ?", [testCode]);
+    if (codeRecord && codeRecord.is_used === 1 && codeRecord.redeemed_by_email === testUser.email) {
+      logPass("SQLite redemption_codes table correctly records is_used = 1 and redeemer email.");
+    } else {
+      logFail(`SQLite redemption_codes verify failed: ${JSON.stringify(codeRecord)}`);
+    }
+
+    const passportRecord = await db.get("SELECT * FROM passports WHERE email = ?", [testUser.email]);
+    const purchasedProducts = JSON.parse(passportRecord.purchased_products || "[]");
+    if (passportRecord && passportRecord.billing_status === 'ACTIVE' && purchasedProducts.includes("Sovereign Digital Architect Bundle")) {
+      logPass("Sovereign passport successfully upgraded to Sovereign Digital Architect Bundle with ACTIVE status.");
+    } else {
+      logFail(`Sovereign passport upgrade failed: ${JSON.stringify(passportRecord)}`);
+    }
+  }
+
+  // 3. Double claim prevention
+  {
+    const { req, res } = mockReqRes({
+      headers: {
+        'authorization': `Bearer ${validToken}`
+      },
+      body: {
+        code: testCode
+      }
+    });
+
+    await redeemHandler(req, res);
+
+    if (res.statusCode === 403 && res.body.error === 'This code has already been claimed by another user.') {
+      logPass("Double claiming same code blocked correctly (403 Forbidden).");
+    } else {
+      logFail(`Double claim check failed. Code: ${res.statusCode}, Body: ${JSON.stringify(res.body)}`);
+    }
+  }
+
   console.log(`\n${colors.green}${colors.bold}==============================================`);
-  console.log(`      ALL 11 PHASES SUCCESSFULLY VALIDATED      `);
+  console.log(`      ALL 13 PHASES SUCCESSFULLY VALIDATED      `);
   console.log(`==============================================${colors.reset}\n`);
 
   // Cleanup test database file

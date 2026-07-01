@@ -7,13 +7,15 @@
     "api/payments/create-order.js":   { "maxDuration": 15 },
     "api/payments/verify.js":         { "maxDuration": 10 },
     "api/webhooks/razorpay.js":       { "maxDuration": 10 },
-    "api/logs.js":                    { "maxDuration": 5  }
+    "api/logs.js":                    { "maxDuration": 5  },
+    "api/redeem.js":                  { "maxDuration": 10 }
   },
   "rewrites": [
     { "source": "/api/auth/:action*", "destination": "/api/auth" },
     { "source": "/passport", "destination": "/passport/index.html" },
     { "source": "/dashboard", "destination": "/dashboard/index.html" },
-    { "source": "/ecosystem", "destination": "/ecosystem/index.html" }
+    { "source": "/ecosystem", "destination": "/ecosystem/index.html" },
+    { "source": "/redeem", "destination": "/passport/redeem.html" }
   ],
   "headers": [
     {

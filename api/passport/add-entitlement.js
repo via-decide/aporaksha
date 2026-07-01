@@ -31,7 +31,7 @@ export default async function handler(req, res) {
       let existing = [];
       try {
         existing = JSON.parse(passport.access_entitlements || "[]");
-      } catch(e) {}
+      } catch (e) { try { if (typeof sovereignAnalytics !== 'undefined') sovereignAnalytics.log('[SILENT CATCH]', e); else console.warn('[SILENT CATCH]', e); } catch(__e) {} }
       
       const newEntitlements = Array.from(new Set([...existing, ...entitlements]));
       await db.run(

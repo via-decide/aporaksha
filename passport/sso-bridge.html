@@ -6,7 +6,7 @@
 </head>
 <body>
   <script>
-    const TRUSTED_ORIGIN_REGEX = /^(https:\/\/(daxini\.space|logichub\.app|daxini\.xyz|hanuman\.solutions|viadecide\.com)|http:\/\/localhost:700[1-6]|http:\/\/localhost:3000)$/;
+    const TRUSTED_ORIGIN_REGEX = /^(https:\/\/((www\.)?(daxini\.space|logichub\.app|daxini\.xyz|hanuman\.solutions|viadecide\.com))|http:\/\/localhost:700[1-6]|http:\/\/localhost:3000)$/;
 
     window.addEventListener('message', (event) => {
       // Validate incoming message origin

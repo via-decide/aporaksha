@@ -30,7 +30,7 @@ export default async function handler(req, res) {
     const db = await getDB();
 
     const passport = await db.get(`
-      SELECT passport_id, customer_name, email, access_entitlements, activation_status
+      SELECT passport_id, customer_name, email, access_entitlements, activation_status, country, billing_status, razorpay_subscription_id, order_id
       FROM passports
       WHERE email = ?
     `, [email]);
@@ -57,7 +57,11 @@ export default async function handler(req, res) {
       customer_name: passport.customer_name,
       email: passport.email,
       entitlements: entitlements,
-      status: passport.activation_status
+      status: passport.activation_status,
+      country: passport.country || null,
+      billing_status: passport.billing_status || null,
+      razorpay_subscription_id: passport.razorpay_subscription_id || null,
+      order_id: passport.order_id || null
     });
 
   } catch (error) {

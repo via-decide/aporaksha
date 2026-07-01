@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Complete Checkout — Aporaksha Passport</title>
   <link rel="stylesheet" href="https://daxini.xyz/assets/css/daxini-brand-kit.css" />
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <style>
     :root {
       --bg: #0b0c10;
@@ -139,7 +140,7 @@
       letter-spacing: 1px;
       margin-bottom: 6px;
     }
-    .form-group input, .form-group textarea {
+    .form-group input, .form-group textarea, .form-group select {
       width: 100%;
       background: #0b0c10;
       border: 1px solid var(--border);
@@ -152,7 +153,7 @@
       transition: border-color 0.15s, box-shadow 0.15s;
     }
     .form-group textarea { resize: vertical; min-height: 80px; }
-    .form-group input:focus, .form-group textarea:focus {
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
       border-color: var(--accent);
       box-shadow: 0 0 0 3px var(--accent-dim);
     }
@@ -238,7 +239,7 @@
         <span class="gift-icon">🎁</span>
         <div class="gift-details">
           <h4>Founder's Special Gift</h4>
-          <p>Every purchase includes **one physical Hardcore NFC Keychain** from the founder at zero additional cost (covered under our Customer Acquisition Cost). Enter your address on the right to receive it.</p>
+          <p>Every purchase includes **one physical Hardcore NFC Keychain** from the founder at zero additional cost. Enter your address on the right to receive it.</p>
         </div>
       </div>
     </div>
@@ -248,6 +249,26 @@
       <div class="section-title">🚚 Shipping Address (For NFC Gift)</div>
       
       <form id="checkout-form" onsubmit="event.preventDefault(); submitCheckout();">
+        <div class="form-group">
+          <label for="cust-country">Country / Region (Geo-Fence Compliance)</label>
+          <select id="cust-country" required onchange="checkCountryGeoFence()">
+            <option value="IN">India (Instant Checkout)</option>
+            <option value="LU">Luxembourg (Instant Checkout)</option>
+            <option value="JP">Japan (Instant Checkout)</option>
+            <option value="US">United States (Restricted — Requires Manual Review)</option>
+            <option value="GB">United Kingdom (Restricted — Requires Manual Review)</option>
+            <option value="CA">Canada (Restricted — Requires Manual Review)</option>
+            <option value="AU">Australia (Restricted — Requires Manual Review)</option>
+            <option value="SG">Singapore (Restricted — Requires Manual Review)</option>
+            <option value="DE">Germany (Restricted — Requires Manual Review)</option>
+            <option value="NL">Netherlands (Restricted — Requires Manual Review)</option>
+            <option value="BR">Brazil (Restricted — Requires Manual Review)</option>
+            <option value="AE">United Arab Emirates (Restricted — Requires Manual Review)</option>
+            <option value="RU">Russia (Blocked — Compliance Regulations)</option>
+            <option value="CN">China (Blocked — Compliance Regulations)</option>
+          </select>
+        </div>
+
         <div class="form-group">
           <label for="cust-name">Recipient Name</label>
           <input type="text" id="cust-name" placeholder="e.g. Dharam Daxini" required autocomplete="name" />
@@ -285,6 +306,13 @@
           </button>
         </div>
 
+        <div style="margin-top: 20px; font-size: 0.72rem; opacity: 0.7; display: flex; gap: 12px; justify-content: center; width: 100%;">
+          <a href="/terms.html" style="color: var(--muted); text-decoration: underline;" target="_blank">Terms of Service</a>
+          <a href="/privacy.html" style="color: var(--muted); text-decoration: underline;" target="_blank">Privacy Policy</a>
+          <a href="/refunds.html" style="color: var(--muted); text-decoration: underline;" target="_blank">Refund & Cancellation</a>
+          <a href="/contact.html" style="color: var(--muted); text-decoration: underline;" target="_blank">Contact Us</a>
+        </div>
+
         <div id="error-msg"></div>
       </form>
     </div>
@@ -298,9 +326,46 @@
         window.location.href = '../index.html?login=required&redirect=dashboard';
         return;
       }
+      updatePriceTag();
     });
 
-    function submitCheckout() {
+    function updatePriceTag() {
+      const country = document.getElementById('cust-country').value;
+      const priceTag = document.querySelector('.price-tag');
+      const payBtn = document.getElementById('pay-btn');
+      
+      if (country === 'IN') {
+        priceTag.innerHTML = `₹99 <span style="font-size: 13px; color: var(--muted); font-weight: normal; text-transform: uppercase; letter-spacing: 0.5px;">monthly subscription</span>`;
+        payBtn.innerHTML = `<span>💳</span> Subscribe — ₹99/mo`;
+      } else {
+        priceTag.innerHTML = `$12 <span style="font-size: 13px; color: var(--muted); font-weight: normal; text-transform: uppercase; letter-spacing: 0.5px;">annual licensing fee</span>`;
+        payBtn.innerHTML = `<span>💳</span> Complete Checkout — $12`;
+      }
+    }
+
+    function checkCountryGeoFence() {
+      const country = document.getElementById('cust-country').value;
+      const errMsg = document.getElementById('error-msg');
+      const payBtn = document.getElementById('pay-btn');
+
+      updatePriceTag();
+
+      if (country === 'RU' || country === 'CN') {
+        errMsg.style.color = '#ef4444';
+        errMsg.textContent = "⚠️ Geo-Fencing Blocked: Purchases are currently unavailable in Russia/China due to export regulations.";
+        payBtn.disabled = true;
+      } else if (country === 'IN' || country === 'LU' || country === 'JP') {
+        errMsg.textContent = "";
+        payBtn.disabled = false;
+      } else {
+        errMsg.style.color = '#ffb020';
+        errMsg.textContent = "⚠️ Compliance Notice: Your selected country requires manual compliance review. Provisioning timelines will be subject to gating.";
+        payBtn.disabled = false;
+      }
+    }
+
+    async function submitCheckout() {
+      const country = document.getElementById('cust-country').value;
       const name = document.getElementById('cust-name').value.trim();
       const whatsapp = document.getElementById('cust-whatsapp').value.trim();
       const address = document.getElementById('cust-address').value.trim();
@@ -308,41 +373,171 @@
       const state = document.getElementById('cust-state').value.trim();
       const pincode = document.getElementById('cust-pincode').value.trim();
       const errMsg = document.getElementById('error-msg');
+      const btn = document.getElementById('pay-btn');
+
+      if (country === 'RU' || country === 'CN') {
+        errMsg.style.color = '#ef4444';
+        errMsg.textContent = "⚠️ Geo-Fencing Blocked: Cannot complete checkout.";
+        return;
+      }
 
       if (!name || !whatsapp || !address || !city || !state || !pincode) {
+        errMsg.style.color = '#ef4444';
         errMsg.textContent = "Please fill in all details.";
         return;
       }
 
       if (!/^\d{10}$/.test(whatsapp)) {
+        errMsg.style.color = '#ef4444';
         errMsg.textContent = "WhatsApp number must be exactly 10 digits.";
         return;
       }
 
       if (!/^\d{6}$/.test(pincode)) {
+        errMsg.style.color = '#ef4444';
         errMsg.textContent = "Pincode must be exactly 6 digits.";
         return;
       }
 
-      errMsg.textContent = "";
-      const btn = document.getElementById('pay-btn');
+      errMsg.style.color = '#94a3b8';
+      errMsg.textContent = "Connecting to sovereign payment edge...";
       btn.disabled = true;
       btn.textContent = "Initializing Bridge...";
 
-      // Save shipping details to sessionStorage for the tracking page
-      const shippingDetails = {
-        name,
-        whatsapp,
-        address,
-        city,
-        state,
-        pincode
-      };
-      sessionStorage.setItem('aporaksha_shipping', JSON.stringify(shippingDetails));
+      const sessionStr = localStorage.getItem('aporaksha_session');
+      const session = JSON.parse(sessionStr);
 
-      setTimeout(() => {
-        window.location.href = './track.html';
-      }, 1000);
+      try {
+        // Create the order on the serverless endpoint
+        const response = await fetch('../api/payments/create-order', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + session.accessToken,
+            'x-vercel-ip-country': country // Pass the simulated country header
+          },
+          body: JSON.stringify({
+            product_id: 'digital_architect',
+            email: session.email,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            locale: navigator.language
+          })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to create payment order');
+        }
+
+        // Save shipping details for later receipt generation
+        const shippingDetails = { name, whatsapp, address, city, state, pincode, country };
+        sessionStorage.setItem('aporaksha_shipping', JSON.stringify(shippingDetails));
+
+        // If sandbox mock is active (or Razorpay library is bypassed)
+        if (data.sandbox || typeof Razorpay === 'undefined') {
+          console.log('[Sandbox Mode] Bypassing Razorpay modal. Simulating callback.');
+          errMsg.textContent = "Sandbox mode: Simulating client verification...";
+          
+          const verifyBody = {
+            razorpay_payment_id: 'pay_mock_' + Math.random().toString(36).substring(2, 10).toUpperCase(),
+            razorpay_signature: 'mock_signature_valid_for_dev_sandbox',
+            product_id: 'digital_architect',
+            email: session.email
+          };
+          if (data.type === 'subscription') {
+            verifyBody.razorpay_subscription_id = data.subscription_id;
+          } else {
+            verifyBody.razorpay_order_id = data.order_id;
+          }
+
+          const verifyRes = await fetch('../api/payments/verify', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + session.accessToken
+            },
+            body: JSON.stringify(verifyBody)
+          });
+
+          const verifyData = await verifyRes.json();
+          if (!verifyRes.ok) {
+             throw new Error(verifyData.error || 'Failed to verify simulated payment');
+          }
+
+          setTimeout(() => {
+            const id = verifyData.order_id || verifyData.subscription_id;
+            window.location.href = `./track.html?order_id=${id}&payment_id=${verifyData.payment_id}`;
+          }, 1200);
+          return;
+        }
+
+        // Live/Test Razorpay checkout options
+        const options = {
+          key: data.key_id,
+          amount: data.amount,
+          currency: data.currency,
+          name: 'Aporaksha',
+          description: data.product_name,
+          theme: { color: '#ff671f' },
+          handler: async function (paymentRes) {
+            btn.textContent = "Verifying Transaction...";
+            try {
+              const verifyRes = await fetch('../api/payments/verify', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': 'Bearer ' + session.accessToken
+                },
+                body: JSON.stringify({
+                  razorpay_order_id: paymentRes.razorpay_order_id || null,
+                  razorpay_subscription_id: paymentRes.razorpay_subscription_id || null,
+                  razorpay_payment_id: paymentRes.razorpay_payment_id,
+                  razorpay_signature: paymentRes.razorpay_signature,
+                  product_id: 'digital_architect',
+                  email: session.email
+                })
+              });
+              const verifyData = await verifyRes.json();
+              if (!verifyRes.ok) {
+                throw new Error(verifyData.error || 'Signature verification failed');
+              }
+              const id = verifyData.order_id || verifyData.subscription_id;
+              window.location.href = `./track.html?order_id=${id}&payment_id=${verifyData.payment_id}`;
+            } catch (err) {
+              errMsg.style.color = '#ef4444';
+              errMsg.textContent = "Verification Failed: " + err.message;
+              btn.disabled = false;
+              btn.textContent = "Complete Checkout";
+            }
+          },
+          prefill: {
+            email: session.email,
+            contact: whatsapp
+          },
+          modal: {
+            ondismiss: function() {
+              btn.disabled = false;
+              btn.textContent = "Complete Checkout";
+              errMsg.textContent = "";
+            }
+          }
+        };
+
+        if (data.type === 'subscription') {
+          options.subscription_id = data.subscription_id;
+        } else {
+          options.order_id = data.order_id;
+        }
+
+        const rzp = new Razorpay(options);
+        rzp.open();
+
+      } catch (err) {
+        errMsg.style.color = '#ef4444';
+        errMsg.textContent = err.message;
+        btn.disabled = false;
+        btn.textContent = "Complete Checkout";
+      }
     }
   </script>
 </body>

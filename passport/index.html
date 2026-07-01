@@ -235,6 +235,9 @@
           if (data.accessToken) {
             localStorage.setItem('aporaksha_session', JSON.stringify({ email: email, accessToken: data.accessToken, refreshToken: data.refreshToken }));
             localStorage.setItem('zayvora_token', data.accessToken);
+            localStorage.setItem('via_access_token', data.accessToken);
+            localStorage.setItem('via_refresh_token', data.refreshToken);
+            localStorage.setItem('ecosystem_uid', email);
             
             // Register local passport profile if NFC tag was supplied
             if (nfcChipId && window.ZayvoraPassportStore) {
@@ -344,6 +347,9 @@
               const email = data.email || 'nfc_user@aporaksha.com';
               localStorage.setItem('aporaksha_session', JSON.stringify({ email: email, accessToken: data.accessToken, refreshToken: data.refreshToken }));
               localStorage.setItem('zayvora_token', data.accessToken);
+              localStorage.setItem('via_access_token', data.accessToken);
+              localStorage.setItem('via_refresh_token', data.refreshToken);
+              localStorage.setItem('ecosystem_uid', email);
               
               if (window.ZayvoraPassportAuth) {
                 window.ZayvoraPassportAuth.loginWithNfcChipId(serial);

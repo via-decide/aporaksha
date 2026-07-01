@@ -372,7 +372,20 @@
           </tr>
         </table>
 
-        <button class="btn primary" onclick="downloadPDF()">📄 Download Receipt PDF</button>
+        <!-- NFC Keychain Linking Activation Panel -->
+        <div class="receipt-box" id="nfc-activation-box" style="border: 1px dashed var(--accent); background: rgba(255, 103, 31, 0.03); margin-top: 1.5rem; display: none;">
+          <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--accent); margin-bottom: 6px; text-transform: uppercase;">🎛️ Provision Free NFC Keychain</h3>
+          <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 12px; line-height: 1.4;">
+            Your free physical NFC Keychain has been queued. Pre-link its NFC Chip ID below to enable instant, passwordless physical card login.
+          </p>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="keychain-nfc-id" placeholder="e.g. NFC-APO-A7B8" value="NFC-APO-8888" style="flex: 1; background: #0b0c10; border: 1px solid var(--border); border-radius: var(--radius-btn); color: var(--text); padding: 10px; font-size: 14px;" />
+            <button class="btn primary" id="btn-activate-nfc" onclick="linkNfcKeychain()" style="margin: 0; padding: 10px 16px; font-size: 13.5px; width: auto; white-space: nowrap;">Activate Login</button>
+          </div>
+          <div id="nfc-activation-status" style="margin-top: 8px; font-size: 13px; font-weight: 500;"></div>
+        </div>
+
+        <button class="btn primary" onclick="downloadPDF()" style="margin-top: 1rem;">📄 Download Receipt PDF</button>
         <button class="btn secondary" onclick="goHome()">Back to Dashboard</button>
       </div>
     </div>
@@ -400,8 +413,14 @@
       }
       shipping = JSON.parse(shippingStr);
 
-      // Generate random Order ID
-      orderId = "APO-" + Math.random().toString(36).slice(2, 6).toUpperCase() + Math.floor(Math.random() * 1000).toString().padStart(3, "0");
+      // Parse order_id from URL query string if present
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlOrderId = urlParams.get('order_id');
+      if (urlOrderId) {
+        orderId = urlOrderId;
+      } else {
+        orderId = "APO-" + Math.random().toString(36).slice(2, 6).toUpperCase() + Math.floor(Math.random() * 1000).toString().padStart(3, "0");
+      }
 
       // Set initial state descriptions
       document.getElementById('receipt-order-id').textContent = orderId;
@@ -467,6 +486,7 @@
 
               // Show receipt details block
               document.getElementById('receipt-block').style.display = 'block';
+              document.getElementById('nfc-activation-box').style.display = 'block';
             }, 1000);
           }).catch(err => {
             console.error("API error during provisioning:", err);
@@ -475,6 +495,7 @@
               setStepState(3, 'completed');
               setStepState(4, 'completed');
               document.getElementById('receipt-block').style.display = 'block';
+              document.getElementById('nfc-activation-box').style.display = 'block';
             }, 1000);
           });
 
@@ -519,12 +540,12 @@
 
       y = 52;
 
-      // CAC / gift banner in PDF
+      // Gift banner in PDF
       doc.setFillColor(25, 20, 15);
       doc.setDrawColor(255, 103, 31);
       doc.roundedRect(margin, y, W - (margin * 2), 16, 3, 3, "FD");
       txt("🎁 FREE NFC KEYCHAIN INCLUDED (FOUNDER'S GIFT)", margin + 6, y + 6.5, 8.5, true, 255, 103, 31);
-      txt("Gift cost ($0.00) fully covered as Customer Acquisition Cost (CAC) by the founder.", margin + 6, y + 11.5, 7.5, false, 160, 160, 160);
+      txt("Physical keychain hardware is provided at zero cost as a founder gift.", margin + 6, y + 11.5, 7.5, false, 160, 160, 160);
       y += 24;
 
       // Meta boxes side by side
@@ -619,7 +640,7 @@
       doc.rect(0, y, W, 3, "F");
       y += 8;
       txt("Aporaksha Ecosystem System Gateway · Sovereign OS Node", W / 2, y, 7.5, false, 100, 116, 139, "center");
-      txt("CAC / Gift Allocation: 1 Unit PrintByDD Custom NFC Keychain. Zero retail liability.", W / 2, y + 5, 7, false, 100, 116, 139, "center");
+      txt("Gift Allocation: 1 Unit PrintByDD Custom NFC Keychain. Zero retail liability.", W / 2, y + 5, 7, false, 100, 116, 139, "center");
 
       doc.save(`Aporaksha-Invoice-${orderId}.pdf`);
     }
@@ -628,6 +649,47 @@
       // Clear address info from session storage
       sessionStorage.removeItem('aporaksha_shipping');
       window.location.href = '../dashboard/';
+    }
+
+    async function linkNfcKeychain() {
+      const chipId = document.getElementById('keychain-nfc-id').value.trim();
+      const statusEl = document.getElementById('nfc-activation-status');
+      const btn = document.getElementById('btn-activate-nfc');
+
+      if (!chipId) {
+        statusEl.style.color = '#ef4444';
+        statusEl.textContent = "Please enter an NFC chip ID.";
+        return;
+      }
+
+      statusEl.style.color = '#94a3b8';
+      statusEl.textContent = "Linking hardware identifier...";
+      btn.disabled = true;
+
+      try {
+        const response = await fetch('../api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'link_nfc',
+            email: email,
+            nfc_chip_id: chipId
+          })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to link NFC card');
+        }
+
+        statusEl.style.color = '#22c55e';
+        statusEl.textContent = `✓ NFC Keychain Linked! You can now log in using tag ID: ${chipId}`;
+        btn.textContent = "Linked!";
+      } catch (err) {
+        statusEl.style.color = '#ef4444';
+        statusEl.textContent = "Error: " + err.message;
+        btn.disabled = false;
+      }
     }
   </script>
 </body>

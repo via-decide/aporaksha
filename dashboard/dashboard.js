@@ -178,6 +178,33 @@
           return '<li><strong style="color:var(--text)">' + e + '</strong> — Lifetime Digital License</li>'; 
         }).join('');
       }
+
+      // Update store bundle details dynamically based on region & billing status
+      var priceEl = document.getElementById('store-bundle-price');
+      var descEl = document.getElementById('store-bundle-desc');
+      var buyBtn = document.getElementById('btn-purchase-architect');
+      if (priceEl && descEl && buyBtn) {
+        var isPremium = data.billing_status === 'ACTIVE' || (data.entitlements && data.entitlements.some(function(e) {
+          return e.indexOf('Founder Pass') !== -1 || e.indexOf('Premium OS') !== -1;
+        }));
+
+        if (isPremium) {
+          buyBtn.disabled = true;
+          buyBtn.textContent = '✓ Active Access Tier';
+          buyBtn.style.background = '#10b981';
+          priceEl.textContent = 'Purchased';
+          descEl.textContent = 'Sovereign Digital Architect Bundle active on your passport.';
+        } else if (data.country === 'IN') {
+          priceEl.textContent = '₹99/mo';
+          descEl.textContent = 'Recurring monthly access subscription.';
+          buyBtn.textContent = 'Subscribe — ₹99/mo';
+        } else {
+          priceEl.textContent = '$12/yr';
+          descEl.textContent = 'Recurring annual access subscription.';
+          buyBtn.textContent = 'Complete Checkout — $12';
+        }
+      }
+
     } catch (err) {
       list.innerHTML = '<li>Unable to load purchases. <a href="" onclick="location.reload();return false;" style="color:var(--accent)">Retry</a></li>';
     }

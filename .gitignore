@@ -19,3 +19,4 @@ backups/
 
 # Invoices and Emails
 invoices/
+node_modules
