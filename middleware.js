@@ -5,6 +5,7 @@ export default function middleware(request) {
   // Set the request header using Vercel's x-middleware-request protocol
   const response = new Response(null, {
     headers: {
+      'x-middleware-next': '1',
       'x-middleware-request-x-pricing-region': region
     }
   });
