@@ -409,7 +409,7 @@
 
       try {
         // Create the order on the serverless endpoint
-        const response = await fetch('../api/payments/create-order', {
+        const response = await fetch('/api/payments/create-order', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -450,7 +450,7 @@
             verifyBody.razorpay_order_id = data.order_id;
           }
 
-          const verifyRes = await fetch('../api/payments/verify', {
+          const verifyRes = await fetch('/api/payments/verify', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -482,7 +482,7 @@
           handler: async function (paymentRes) {
             btn.textContent = "Verifying Transaction...";
             try {
-              const verifyRes = await fetch('../api/payments/verify', {
+              const verifyRes = await fetch('/api/payments/verify', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
