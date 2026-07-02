@@ -62,7 +62,7 @@ export default async function handler(req, res) {
   const isMock = (razorpay_order_id && razorpay_order_id.startsWith('order_mock_')) || 
                  (razorpay_subscription_id && razorpay_subscription_id.startsWith('sub_mock_'));
   
-  if (isMock) {
+  if (isMock && process.env.NODE_ENV === 'development') {
     const id = razorpay_order_id || razorpay_subscription_id;
     console.log('[Razorpay Sandbox] Verifying mock payment signature successfully');
     try {
