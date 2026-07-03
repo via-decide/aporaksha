@@ -1,34 +1,5 @@
 import crypto from "crypto";
-
-import fs from "fs";
-import path from "path";
-
-// File-based user store to prevent identity loss on serverless cold starts
-// Note: /tmp is the only writable directory in Vercel serverless functions
-const DATA_FILE = path.join("/tmp", "aporaksha_users.json");
-
-function loadUsers() {
-  try {
-    if (fs.existsSync(DATA_FILE)) {
-      const data = JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
-      return new Map(Object.entries(data));
-    }
-  } catch (e) {
-    console.error("Failed to load users", e);
-  }
-  return new Map();
-}
-
-function saveUsers(usersMap) {
-  try {
-    const obj = Object.fromEntries(usersMap);
-    fs.writeFileSync(DATA_FILE, JSON.stringify(obj, null, 2), "utf8");
-  } catch (e) {
-    console.error("Failed to save users", e);
-  }
-}
-
-let users = loadUsers();
+import { getDB } from "../lib/db.js";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{12,}$/;
@@ -76,15 +47,15 @@ function issueTokens(user, deviceId) {
   const jti = crypto.randomBytes(16).toString("hex");
   return {
     accessToken: signJWT({
-      userId: user.id, email: user.email, role: user.role || "user",
+      userId: user.passport_id, email: user.email, role: user.role || "user",
       ecosystem_uid: user.email,
       jti, type: "access", exp: Math.floor(Date.now() / 1000) + 900,
     }, ACCESS_SECRET),
     refreshToken: signJWT({
-      userId: user.id, deviceId: deviceId || "unknown",
+      userId: user.passport_id, deviceId: deviceId || "unknown",
       type: "refresh", exp: Math.floor(Date.now() / 1000) + 604800,
     }, REFRESH_SECRET),
-    userId: user.id,
+    userId: user.passport_id,
     expiresIn: 900,
   };
 }
@@ -115,17 +86,31 @@ export default async function handler(req, res) {
   const { action, email, password, refreshToken, nfc_chip_id } = req.body || {};
   const identity = (email || "").trim().toLowerCase();
 
+  const db = await getDB();
+
   // SIGNUP
   if (action === "signup") {
     if (!EMAIL_REGEX.test(identity) || !PASSWORD_REGEX.test(password || ""))
       return res.status(400).json({ error: "Email/password invalid. Password must be 12+ chars with upper, lower, digit, special." });
-    if (users.has(identity))
+    
+    const existingUser = await db.get(`SELECT email FROM passports WHERE email = ?`, [identity]);
+    if (existingUser)
       return res.status(409).json({ error: "Account exists" });
 
     const id = crypto.randomUUID();
-    const newUser = { id, email: identity, password_hash: hashPassword(password), role: "user", nfc_chip_id: nfc_chip_id || null };
-    users.set(identity, newUser);
-    saveUsers(users);
+    const newUser = { 
+      passport_id: id, 
+      email: identity, 
+      password_hash: hashPassword(password), 
+      role: "user", 
+      nfc_chip_id: nfc_chip_id || null 
+    };
+    
+    await db.run(
+      `INSERT INTO passports (passport_id, email, password_hash, role, nfc_chip_id) VALUES (?, ?, ?, ?, ?)`,
+      [newUser.passport_id, newUser.email, newUser.password_hash, newUser.role, newUser.nfc_chip_id]
+    );
+
     const tokens = issueTokens(newUser, req.headers["x-device-id"] || "web");
     return res.status(201).json(tokens);
   }
@@ -134,7 +119,8 @@ export default async function handler(req, res) {
   if (action === "nfc_login") {
     if (!nfc_chip_id)
       return res.status(400).json({ error: "NFC chip ID required" });
-    const user = Array.from(users.values()).find((u) => u.nfc_chip_id === nfc_chip_id);
+    
+    const user = await db.get(`SELECT passport_id, email, password_hash, role, nfc_chip_id FROM passports WHERE nfc_chip_id = ?`, [nfc_chip_id]);
     if (!user)
       return res.status(401).json({ error: "No passport associated with this NFC Card." });
 
@@ -148,23 +134,27 @@ export default async function handler(req, res) {
     if (!targetEmail || !chipId) {
       return res.status(400).json({ error: "Email and NFC chip ID are required" });
     }
-    const user = users.get(targetEmail.trim().toLowerCase());
+    const cleanEmail = targetEmail.trim().toLowerCase();
+    
+    const user = await db.get(`SELECT passport_id, email FROM passports WHERE email = ?`, [cleanEmail]);
     if (!user) {
       return res.status(404).json({ error: "Passport user account not found" });
     }
-    user.nfc_chip_id = chipId.trim().toUpperCase();
-    users.set(targetEmail.trim().toLowerCase(), user);
-    saveUsers(users);
+    
+    const newChipId = chipId.trim().toUpperCase();
+    await db.run(`UPDATE passports SET nfc_chip_id = ? WHERE email = ?`, [newChipId, cleanEmail]);
 
-    console.log(`[NFC Link] Linked NFC card ${chipId} to ${targetEmail}`);
-    return res.status(200).json({ success: true, message: `Successfully linked NFC Card: ${chipId}` });
+    console.log(`[NFC Link] Linked NFC card ${newChipId} to ${cleanEmail}`);
+    return res.status(200).json({ success: true, message: `Successfully linked NFC Card: ${newChipId}` });
   }
 
   // LOGIN
   if (action === "login") {
     if (!identity || !password)
       return res.status(400).json({ error: "Email and password required" });
-    const user = users.get(identity);
+      
+    const user = await db.get(`SELECT passport_id, email, password_hash, role, nfc_chip_id FROM passports WHERE email = ?`, [identity]);
+    
     if (!user || !comparePassword(password, user.password_hash))
       return res.status(401).json({ error: "Invalid credentials" });
 
@@ -180,7 +170,7 @@ export default async function handler(req, res) {
     if (!v.valid || v.payload?.type !== "refresh")
       return res.status(401).json({ error: "Invalid token" });
 
-    const user = Array.from(users.values()).find((u) => u.id === v.payload.userId);
+    const user = await db.get(`SELECT passport_id, email, password_hash, role, nfc_chip_id FROM passports WHERE passport_id = ?`, [v.payload.userId]);
     if (!user) return res.status(401).json({ error: "User not found" });
 
     const tokens = issueTokens(user, v.payload.deviceId);

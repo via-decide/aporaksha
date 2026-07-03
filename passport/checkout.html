@@ -414,7 +414,8 @@
           headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + session.accessToken,
-            'x-vercel-ip-country': country // Pass the simulated country header
+            'x-vercel-ip-country': country, // Pass the simulated country header
+            'x-pricing-region': country === 'IN' ? 'IN' : 'GLOBAL'
           },
           body: JSON.stringify({
             product_id: 'digital_architect',
