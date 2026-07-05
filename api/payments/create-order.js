@@ -23,6 +23,8 @@ const PRODUCTS = {
   arch_audit:   { amount: 499900, name: 'Architecture Audit — Hanuman.Solutions', currency: 'INR' },
   test_product: { amount: 100,    name: 'Validation Product',               currency: 'INR' },
   digital_architect: { amount: 1244100, name: 'Sovereign Digital Architect Bundle', currency: 'INR' },
+  smarttag_lite_single: { amount: 19900, name: 'SmartTag Lite — Single',     currency: 'INR' },
+  smarttag_lite_bulk:   { amount: 89900, name: 'SmartTag Lite — Bulk (5-pack)', currency: 'INR' },
 };
 
 const ACCESS_SECRET = process.env.SECRET_KEY || "zayvora_dev_access_secret";
@@ -56,7 +58,7 @@ async function logWaitlist(email, product_id, reason) {
 
 export default async function handler(req, res) {
   // ── CORS ────────────────────────────────────────────────────────────────
-  const ALLOWED = ['https://aporaksha.com', 'https://www.aporaksha.com'];
+  const ALLOWED = ['https://aporaksha.com', 'https://www.aporaksha.com', 'https://viadecide.com', 'https://www.viadecide.com'];
   const origin  = req.headers.origin || '';
   if (ALLOWED.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
@@ -105,16 +107,13 @@ export default async function handler(req, res) {
   }
 
   // ── 2. Commerce Readiness Engine ─────────────────────────────────────────
-  // Auth Check
+  // Auth Check (Deferral Enabled - Guest Checkout Allowed)
   const authHeader = req.headers.authorization || '';
   const token = authHeader.replace('Bearer ', '');
   const verification = verifyJWT(token);
 
-  if (!verification.valid) {
-    return res.status(401).json({ error: 'Unauthorized. Passport authentication required.' });
-  }
-  const userId = verification.payload.userId;
-  const userEmail = email || verification.payload.email;
+  const userId = verification.valid ? verification.payload.userId : 'guest';
+  const userEmail = verification.valid ? (email || verification.payload.email) : (email || null);
 
   // Passport Check (DB Health)
   const isPassportHealthy = await checkPassportHealth();
@@ -150,14 +149,20 @@ export default async function handler(req, res) {
     const db = await getDB();
     if (region === 'IN') {
       const subId = `sub_mock_${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+      if (userEmail) {
+        await db.run(
+          `UPDATE passports SET razorpay_subscription_id = ?, billing_status = ? WHERE email = ?`,
+          [subId, 'PENDING', userEmail]
+        );
+      }
       await db.run(
-        `UPDATE passports SET razorpay_subscription_id = ?, billing_status = ? WHERE email = ?`,
-        [subId, 'PENDING', userEmail]
+        `INSERT INTO orders (id, amount, currency, status, email, user_id) VALUES (?, ?, ?, ?, ?, ?)`,
+        [subId, product.amount, 'INR', 'awaiting_payment', userEmail || '', userId]
       );
       return res.status(200).json({
         type: 'subscription',
         subscription_id: subId,
-        amount: 9900,
+        amount: product.amount,
         currency: 'INR',
         product_name: product.name,
         key_id: 'rzp_test_mockkey123',
@@ -165,14 +170,21 @@ export default async function handler(req, res) {
       });
     } else {
       const ordId = `order_mock_${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+      if (userEmail) {
+        await db.run(
+          `UPDATE passports SET order_id = ?, billing_status = ? WHERE email = ?`,
+          [ordId, 'PENDING', userEmail]
+        );
+      }
+      const usdAmount = Math.round(product.amount / 83);
       await db.run(
-        `UPDATE passports SET order_id = ?, billing_status = ? WHERE email = ?`,
-        [ordId, 'PENDING', userEmail]
+        `INSERT INTO orders (id, amount, currency, status, email, user_id) VALUES (?, ?, ?, ?, ?, ?)`,
+        [ordId, usdAmount, 'USD', 'awaiting_payment', userEmail || '', userId]
       );
       return res.status(200).json({
         type: 'order',
         order_id: ordId,
-        amount: 1200,
+        amount: usdAmount,
         currency: 'USD',
         product_name: product.name,
         key_id: 'rzp_test_mockkey123',
@@ -203,9 +215,15 @@ export default async function handler(req, res) {
         }
       });
 
+      if (userEmail) {
+        await db.run(
+          `UPDATE passports SET razorpay_subscription_id = ?, billing_status = ? WHERE email = ?`,
+          [subscription.id, 'PENDING', userEmail]
+        );
+      }
       await db.run(
-        `UPDATE passports SET razorpay_subscription_id = ?, billing_status = ? WHERE email = ?`,
-        [subscription.id, 'PENDING', userEmail]
+        `INSERT INTO orders (id, amount, currency, status, email, user_id) VALUES (?, ?, ?, ?, ?, ?)`,
+        [subscription.id, product.amount, 'INR', 'awaiting_payment', userEmail || '', userId]
       );
 
       console.log('[Telemetry] subscription_created:', {
@@ -218,14 +236,15 @@ export default async function handler(req, res) {
       return res.status(200).json({
         type: 'subscription',
         subscription_id: subscription.id,
-        amount: 9900,
+        amount: product.amount,
         currency: 'INR',
         product_name: product.name,
         key_id: KEY_ID
       });
     } else {
+      const usdAmount = Math.round(product.amount / 83);
       const order = await razorpay.orders.create({
-        amount: 1200, // $12.00
+        amount: usdAmount, // Dynamic USD amount
         currency: 'USD',
         receipt: `rcpt_${product_id}_${crypto.randomBytes(4).toString('hex')}`,
         notes: {
@@ -239,9 +258,15 @@ export default async function handler(req, res) {
         }
       });
 
+      if (userEmail) {
+        await db.run(
+          `UPDATE passports SET order_id = ?, billing_status = ? WHERE email = ?`,
+          [order.id, 'PENDING', userEmail]
+        );
+      }
       await db.run(
-        `UPDATE passports SET order_id = ?, billing_status = ? WHERE email = ?`,
-        [order.id, 'PENDING', userEmail]
+        `INSERT INTO orders (id, amount, currency, status, email, user_id) VALUES (?, ?, ?, ?, ?, ?)`,
+        [order.id, usdAmount, 'USD', 'awaiting_payment', userEmail || '', userId]
       );
 
       console.log('[Telemetry] order_created:', {
@@ -254,7 +279,7 @@ export default async function handler(req, res) {
       return res.status(200).json({
         type: 'order',
         order_id: order.id,
-        amount: 1200,
+        amount: usdAmount,
         currency: 'USD',
         product_name: product.name,
         key_id: KEY_ID

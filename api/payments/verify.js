@@ -30,7 +30,7 @@ function verifyJWT(token) {
 }
 export default async function handler(req, res) {
   // ── CORS ────────────────────────────────────────────────────────────────
-  const ALLOWED = ['https://aporaksha.com', 'https://www.aporaksha.com'];
+  const ALLOWED = ['https://aporaksha.com', 'https://www.aporaksha.com', 'https://viadecide.com', 'https://www.viadecide.com'];
   const origin  = req.headers.origin || '';
   if (ALLOWED.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
