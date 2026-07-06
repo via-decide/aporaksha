@@ -95,12 +95,11 @@
       h1 { font-size: 24px; }
     }
   </style>
-  <script src="./passport-id-generator.js"></script>
-  <script src="./passport-model.js"></script>
-  <script src="./passport-store.js"></script>
-  <script src="./nfc/nfc-passport-reader.js"></script>
-  <script src="./passport-auth.js"></script>
-  <script src="./nfc/nfc-passport-reader.js"></script>
+  <script src="/passport/passport-id-generator.js"></script>
+  <script src="/passport/passport-model.js"></script>
+  <script src="/passport/passport-store.js"></script>
+  <script src="/passport/nfc/nfc-passport-reader.js"></script>
+  <script src="/passport/passport-auth.js"></script>
 </head>
 <body>
   <nav class="nav">
@@ -226,12 +225,18 @@
       btn.disabled = true;
       setMsg(isLogin ? 'Logging in…' : 'Creating passport…');
 
-      fetch('../api/auth', {
+      fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: isLogin ? 'login' : 'signup', name: name, email: email, password: password, nfc_chip_id: nfcChipId || null })
       })
-        .then(function (r) { return r.json(); })
+        .then(async function (r) { 
+          if (!r.ok) {
+            const text = await r.text();
+            try { return JSON.parse(text); } catch(e) { throw new Error(text || r.statusText); }
+          }
+          return r.json(); 
+        })
         .then(function (data) {
           if (data.accessToken) {
             localStorage.setItem('aporaksha_session', JSON.stringify({ email: email, accessToken: data.accessToken, refreshToken: data.refreshToken }));
@@ -337,12 +342,18 @@
         const serial = result.serialNumber.replace(/:/g, '').toUpperCase();
         setMsg('NFC read success! Authenticating via Aporaksha gateway...');
         
-        fetch('../api/auth', {
+        fetch('/api/auth', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'nfc_login', nfc_chip_id: serial })
         })
-          .then(function (r) { return r.json(); })
+          .then(async function (r) { 
+            if (!r.ok) {
+              const text = await r.text();
+              try { return JSON.parse(text); } catch(e) { throw new Error(text || r.statusText); }
+            }
+            return r.json(); 
+          })
           .then(function (data) {
             if (data.accessToken) {
               const email = data.email || 'nfc_user@aporaksha.com';
