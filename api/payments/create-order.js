@@ -23,7 +23,7 @@ const PRODUCTS = {
   arch_audit:   { amount: 499900, name: 'Architecture Audit — Hanuman.Solutions', currency: 'INR' },
   test_product: { amount: 100,    name: 'Validation Product',               currency: 'INR' },
   digital_architect: { amount: 1244100, name: 'Sovereign Digital Architect Bundle', currency: 'INR' },
-  smarttag_lite_single: { amount: 19900, name: 'SmartTag Lite — Single',     currency: 'INR' },
+  smarttag_lite_single: { amount: 39900, name: 'SmartTag Lite — Single',     currency: 'INR' },
   smarttag_lite_bulk:   { amount: 89900, name: 'SmartTag Lite — Bulk (5-pack)', currency: 'INR' },
 };
 
