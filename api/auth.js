@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { getDB } from "../lib/db.js";
+import { initDB } from "../lib/initDb.js";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{12,}$/;
@@ -86,6 +87,7 @@ export default async function handler(req, res) {
   const { action, email, password, refreshToken, nfc_chip_id } = req.body || {};
   const identity = (email || "").trim().toLowerCase();
 
+  await initDB();
   const db = await getDB();
 
   // SIGNUP
