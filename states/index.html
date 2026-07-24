@@ -42,16 +42,16 @@
 
 <script>
   const states = [
-    ['empty.html', 'server-off', 'Empty State', 'No sovereign AI compute nodes or GPU clusters provisioned'],
-    ['loading.html', 'loader-2', 'Loading State', 'Provisioning GPU cluster nodes & binding CUDA telemetry'],
-    ['error.html', 'alert-triangle', 'Error State', 'Hardware telemetry pipeline VRAM memory fault'],
-    ['offline.html', 'wifi-off', 'No Internet', 'Air-gapped sovereign AI compute node operating offline'],
-    ['slow-network.html', 'signal-low', 'Slow Network', 'Mesh interconnect latency fallback & model quantization'],
-    ['no-results.html', 'search-x', 'No Search Results', 'Query returned zero active GPU compute clusters'],
-    ['permission-denied.html', 'lock', 'Permission Denied', 'Sovereign infrastructure node clearance restricted'],
-    ['session-expired.html', 'clock-alert', 'Session Expired', 'Hardware operator authorization key timeout'],
-    ['form-validation.html', 'list-checks', 'Form Validation', 'Real-time sovereign AI node registration validator'],
-    ['success.html', 'check-circle-2', 'Success State', 'Sovereign compute node provisioned & bound to mesh'],
+    ['empty', 'cpu', 'Empty State', 'No active AI compute nodes or GPU clusters registered'],
+    ['loading', 'loader-2', 'Loading State', 'Initialising hardware enclave & firmware verification'],
+    ['error', 'alert-triangle', 'Error State', 'Sovereign hardware clearance breakdown'],
+    ['offline', 'wifi-off', 'No Internet', 'Air-gapped node isolation active'],
+    ['slow-network', 'signal-low', 'Slow Network', 'Low-bandwidth satellite telemetry mode'],
+    ['no-results', 'search-x', 'No Search Results', 'Query yielded zero node matches in security vault'],
+    ['permission-denied', 'shield-alert', 'Permission Denied', 'GPU cluster access denied — hardware key required'],
+    ['session-expired', 'clock-alert', 'Session Expired', 'Enclave authorization lease expired'],
+    ['form-validation', 'list-checks', 'Form Validation', 'Real-time sovereign node registration validator'],
+    ['success', 'check-circle-2', 'Success State', 'Hardware node verified & added to enclave'],
   ];
   const grid = document.getElementById('grid');
   for (const [href, icon, title, desc] of states) {
