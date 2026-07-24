@@ -1,4 +1,6 @@
 import express from 'express';
+import { threatDetector } from '../server/threat-detector.js';
+
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -84,6 +86,7 @@ process.env.SOVEREIGN_EDGE = 'true';
 
 
 const app = express();
+app.use(threatDetector);
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -171,6 +174,24 @@ app.use(async (req, res, next) => {
 });
 
 // Serve static frontend
+app.use((req, res, next) => {
+    const urlPath = req.path;
+    if (urlPath.endsWith('.html') && !urlPath.endsWith('/index.html') && !urlPath.endsWith('index.html')) {
+        const cleanPath = urlPath.slice(0, -5) + (req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '');
+        return res.redirect(301, cleanPath);
+    }
+    if (!path.extname(urlPath)) {
+        const fileWithHtml = path.join(__dirname, urlPath + '.html');
+        const publicWithHtml = path.join(__dirname, 'public', urlPath + '.html');
+        if (fs.existsSync(fileWithHtml) && fs.statSync(fileWithHtml).isFile()) {
+            return res.sendFile(fileWithHtml);
+        } else if (fs.existsSync(publicWithHtml) && fs.statSync(publicWithHtml).isFile()) {
+            return res.sendFile(publicWithHtml);
+        }
+    }
+    next();
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname));
 
