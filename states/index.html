@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI States — Aporaksha.com</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  .font-mono { font-family: 'JetBrains Mono', monospace; }
+</style>
+</head>
+<body class="min-h-screen bg-[#0b0c10] text-[#f5f5f5] antialiased selection:bg-[#ff671f]/30 selection:text-white">
+<header class="border-b border-[#1e293b] bg-[#0b0c10]/90 backdrop-blur sticky top-0 z-50">
+  <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 sm:px-6">
+    <div class="flex items-center gap-3">
+      <a href="/" class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-[#ff671f]"></span>
+        APORAKSHA<span class="text-[#ff671f]">.COM</span>
+      </a>
+      <span class="text-xs text-[#94a3b8] hidden sm:inline-block">/ Sovereign AI Infrastructure</span>
+    </div>
+    <span class="font-mono text-[11px] uppercase tracking-widest px-2.5 py-1 rounded bg-[#ff671f]/10 border border-[#ff671f]/30 text-[#ff671f]">Infrastructure States</span>
+  </div>
+</header>
+<main class="mx-auto max-w-4xl px-4 py-12 sm:px-6">
+  <div class="mb-10 text-center sm:text-left">
+    <div class="inline-flex items-center gap-2 font-mono text-xs text-[#ff671f] bg-[#ff671f]/10 border border-[#ff671f]/20 px-3 py-1 rounded-full mb-3">
+      <i data-lucide="server" class="w-3.5 h-3.5"></i> Sovereign AI System Specifications
+    </div>
+    <h1 class="text-3xl sm:text-4xl font-bold text-white tracking-tight mb-3">Node & Cluster UI States</h1>
+    <p class="text-[#94a3b8] text-sm max-w-2xl leading-relaxed">
+      Standardized operational state visual references for Aporaksha sovereign compute clusters, telemetry pipelines, and hardware infrastructure.
+    </p>
+  </div>
+  <div class="grid sm:grid-cols-2 gap-4" id="grid"></div>
+</main>
+
+<script>
+  const states = [
+    ['empty.html', 'server-off', 'Empty State', 'No sovereign AI compute nodes or GPU clusters provisioned'],
+    ['loading.html', 'loader-2', 'Loading State', 'Provisioning GPU cluster nodes & binding CUDA telemetry'],
+    ['error.html', 'alert-triangle', 'Error State', 'Hardware telemetry pipeline VRAM memory fault'],
+    ['offline.html', 'wifi-off', 'No Internet', 'Air-gapped sovereign AI compute node operating offline'],
+    ['slow-network.html', 'signal-low', 'Slow Network', 'Mesh interconnect latency fallback & model quantization'],
+    ['no-results.html', 'search-x', 'No Search Results', 'Query returned zero active GPU compute clusters'],
+    ['permission-denied.html', 'lock', 'Permission Denied', 'Sovereign infrastructure node clearance restricted'],
+    ['session-expired.html', 'clock-alert', 'Session Expired', 'Hardware operator authorization key timeout'],
+    ['form-validation.html', 'list-checks', 'Form Validation', 'Real-time sovereign AI node registration validator'],
+    ['success.html', 'check-circle-2', 'Success State', 'Sovereign compute node provisioned & bound to mesh'],
+  ];
+  const grid = document.getElementById('grid');
+  for (const [href, icon, title, desc] of states) {
+    const a = document.createElement('a');
+    a.href = href;
+    a.className = 'group flex items-start gap-4 rounded-xl border border-[#1e293b] bg-[#121826] p-5 hover:border-[#ff671f]/60 hover:bg-[#ff671f]/5 transition-all duration-200';
+    a.innerHTML = `
+      <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#1e293b] bg-[#0b0c10] group-hover:border-[#ff671f]/50 group-hover:text-[#ff671f] transition-colors">
+        <i data-lucide="${icon}" class="h-5 w-5 text-[#ff671f]"></i>
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center justify-between">
+          <div class="text-sm font-semibold text-white group-hover:text-[#ff671f] transition-colors">${title}</div>
+          <i data-lucide="arrow-right" class="h-4 w-4 text-[#94a3b8] group-hover:text-[#ff671f] group-hover:translate-x-0.5 transition-all"></i>
+        </div>
+        <div class="text-xs text-[#94a3b8] mt-1 line-clamp-2">${desc}</div>
+      </div>`;
+    grid.appendChild(a);
+  }
+  lucide.createIcons();
+</script>
+</body>
+</html>

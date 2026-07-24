@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Empty State — Aporaksha.com</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  .font-mono { font-family: 'JetBrains Mono', monospace; }
+</style>
+</head>
+<body class="min-h-screen bg-[#0b0c10] text-[#f5f5f5] antialiased">
+<header class="border-b border-[#1e293b] bg-[#0b0c10]/90 backdrop-blur sticky top-0 z-50">
+  <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 sm:px-6">
+    <a href="/states/index.html" class="text-xs font-mono text-[#94a3b8] hover:text-[#ff671f] flex items-center gap-1.5 transition-colors">
+      <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Infrastructure States
+    </a>
+    <span class="font-mono text-xs text-[#ff671f]">State 01 / Empty</span>
+  </div>
+</header>
+<main class="mx-auto max-w-2xl px-4 py-20 text-center">
+  <div class="inline-flex h-20 w-20 items-center justify-center rounded-2xl border border-[#ff671f]/30 bg-[#121826] mb-6 text-[#ff671f] shadow-xl shadow-[#ff671f]/10">
+    <i data-lucide="server-off" class="w-10 h-10"></i>
+  </div>
+  <h1 class="text-2xl font-bold text-white mb-2">No AI Compute Nodes Provisioned</h1>
+  <p class="text-[#94a3b8] text-sm max-w-md mx-auto mb-8 leading-relaxed">
+    Your sovereign cluster has no registered GPU nodes or inference accelerators bound to the telemetry control plane.
+  </p>
+  <div class="flex flex-wrap items-center justify-center gap-3">
+    <a href="/states/form-validation.html" class="inline-flex items-center gap-2 rounded-lg bg-[#ff671f] px-4 py-2.5 text-sm font-semibold text-[#120b08] hover:bg-[#ff8547] transition-colors shadow-lg shadow-[#ff671f]/20">
+      <i data-lucide="plus-circle" class="w-4 h-4"></i> Register Sovereign Node
+    </a>
+    <button class="inline-flex items-center gap-2 rounded-lg border border-[#1e293b] bg-[#121826] px-4 py-2.5 text-sm font-medium text-[#f5f5f5] hover:border-[#ff671f]/50 hover:text-white transition-colors">
+      <i data-lucide="cpu" class="w-4 h-4 text-[#94a3b8]"></i> Auto-Detect GPU Hardware
+    </button>
+  </div>
+</main>
+<script>lucide.createIcons();</script>
+</body>
+</html>

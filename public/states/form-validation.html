@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Form Validation — Aporaksha.com</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  .font-mono { font-family: 'JetBrains Mono', monospace; }
+</style>
+</head>
+<body class="min-h-screen bg-[#0b0c10] text-[#f5f5f5] antialiased">
+<header class="border-b border-[#1e293b] bg-[#0b0c10]/90 backdrop-blur sticky top-0 z-50">
+  <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 sm:px-6">
+    <a href="/states/index.html" class="text-xs font-mono text-[#94a3b8] hover:text-[#ff671f] flex items-center gap-1.5 transition-colors">
+      <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Infrastructure States
+    </a>
+    <span class="font-mono text-xs text-[#ff671f]">State 09 / Form Validation</span>
+  </div>
+</header>
+
+<main class="mx-auto max-w-xl px-4 py-12">
+  <div class="mb-8">
+    <div class="inline-flex items-center gap-2 font-mono text-xs text-[#ff671f] bg-[#ff671f]/10 border border-[#ff671f]/20 px-2.5 py-0.5 rounded mb-2">
+      <i data-lucide="list-checks" class="w-3.5 h-3.5"></i> Live Node Validation
+    </div>
+    <h1 class="text-2xl font-bold text-white">Register Sovereign AI Node</h1>
+    <p class="text-[#94a3b8] text-xs mt-1">Bind a physical GPU node or compute accelerator to the Aporaksha cluster control plane.</p>
+  </div>
+
+  <form id="nodeForm" novalidate class="rounded-xl border border-[#1e293b] bg-[#121826] p-6 shadow-2xl space-y-5">
+    
+    <!-- Node Name -->
+    <div>
+      <label for="nodeName" class="block text-xs font-mono text-[#94a3b8] mb-1">Node Hostname <span class="text-[#f87171]">*</span></label>
+      <input type="text" id="nodeName" placeholder="apo-h100-node-01"
+        class="w-full rounded-lg border border-[#1e293b] bg-[#0b0c10] px-3.5 py-2 text-sm text-white font-mono placeholder-[#4e5368] focus:border-[#ff671f] focus:outline-none transition-colors" />
+      <p id="nameError" class="hidden text-xs text-[#f87171] mt-1.5 flex items-center gap-1">
+        <i data-lucide="alert-circle" class="w-3 h-3"></i> Hostname must be at least 4 characters long.
+      </p>
+    </div>
+
+    <!-- Cluster ID -->
+    <div>
+      <div class="flex justify-between items-center mb-1">
+        <label for="clusterId" class="block text-xs font-mono text-[#94a3b8]">Cluster ID <span class="text-[#f87171]">*</span></label>
+        <span class="text-[10px] font-mono text-[#94a3b8]">Format: APO-CLUSTER-XXXX</span>
+      </div>
+      <input type="text" id="clusterId" placeholder="APO-CLUSTER-7002"
+        class="w-full rounded-lg border border-[#1e293b] bg-[#0b0c10] px-3.5 py-2 text-sm text-white font-mono placeholder-[#4e5368] focus:border-[#ff671f] focus:outline-none transition-colors" />
+      <p id="clusterError" class="hidden text-xs text-[#f87171] mt-1.5 flex items-center gap-1">
+        <i data-lucide="alert-circle" class="w-3 h-3"></i> Cluster ID must match APO-CLUSTER- followed by 4 digits (e.g. APO-CLUSTER-7002).
+      </p>
+    </div>
+
+    <!-- Operator Email -->
+    <div>
+      <label for="email" class="block text-xs font-mono text-[#94a3b8] mb-1">Operator Email <span class="text-[#f87171]">*</span></label>
+      <input type="email" id="email" placeholder="ops@aporaksha.com"
+        class="w-full rounded-lg border border-[#1e293b] bg-[#0b0c10] px-3.5 py-2 text-sm text-white placeholder-[#4e5368] focus:border-[#ff671f] focus:outline-none transition-colors" />
+      <p id="emailError" class="hidden text-xs text-[#f87171] mt-1.5 flex items-center gap-1">
+        <i data-lucide="alert-circle" class="w-3 h-3"></i> Please enter a valid operator email address.
+      </p>
+    </div>
+
+    <!-- GPU Architecture -->
+    <div>
+      <label for="gpuArch" class="block text-xs font-mono text-[#94a3b8] mb-1">GPU Architecture <span class="text-[#f87171]">*</span></label>
+      <select id="gpuArch" class="w-full rounded-lg border border-[#1e293b] bg-[#0b0c10] px-3.5 py-2 text-sm text-white focus:border-[#ff671f] focus:outline-none transition-colors">
+        <option value="">Select GPU architecture...</option>
+        <option value="h100">NVIDIA H100 SXM5 (80GB VRAM)</option>
+        <option value="a100">NVIDIA A100 (80GB PCIe)</option>
+        <option value="l40s">NVIDIA L40S Tensor Core</option>
+        <option value="asic">Aporaksha Sovereign ASIC Cluster</option>
+      </select>
+      <p id="gpuArchError" class="hidden text-xs text-[#f87171] mt-1.5 flex items-center gap-1">
+        <i data-lucide="alert-circle" class="w-3 h-3"></i> Please select a valid GPU architecture.
+      </p>
+    </div>
+
+    <!-- Allocated VRAM -->
+    <div>
+      <label for="vram" class="block text-xs font-mono text-[#94a3b8] mb-1">Allocated VRAM Pool (GB) <span class="text-[#f87171]">*</span></label>
+      <input type="number" id="vram" placeholder="80"
+        class="w-full rounded-lg border border-[#1e293b] bg-[#0b0c10] px-3.5 py-2 text-sm text-white font-mono placeholder-[#4e5368] focus:border-[#ff671f] focus:outline-none transition-colors" />
+      <p id="vramError" class="hidden text-xs text-[#f87171] mt-1.5 flex items-center gap-1">
+        <i data-lucide="alert-circle" class="w-3 h-3"></i> VRAM allocation must be between 16GB and 512GB.
+      </p>
+    </div>
+
+    <!-- SSH Public Key -->
+    <div>
+      <label for="sshKey" class="block text-xs font-mono text-[#94a3b8] mb-1">Authorized SSH Public Key <span class="text-[#f87171]">*</span></label>
+      <textarea id="sshKey" rows="2" placeholder="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI..."
+        class="w-full rounded-lg border border-[#1e293b] bg-[#0b0c10] px-3.5 py-2 text-xs font-mono text-white placeholder-[#4e5368] focus:border-[#ff671f] focus:outline-none transition-colors"></textarea>
+      <p id="sshKeyError" class="hidden text-xs text-[#f87171] mt-1.5 flex items-center gap-1">
+        <i data-lucide="alert-circle" class="w-3 h-3"></i> Must be a valid SSH key starting with ssh-ed25519 or ssh-rsa.
+      </p>
+    </div>
+
+    <!-- Success Message Container -->
+    <div id="formSuccess" class="hidden rounded-lg border border-[#34d399]/30 bg-[#34d399]/10 p-3 text-xs text-[#34d399] flex items-center gap-2">
+      <i data-lucide="check-circle" class="w-4 h-4 shrink-0"></i>
+      <span>Validation passed! Provisioning node in Aporaksha telemetry plane...</span>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" class="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[#ff671f] px-4 py-2.5 text-sm font-semibold text-[#120b08] hover:bg-[#ff8547] transition-colors shadow-lg shadow-[#ff671f]/20">
+      <i data-lucide="cpu" class="w-4 h-4"></i> Validate & Provision Node
+    </button>
+  </form>
+</main>
+
+<script>
+  lucide.createIcons();
+
+  const form = document.getElementById('nodeForm');
+  const nodeName = document.getElementById('nodeName');
+  const clusterId = document.getElementById('clusterId');
+  const email = document.getElementById('email');
+  const gpuArch = document.getElementById('gpuArch');
+  const vram = document.getElementById('vram');
+  const sshKey = document.getElementById('sshKey');
+  const formSuccess = document.getElementById('formSuccess');
+
+  function validateField(field, errorEl, isInvalidCondition) {
+    if (isInvalidCondition) {
+      field.classList.add('border-[#f87171]');
+      field.classList.remove('border-[#1e293b]');
+      errorEl.classList.remove('hidden');
+      return false;
+    } else {
+      field.classList.remove('border-[#f87171]');
+      field.classList.add('border-[#1e293b]');
+      errorEl.classList.add('hidden');
+      return true;
+    }
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const isNameValid = validateField(nodeName, document.getElementById('nameError'), nodeName.value.trim().length < 4);
+    const isClusterValid = validateField(clusterId, document.getElementById('clusterError'), !/^APO-CLUSTER-\d{4}$/.test(clusterId.value.trim()));
+    const isEmailValid = validateField(email, document.getElementById('emailError'), !/^\S+@\S+\.\S+$/.test(email.value.trim()));
+    const isGpuValid = validateField(gpuArch, document.getElementById('gpuArchError'), !gpuArch.value);
+    const vramNum = parseInt(vram.value, 10);
+    const isVramValid = validateField(vram, document.getElementById('vramError'), isNaN(vramNum) || vramNum < 16 || vramNum > 512);
+    const isSshValid = validateField(sshKey, document.getElementById('sshKeyError'), !/^(ssh-ed25519|ssh-rsa)\s+[A-Za-z0-9+/=]+/.test(sshKey.value.trim()));
+
+    if (isNameValid && isClusterValid && isEmailValid && isGpuValid && isVramValid && isSshValid) {
+      formSuccess.classList.remove('hidden');
+      setTimeout(() => {
+        window.location.href = '/states/success.html';
+      }, 1200);
+    } else {
+      formSuccess.classList.add('hidden');
+    }
+  });
+</script>
+</body>
+</html>
