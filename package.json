@@ -10,6 +10,7 @@
     "@aws-sdk/client-kms": "^3.1073.0",
     "@aws-sdk/client-s3": "^3.1073.0",
     "@aws-sdk/lib-storage": "^3.1073.0",
+    "@libsql/client": "^0.17.4",
     "@temporalio/worker": "^1.18.1",
     "@temporalio/workflow": "^1.18.1",
     "dotenv": "^16.4.5",
