@@ -75,6 +75,50 @@ Structure that matches what actually gets found:
 4. **Fix** — ordered, smallest blast radius first
 5. **What else this implies** — the things they did not ask about
 
+### How this is actually delivered — `daxini-bca-learning`
+
+The 12-hour promise is only realistic because the reference material already
+exists. `via-decide/daxini-bca-learning` is not a course repo; it is the
+**delivery library**.
+
+54 domain modules across five categories — simple backend, multi-user,
+real-time, AI/ML, complex databases — covering gym management, hospital,
+hotel booking, event management, task management, project management, time
+tracking, expense tracker, inventory, student information, clinic appointments,
+library management, and more.
+
+**49 of them carry the same seven files:**
+
+| File | What it does in a refinement |
+|---|---|
+| `ARCHITECTURE.md` | the reference shape to compare theirs against |
+| `COMMON_MISTAKES.md` | **the review checklist** — the highest-value file in the repo |
+| `API_DESIGN.md` | what their endpoints should look like |
+| `DATABASE.sql` | the schema their data should roughly match |
+| `DEBUGGING_GUIDE.md` | maps directly onto the written diagnosis |
+| `LEARNING_PATH.md` / `RESOURCES.md` | what to hand the client afterwards |
+| `STARTER_TEMPLATE/` | working code, if the fix is a rewrite |
+
+So delivery is **assembly, not invention**:
+
+```
+intake says "booking system"
+  └─ pull projects/02-multi-user/03-hotel-booking
+       ├─ compare their build against ARCHITECTURE.md
+       ├─ walk COMMON_MISTAKES.md as the review checklist
+       ├─ check their schema against DATABASE.sql
+       └─ write the diagnosis using DEBUGGING_GUIDE.md's structure
+```
+
+That is what makes two a week sustainable alongside an M.Sc. Without it, every
+refinement is a fresh investigation and the 12-hour promise breaks on the third
+client.
+
+**Gap worth closing:** 54 modules, 49 with the full seven-file set. The five
+incomplete ones will be the ones a client asks about. Also, `04-ai-ml` has only
+2 modules and `07-complex-databases` only 2 — thin coverage in the two areas
+most likely to walk in the door in 2026.
+
 ### Capacity, honestly
 
 One audit is a few hours of real attention. Two a week is comfortable alongside
