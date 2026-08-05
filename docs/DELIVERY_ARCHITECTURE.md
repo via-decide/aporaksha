@@ -84,10 +84,41 @@ complains about.
 
 ---
 
-## Part 2 — ₹1,717 GN8R APK (`zayvora_os`)
+## Part 2 — ₹1,717 GN8R automation APK (`zayvora_os`)
 
-A 17 MB Android binary sold to founders. This has a hard technical constraint
-that dictates the whole design.
+### What it actually is
+
+Not "an Android app for founders." It is **packaged, proven automation for
+people who already run their own infrastructure** — a Mac Mini, a home server,
+a always-on box of some kind — and want workflows that are known to work rather
+than ones they have to discover.
+
+Two things define the buyer, and both matter for how it is sold:
+
+1. **They already have the setup.** They are not buying capability, they are
+   buying the workarounds. The value is that someone else already hit the edge
+   cases and the recipes survive contact with a real machine.
+2. **They do not want a Telegram dependency.** Most self-hosted automation
+   assumes a Telegram bot as the control plane. That means a third-party account,
+   a bot token, and an outbound channel to a service you do not control. This
+   product deliberately does not require one.
+
+That second point is the sharpest differentiator and should be said plainly on
+the page, because the audience has usually already been burned by it. Worth
+noting this estate is itself evidence: Telegram integration code exists across
+several repos here and **no Telegram bot is running** — the automation works
+without it.
+
+### Positioning, in the buyer's words
+
+> You already have the box. You do not want another bot token, another
+> third-party account, or another thing that stops working when someone else's
+> API changes. This is the automation, already debugged, running locally.
+
+### The delivery constraint
+
+Distribution is still a 17 MB binary, and that has a hard technical limit which
+dictates the rest of this section.
 
 ### The constraint: you cannot email an APK
 
@@ -160,6 +191,11 @@ different project.
 3. **Clean up `ViaApp-Android/`.** There are 13 build directories
    (`build`, `build (1)` … `build (12)`). Nobody can tell which produced the
    artefact you are selling.
+4. **Verify the no-Telegram claim holds in the shipped build.** It is the
+   headline differentiator, so it has to be true of the artefact, not just of
+   the intent. Grep the release for Telegram tokens, bot endpoints and
+   `api.telegram.org` before it goes out — a single leftover import turns the
+   main selling point into a refund.
 
 Until 1–3 are done, `zayvora_os` stays `deliverable: false` and returns 503 at
 checkout — refusing the sale rather than emailing a dead link.
