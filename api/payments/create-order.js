@@ -132,8 +132,11 @@ export default async function handler(req, res) {
   }
 
   // Product Check (Verify deliverable exists)
+  // Gate on `deliverable`, not merely on a link existing. Four of the nine
+  // products pointed at URLs that 404 — including arch_audit at Rs4,999 —
+  // so the old check passed and the customer was emailed a dead link.
   const meta = getProductMetadata(product_id);
-  if (!meta || !meta.downloadLink) {
+  if (!meta || !meta.downloadLink || meta.deliverable === false) {
     console.error('[Readiness] Product deliverable missing for:', product_id);
     await logWaitlist(userEmail, product_id, 'missing_deliverable');
     return res.status(503).json({ error: 'Purchases are temporarily unavailable. We are updating delivery infrastructure. We will send an update to your email when payments return.' });
