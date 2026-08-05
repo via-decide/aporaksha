@@ -319,6 +319,21 @@
   </main>
 
   <script>
+
+  // Which product this checkout is for. Read from ?product= so one page can
+  // sell the whole catalogue — previously it hardcoded digital_architect,
+  // which meant every other product (arch_audit, forge_access, the smarttag
+  // SKUs) had a price on the server and no way for anyone to reach it.
+  // Allow-listed on purpose: the server rejects unknown ids anyway, but a bad
+  // value should fail here rather than after a round trip.
+  const APORAKSHA_PRODUCTS = [
+    'zayvora_os','daxini_stack','forge_access','scaffold','arch_audit',
+    'digital_architect','smarttag_lite_single','smarttag_lite_bulk'
+  ];
+  const PRODUCT_ID = (function () {
+    const q = new URLSearchParams(location.search).get('product');
+    return APORAKSHA_PRODUCTS.includes(q) ? q : 'digital_architect';
+  })();
     // Set user email on load
     window.addEventListener('DOMContentLoaded', () => {
       const sessionStr = localStorage.getItem('aporaksha_session');
@@ -418,7 +433,7 @@
             'x-pricing-region': country === 'IN' ? 'IN' : 'GLOBAL'
           },
           body: JSON.stringify({
-            product_id: 'digital_architect',
+            product_id: PRODUCT_ID,
             email: session.email,
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             locale: navigator.language
@@ -442,7 +457,7 @@
           const verifyBody = {
             razorpay_payment_id: 'pay_mock_' + Math.random().toString(36).substring(2, 10).toUpperCase(),
             razorpay_signature: 'mock_signature_valid_for_dev_sandbox',
-            product_id: 'digital_architect',
+            product_id: PRODUCT_ID,
             email: session.email
           };
           if (data.type === 'subscription') {
@@ -494,7 +509,7 @@
                   razorpay_subscription_id: paymentRes.razorpay_subscription_id || null,
                   razorpay_payment_id: paymentRes.razorpay_payment_id,
                   razorpay_signature: paymentRes.razorpay_signature,
-                  product_id: 'digital_architect',
+                  product_id: PRODUCT_ID,
                   email: session.email
                 })
               });
