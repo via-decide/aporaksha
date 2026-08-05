@@ -13,6 +13,7 @@ import { COUNTRY_POLICY, PRODUCT_GEO_OVERRIDES } from '../../lib/commerceConfig.
 import { checkHealth as checkSmtpHealth } from '../../lib/emailService.js';
 import { checkHealth as checkPassportHealth, getProductMetadata } from '../../lib/passportEngine.js';
 import { getDB } from '../../lib/db.js';
+import { logWaitlist, WAITLIST_REASONS } from '../../lib/waitlist.js';
 
 // ── Product catalogue (amounts in paise = INR × 100) ──────────────────────
 const PRODUCTS = {
@@ -43,18 +44,6 @@ function verifyJWT(token) {
   }
 }
 
-async function logWaitlist(email, product_id, reason) {
-  try {
-    if (!email) return;
-    const db = await getDB();
-    await db.run(
-      `INSERT INTO events (type, payload) VALUES (?, ?)`,
-      ['waitlist_due_to_outage', JSON.stringify({ email, product_id, reason, ts: new Date().toISOString() })]
-    );
-  } catch (e) {
-    console.error("[Waitlist] Failed to log waitlist event:", e);
-  }
-}
 
 export default async function handler(req, res) {
   // ── CORS ────────────────────────────────────────────────────────────────
@@ -75,7 +64,7 @@ export default async function handler(req, res) {
 
   // ── 0. Payment Kill Switch ──────────────────────────────────────────────
   if (process.env.ACCEPT_PAYMENTS === 'OFF') {
-    await logWaitlist(email, product_id, 'kill_switch');
+    await logWaitlist(email, product_id, WAITLIST_REASONS.OUTAGE);
     return res.status(503).json({ error: 'Purchases are temporarily unavailable. We are performing system maintenance. We will send an update to your email when payments return.' });
   }
 
@@ -119,7 +108,7 @@ export default async function handler(req, res) {
   const isPassportHealthy = await checkPassportHealth();
   if (!isPassportHealthy) {
     console.error('[Readiness] Passport DB is offline.');
-    await logWaitlist(userEmail, product_id, 'db_offline');
+    await logWaitlist(userEmail, product_id, WAITLIST_REASONS.OUTAGE);
     return res.status(503).json({ error: 'Purchases are temporarily unavailable. We are updating delivery infrastructure. We will send an update to your email when payments return.' });
   }
 
@@ -127,7 +116,7 @@ export default async function handler(req, res) {
   const isSmtpHealthy = await checkSmtpHealth();
   if (!isSmtpHealthy) {
     console.error('[Readiness] SMTP is offline. Cannot deliver emails.');
-    await logWaitlist(userEmail, product_id, 'smtp_offline');
+    await logWaitlist(userEmail, product_id, WAITLIST_REASONS.OUTAGE);
     return res.status(503).json({ error: 'Purchases are temporarily unavailable. We are updating delivery infrastructure. We will send an update to your email when payments return.' });
   }
 
@@ -137,9 +126,28 @@ export default async function handler(req, res) {
   // so the old check passed and the customer was emailed a dead link.
   const meta = getProductMetadata(product_id);
   if (!meta || !meta.downloadLink || meta.deliverable === false) {
-    console.error('[Readiness] Product deliverable missing for:', product_id);
-    await logWaitlist(userEmail, product_id, 'missing_deliverable');
-    return res.status(503).json({ error: 'Purchases are temporarily unavailable. We are updating delivery infrastructure. We will send an update to your email when payments return.' });
+    // Two different situations wearing the same 503, and they need different
+    // follow-up. `deliverable: false` means the asset was never published —
+    // that is a demand signal, and the customer should be told when it ships.
+    // Anything else here is a genuine readiness failure to chase down.
+    const notBuiltYet = meta && meta.deliverable === false;
+    console.error(
+      notBuiltYet
+        ? '[Waitlist] Interest in an unreleased product:'
+        : '[Readiness] Product deliverable missing for:',
+      product_id
+    );
+    await logWaitlist(
+      userEmail,
+      product_id,
+      notBuiltYet ? WAITLIST_REASONS.INTEREST : WAITLIST_REASONS.OUTAGE
+    );
+    return res.status(503).json({
+      error: notBuiltYet
+        ? 'This is not released yet. We have noted your interest and will email you the moment it ships.'
+        : 'Purchases are temporarily unavailable. We are updating delivery infrastructure. We will send an update to your email when payments return.',
+      code: notBuiltYet ? 'NOT_RELEASED' : 'DELIVERY_UNAVAILABLE'
+    });
   }
 
   // ── 3. Validate keys are present ─────────────────────────────────────────
