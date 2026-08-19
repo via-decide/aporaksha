@@ -10,6 +10,6 @@ Implement durable `webhook_events` (append-only, immutable raw payload, replayab
 
 Enforce idempotency and async processing with retries, DLQ, structured errors, reconciliation, order/subscription updates, entitlement grants, notifications, and audit logs.
 
-Add structured logs/metrics (ingestion, processing, retries, failures, latency), isolate failures so Razorpay always gets 200 after ingestion, and add replay capability (`POST /internal/webhooks/replay/:eventId`) for failed/dead-lettered events.
+Add structured logs/metrics (ingestion, processing, retries, failures, latency), isolate failures so Razorpay always gets 200 after ingestion, and add replay capability (`POST /api/webhooks/razorpay?replay=:eventId (folded into the main handler 2026-08-19, no longer its own function)`) for failed/dead-lettered events.
 
 Outcome: stable Vercel webhook transport, internalized retries/recovery, replay-safe payment processing, and foundation for Hanuman execution orchestration.
