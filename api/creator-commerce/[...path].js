@@ -1,15 +1,19 @@
 import crypto from 'crypto';
 import Razorpay from 'razorpay';
-import { getCreator } from '../../lib/creatorCatalog.js';
+import * as store from '../../lib/domain/creatorStore.js';
+import { validateOrderInput, isValidHandle, isValidAmountMinor } from '../../lib/domain/types.js';
 import * as ledger from '../../lib/creatorLedger.js';
 
-const ALLOWED = ['https://aporaksha.com', 'https://www.aporaksha.com', 'https://viadecide.com', 'https://www.viadecide.com'];
+const ALLOWED = [
+  'https://aporaksha.com', 'https://www.aporaksha.com',
+  'https://viadecide.com', 'https://www.viadecide.com',
+];
 
 function cors(req, res) {
   const origin = req.headers.origin || '';
   if (ALLOWED.includes(origin)) res.setHeader('Access-Control-Allow-Origin', origin);
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Vary', 'Origin');
 }
 
@@ -18,9 +22,17 @@ function route(req) {
   const base = '/api/creator-commerce/';
   const idx = url.indexOf(base);
   if (idx === -1) return '';
-  const rest = url.slice(idx + base.length).split('?')[0].replace(/\/+$/, '');
-  return rest;
+  return url.slice(idx + base.length).split('?')[0].replace(/\/+$/, '');
 }
+
+function parseQuery(req) {
+  const url = req.url || '';
+  const q = url.indexOf('?');
+  if (q === -1) return {};
+  return Object.fromEntries(new URLSearchParams(url.slice(q + 1)));
+}
+
+// ── Handlers ─────────────────────────────────────────────────────────
 
 async function handleConfig(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
@@ -29,89 +41,175 @@ async function handleConfig(req, res) {
   return res.json({ razorpayKeyId: keyId });
 }
 
-function validateOrder(body) {
-  const { creatorSlug, offerId, date, time, buyerName, buyerEmail, idempotencyKey } = body || {};
-  const errors = [];
-  if (!creatorSlug || typeof creatorSlug !== 'string') errors.push('creatorSlug required');
-  if (!offerId || typeof offerId !== 'string') errors.push('offerId required');
-  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) errors.push('date must be YYYY-MM-DD');
-  if (!time || !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) errors.push('time must be HH:MM');
-  if (!buyerName || buyerName.length < 2 || buyerName.length > 200) errors.push('buyerName 2-200 chars');
-  if (!buyerEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(buyerEmail)) errors.push('valid buyerEmail required');
-  if (!idempotencyKey) errors.push('idempotencyKey required');
-  return errors;
+async function handleReserveHandle(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  const { handle, email } = req.body || {};
+  if (!handle || !email) return res.status(400).json({ error: 'handle and email required' });
+  const result = await store.reserveHandle(handle, email);
+  if (!result.ok) return res.status(409).json({ error: result.error });
+  return res.status(200).json(result);
+}
+
+async function handleCreators(req, res) {
+  if (req.method === 'POST') {
+    const result = await store.createCreator(req.body);
+    if (!result.ok) return res.status(400).json({ error: 'validation_error', details: result.errors });
+    return res.status(201).json({ handle: result.handle });
+  }
+  if (req.method === 'GET') {
+    const query = parseQuery(req);
+    const creators = await store.listCreators(query.status);
+    return res.json({ creators });
+  }
+  return res.status(405).json({ error: 'Method not allowed' });
+}
+
+async function handleCreatorProfile(req, res, handle) {
+  if (!isValidHandle(handle)) return res.status(400).json({ error: 'invalid handle' });
+
+  if (req.method === 'GET') {
+    const creator = await store.getCreator(handle);
+    if (!creator) return res.status(404).json({ error: 'creator_not_found' });
+    const offers = await store.listOffers(handle, false);
+    return res.json({
+      handle: creator.handle,
+      displayName: creator.displayName,
+      bio: creator.bio,
+      avatarUrl: creator.avatarUrl,
+      status: creator.status,
+      paymentReady: creator.paymentReady,
+      offers,
+    });
+  }
+
+  if (req.method === 'PUT') {
+    const result = await store.updateCreator(handle, req.body);
+    if (!result.ok) return res.status(400).json({ error: 'update_failed' });
+    return res.json({ ok: true });
+  }
+
+  return res.status(405).json({ error: 'Method not allowed' });
+}
+
+async function handleOffers(req, res, handle) {
+  if (!isValidHandle(handle)) return res.status(400).json({ error: 'invalid handle' });
+
+  if (req.method === 'GET') {
+    const query = parseQuery(req);
+    const offers = await store.listOffers(handle, query.all === 'true');
+    return res.json({ offers });
+  }
+  if (req.method === 'POST') {
+    const result = await store.createOffer(handle, req.body);
+    if (!result.ok) return res.status(400).json({ error: 'validation_error', details: result.errors });
+    return res.status(201).json({ offerId: result.offerId });
+  }
+  return res.status(405).json({ error: 'Method not allowed' });
+}
+
+async function handleOfferById(req, res, handle, offerId) {
+  if (req.method === 'GET') {
+    const offer = await store.getOffer(offerId);
+    if (!offer || offer.creatorHandle !== handle) return res.status(404).json({ error: 'offer_not_found' });
+    return res.json(offer);
+  }
+  if (req.method === 'PUT') {
+    const result = await store.updateOffer(offerId, handle, req.body);
+    if (!result.ok) return res.status(400).json({ error: 'update_failed', details: result.errors });
+    return res.json({ ok: true });
+  }
+  if (req.method === 'DELETE') {
+    await store.deleteOffer(offerId, handle);
+    return res.json({ ok: true });
+  }
+  return res.status(405).json({ error: 'Method not allowed' });
 }
 
 async function handleOrders(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const errors = validateOrder(req.body);
+  const errors = validateOrderInput(req.body);
   if (errors.length) return res.status(400).json({ error: 'validation_error', details: errors });
 
-  const { creatorSlug, offerId, date, time, buyerName, buyerEmail, notes, idempotencyKey } = req.body;
+  const { creatorHandle, offerId, selectedDate, selectedTime, buyerName, buyerEmail, notes, idempotencyKey } = req.body;
 
-  const creator = getCreator(creatorSlug);
+  const creator = await store.getCreator(creatorHandle);
   if (!creator) return res.status(404).json({ error: 'creator_not_found' });
 
-  const offer = creator.offers.find(o => o.id === offerId);
-  if (!offer) return res.status(404).json({ error: 'offer_not_found' });
+  const offer = await store.getOffer(offerId);
+  if (!offer || offer.creatorHandle !== creatorHandle) return res.status(404).json({ error: 'offer_not_found' });
+  if (offer.status !== 'active') return res.status(400).json({ error: 'offer_not_active' });
 
   await ledger.ensureTables();
-
   const existing = await ledger.findByIdempotencyKey(idempotencyKey);
   if (existing) {
     return res.status(200).json({
       orderId: existing.order_id,
       razorpayOrderId: existing.razorpay_order_id || null,
-      amount: offer.price.amount * 100,
-      currency: offer.price.currency,
+      amountMinor: offer.amountMinor,
+      currency: offer.currency,
       status: existing.status,
     });
   }
 
   const orderId = crypto.randomUUID();
-  const isFree = offer.price.amount === 0;
-  const canCharge = offer.price.amount > 0 && offer.paymentEnabled;
-
-  if (offer.price.amount > 0 && !offer.paymentEnabled) {
-    return res.status(400).json({ error: 'payment_not_enabled', message: 'This offer does not accept payments yet.' });
-  }
+  const isFree = offer.amountMinor === 0;
 
   let razorpayOrderId;
-  if (canCharge) {
-    const rzp = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET,
-    });
+  if (!isFree) {
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!keyId || !keySecret) return res.status(500).json({ error: 'payment_not_configured' });
+
+    const rzp = new Razorpay({ key_id: keyId, key_secret: keySecret });
     const rpOrder = await rzp.orders.create({
-      amount: offer.price.amount * 100,
-      currency: offer.price.currency,
+      amount: offer.amountMinor,
+      currency: offer.currency,
       receipt: orderId,
-      notes: { creatorSlug, offerId, buyerEmail },
+      notes: { creatorHandle, offerId, buyerEmail },
     });
     razorpayOrderId = rpOrder.id;
   }
 
   await ledger.createOrder({
-    orderId, creatorSlug, offerId, offerTitle: offer.title,
-    amount: offer.price.amount, currency: offer.price.currency,
-    buyerName, buyerEmail, selectedDate: date, selectedTime: time,
+    orderId,
+    creatorSlug: creatorHandle,
+    offerId,
+    offerTitle: offer.title,
+    amount: offer.amountMinor,
+    currency: offer.currency,
+    buyerName,
+    buyerEmail,
+    selectedDate: selectedDate || '',
+    selectedTime: selectedTime || '',
     status: isFree ? 'free_confirmed' : 'created',
-    razorpayOrderId, notes, idempotencyKey,
+    razorpayOrderId,
+    notes,
+    idempotencyKey,
   });
 
   if (isFree) {
     await ledger.createBooking({
-      bookingId: crypto.randomUUID(), orderId, creatorSlug, offerId,
-      offerTitle: offer.title, buyerName, buyerEmail,
-      scheduledDate: date, scheduledTime: time, status: 'confirmed',
+      bookingId: crypto.randomUUID(),
+      orderId,
+      creatorSlug: creatorHandle,
+      offerId,
+      offerTitle: offer.title,
+      buyerName,
+      buyerEmail,
+      scheduledDate: selectedDate || '',
+      scheduledTime: selectedTime || '',
+      status: 'confirmed',
     });
   }
 
   return res.status(201).json({
-    orderId, razorpayOrderId: razorpayOrderId || null,
-    amount: offer.price.amount * 100, currency: offer.price.currency,
-    status: isFree ? 'free_confirmed' : 'created', free: isFree,
+    orderId,
+    razorpayOrderId: razorpayOrderId || null,
+    amountMinor: offer.amountMinor,
+    currency: offer.currency,
+    status: isFree ? 'free_confirmed' : 'created',
+    free: isFree,
   });
 }
 
@@ -133,8 +231,12 @@ async function handleVerify(req, res) {
   if (!secret) return res.status(500).json({ error: 'payment_not_configured' });
 
   const body = razorpayOrderId + '|' + razorpayPaymentId;
-  const expected = crypto.createHmac('sha256', secret).update(body).digest('hex');
-  if (expected !== razorpaySignature) {
+  const expectedBuf = Buffer.from(
+    crypto.createHmac('sha256', secret).update(body).digest('hex'), 'utf8'
+  );
+  const receivedBuf = Buffer.from(razorpaySignature, 'utf8');
+
+  if (expectedBuf.length !== receivedBuf.length || !crypto.timingSafeEqual(expectedBuf, receivedBuf)) {
     await ledger.updateOrderStatus(orderId, 'payment_failed');
     return res.status(400).json({ error: 'signature_invalid' });
   }
@@ -144,11 +246,16 @@ async function handleVerify(req, res) {
   const existingBooking = await ledger.getBookingByOrderId(orderId);
   if (!existingBooking) {
     await ledger.createBooking({
-      bookingId: crypto.randomUUID(), orderId,
-      creatorSlug: order.creatorSlug, offerId: order.offerId,
-      offerTitle: order.offerTitle, buyerName: order.buyerName,
-      buyerEmail: order.buyerEmail, scheduledDate: order.selectedDate,
-      scheduledTime: order.selectedTime, status: 'confirmed',
+      bookingId: crypto.randomUUID(),
+      orderId,
+      creatorSlug: order.creatorSlug,
+      offerId: order.offerId,
+      offerTitle: order.offerTitle,
+      buyerName: order.buyerName,
+      buyerEmail: order.buyerEmail,
+      scheduledDate: order.selectedDate,
+      scheduledTime: order.selectedTime,
+      status: 'confirmed',
     });
   }
 
@@ -165,8 +272,11 @@ async function handleWebhook(req, res) {
   if (!webhookSecret) return res.status(500).json({ error: 'webhook_not_configured' });
 
   const rawBody = JSON.stringify(req.body);
-  const expected = crypto.createHmac('sha256', webhookSecret).update(rawBody).digest('hex');
-  if (expected !== signature) return res.status(400).json({ error: 'invalid_signature' });
+  const expectedHex = crypto.createHmac('sha256', webhookSecret).update(rawBody).digest('hex');
+  if (typeof signature !== 'string' || signature.length !== expectedHex.length ||
+      !crypto.timingSafeEqual(Buffer.from(expectedHex, 'utf8'), Buffer.from(signature, 'utf8'))) {
+    return res.status(400).json({ error: 'invalid_signature' });
+  }
 
   const event = req.body;
   if (event.event === 'payment.captured') {
@@ -182,11 +292,16 @@ async function handleWebhook(req, res) {
         const existingBooking = await ledger.getBookingByOrderId(order.orderId);
         if (!existingBooking) {
           await ledger.createBooking({
-            bookingId: crypto.randomUUID(), orderId: order.orderId,
-            creatorSlug: order.creatorSlug, offerId: order.offerId,
-            offerTitle: order.offerTitle, buyerName: order.buyerName,
-            buyerEmail: order.buyerEmail, scheduledDate: order.selectedDate,
-            scheduledTime: order.selectedTime, status: 'confirmed',
+            bookingId: crypto.randomUUID(),
+            orderId: order.orderId,
+            creatorSlug: order.creatorSlug,
+            offerId: order.offerId,
+            offerTitle: order.offerTitle,
+            buyerName: order.buyerName,
+            buyerEmail: order.buyerEmail,
+            scheduledDate: order.selectedDate,
+            scheduledTime: order.selectedTime,
+            status: 'confirmed',
           });
         }
       }
@@ -196,6 +311,58 @@ async function handleWebhook(req, res) {
   return res.status(200).json({ status: 'ok' });
 }
 
+async function handleFulfillment(req, res, orderId) {
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+
+  await ledger.ensureTables();
+  const order = await ledger.getOrder(orderId);
+  if (!order) return res.status(404).json({ error: 'order_not_found' });
+
+  if (order.status !== 'paid' && order.status !== 'free_confirmed' && order.status !== 'fulfilled') {
+    return res.status(403).json({ error: 'payment_required' });
+  }
+
+  const offer = await store.getOffer(order.offerId);
+  if (!offer) return res.status(404).json({ error: 'offer_not_found' });
+
+  if (offer.offerType === 'digital_file') {
+    if (!offer.fileUrl) return res.status(404).json({ error: 'file_not_uploaded' });
+    await ledger.updateOrderStatus(orderId, 'fulfilled');
+    return res.json({
+      type: 'digital_file',
+      fileLabel: offer.fileLabel || offer.title,
+      downloadUrl: offer.fileUrl,
+      orderId,
+    });
+  }
+
+  if (offer.offerType === 'session') {
+    const booking = await ledger.getBookingByOrderId(orderId);
+    return res.json({
+      type: 'session',
+      title: offer.title,
+      scheduledDate: booking?.scheduled_date || order.selectedDate,
+      scheduledTime: booking?.scheduled_time || order.selectedTime,
+      orderId,
+    });
+  }
+
+  return res.json({
+    type: offer.offerType,
+    title: offer.title,
+    status: order.status,
+    orderId,
+  });
+}
+
+async function handleSeed(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  const seeded = await store.seedAshokIfNeeded();
+  return res.json({ seeded });
+}
+
+// ── Router ───────────────────────────────────────────────────────────
+
 export default async function handler(req, res) {
   cors(req, res);
   if (req.method === 'OPTIONS') return res.status(204).end();
@@ -204,9 +371,24 @@ export default async function handler(req, res) {
     const path = route(req);
 
     if (path === 'config') return handleConfig(req, res);
+    if (path === 'reserve-handle') return handleReserveHandle(req, res);
+    if (path === 'creators') return handleCreators(req, res);
     if (path === 'orders') return handleOrders(req, res);
     if (path === 'payments/verify') return handleVerify(req, res);
     if (path === 'payments/webhook') return handleWebhook(req, res);
+    if (path === 'seed') return handleSeed(req, res);
+
+    const fulfillMatch = path.match(/^fulfillment\/([a-zA-Z0-9-]+)$/);
+    if (fulfillMatch) return handleFulfillment(req, res, fulfillMatch[1]);
+
+    const creatorMatch = path.match(/^creators\/([a-z][a-z0-9_-]+)$/);
+    if (creatorMatch) return handleCreatorProfile(req, res, creatorMatch[1]);
+
+    const offersMatch = path.match(/^creators\/([a-z][a-z0-9_-]+)\/offers$/);
+    if (offersMatch) return handleOffers(req, res, offersMatch[1]);
+
+    const offerByIdMatch = path.match(/^creators\/([a-z][a-z0-9_-]+)\/offers\/([a-zA-Z0-9_-]+)$/);
+    if (offerByIdMatch) return handleOfferById(req, res, offerByIdMatch[1], offerByIdMatch[2]);
 
     return res.status(404).json({ error: 'not_found' });
   } catch (err) {
