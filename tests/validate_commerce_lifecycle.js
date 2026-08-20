@@ -173,8 +173,9 @@ async function runTests() {
   console.log(`    APORAKSHA COMMERCE VALIDATION TASK ENGINE    `);
   console.log(`==============================================${colors.reset}\n`);
 
-  const { default: createOrderHandler } = await import('../api/payments/create-order.js');
-  const { default: verifyPaymentHandler } = await import('../api/payments/verify.js');
+  const { default: paymentHandler } = await import('../api/payments/[...path].js');
+  const createOrderHandler = (req, res) => paymentHandler(Object.assign(req, { url: '/api/payments/create-order' }), res);
+  const verifyPaymentHandler = (req, res) => paymentHandler(Object.assign(req, { url: '/api/payments/verify' }), res);
   const { default: webhookHandler } = await import('../api/webhooks/razorpay.js');
   const { default: verifyPassportHandler } = await import('../api/passport/verify.js');
   const passportEngine = await import('../lib/passportEngine.js');
