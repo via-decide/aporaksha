@@ -335,6 +335,16 @@
       return res.json();
     })
     .then(function(data) {
+      if (data.already_active) {
+        msgEl.innerHTML = '<p class="success-msg">Already active!</p>';
+        setTimeout(function() { window.location.reload(); }, 1000);
+        return;
+      }
+      if (data.shortUrl) {
+        msgEl.innerHTML = '<p class="success-msg">Redirecting to payment...</p>';
+        setTimeout(function() { window.location.href = data.shortUrl; }, 500);
+        return;
+      }
       msgEl.innerHTML = '<p class="success-msg">Subscription created! Redirecting...</p>';
       setTimeout(function() { window.location.reload(); }, 2000);
     })

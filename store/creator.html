@@ -174,12 +174,15 @@
     </div>
   </div>
 
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script>
     (function () {
       var handle = window.location.pathname.replace(/^\/+|\/+$/g, '').replace(/^@/, '');
       if (!handle) { window.location.href = '/store'; return; }
 
       var app = document.getElementById('app');
+      var rzpKeyId = '';
+      var creatorData = null;
 
       function esc(s) {
         var d = document.createElement('div');
@@ -196,12 +199,123 @@
         return (name || '?').split(/\s+/).map(function (w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
       }
 
+      function getToken() {
+        return localStorage.getItem('access_token') || '';
+      }
+
+      function showMsg(id, text, isError) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.innerHTML = '<p style="color:' + (isError ? '#f87171' : 'var(--green)') + ';font-size:0.9rem;margin-top:8px;">' + esc(text) + '</p>';
+      }
+
+      function buyOffer(offer) {
+        var token = getToken();
+        if (!token) {
+          window.location.href = '/passport?redirect=' + encodeURIComponent(window.location.pathname);
+          return;
+        }
+
+        var btnId = 'buy-' + offer.offerId;
+        var msgId = 'msg-' + offer.offerId;
+        var btn = document.getElementById(btnId);
+        if (btn) btn.disabled = true;
+        showMsg(msgId, 'Creating order...', false);
+
+        var idempotencyKey = handle + '-' + offer.offerId + '-' + Date.now();
+
+        fetch('/api/creator-commerce/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({
+            creatorHandle: handle,
+            offerId: offer.offerId,
+            buyerName: '',
+            buyerEmail: '',
+            idempotencyKey: idempotencyKey
+          })
+        })
+        .then(function (r) {
+          if (!r.ok) return r.json().then(function (e) { throw new Error(e.error || 'Order failed'); });
+          return r.json();
+        })
+        .then(function (order) {
+          if (order.free || order.status === 'free_confirmed') {
+            showMsg(msgId, 'Confirmed! Redirecting...', false);
+            setTimeout(function () { window.location.reload(); }, 1500);
+            return;
+          }
+
+          if (!rzpKeyId) {
+            showMsg(msgId, 'Payment not configured. Contact creator.', true);
+            if (btn) btn.disabled = false;
+            return;
+          }
+
+          var options = {
+            key: rzpKeyId,
+            amount: order.amountMinor,
+            currency: order.currency,
+            name: creatorData ? (creatorData.displayName || handle) : handle,
+            description: offer.title,
+            order_id: order.razorpayOrderId,
+            handler: function (response) {
+              showMsg(msgId, 'Verifying payment...', false);
+              fetch('/api/creator-commerce/payments/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({
+                  orderId: order.orderId,
+                  razorpayOrderId: response.razorpay_order_id,
+                  razorpayPaymentId: response.razorpay_payment_id,
+                  razorpaySignature: response.razorpay_signature
+                })
+              })
+              .then(function (r) { return r.json(); })
+              .then(function (result) {
+                if (result.status === 'verified' || result.status === 'already_verified') {
+                  showMsg(msgId, 'Payment successful!', false);
+                } else {
+                  showMsg(msgId, 'Verification failed. Contact support.', true);
+                }
+                if (btn) btn.disabled = false;
+              })
+              .catch(function () {
+                showMsg(msgId, 'Verification error. Contact support.', true);
+                if (btn) btn.disabled = false;
+              });
+            },
+            modal: {
+              ondismiss: function () { if (btn) btn.disabled = false; showMsg(msgId, '', false); }
+            },
+            theme: { color: '#ff671f' }
+          };
+
+          var rzp = new Razorpay(options);
+          rzp.on('payment.failed', function (resp) {
+            showMsg(msgId, 'Payment failed: ' + (resp.error.description || 'Try again'), true);
+            if (btn) btn.disabled = false;
+          });
+          rzp.open();
+        })
+        .catch(function (err) {
+          showMsg(msgId, err.message || 'Order failed', true);
+          if (btn) btn.disabled = false;
+        });
+      }
+
+      fetch('/api/creator-commerce/config')
+        .then(function (r) { return r.ok ? r.json() : {}; })
+        .then(function (cfg) { rzpKeyId = cfg.razorpayKeyId || ''; })
+        .catch(function () {});
+
       fetch('/api/creator-commerce/creators/' + encodeURIComponent(handle))
         .then(function (r) {
           if (!r.ok) throw new Error('Creator not found');
           return r.json();
         })
         .then(function (data) {
+          creatorData = data;
           document.title = (data.displayName || handle) + ' — Aporaksha';
 
           var avatarHtml = data.avatarUrl
@@ -211,13 +325,18 @@
           var offersHtml = '';
           if (data.offers && data.offers.length) {
             offersHtml = '<h2 class="section-title">Offers</h2><div class="offers-list">';
-            data.offers.forEach(function (o) {
+            data.offers.forEach(function (o, i) {
               var priceLabel = o.amountMinor === 0 ? 'Free' : formatPrice(o.amountMinor, o.currency);
+              var btnLabel = o.amountMinor === 0 ? 'Get Free' : 'Buy — ' + priceLabel;
+              var btnId = 'buy-' + (o.offerId || o.offer_id || i);
+              var msgId = 'msg-' + (o.offerId || o.offer_id || i);
               offersHtml += '<div class="offer-card">'
                 + '<div class="offer-top"><span class="offer-title">' + esc(o.title) + '</span>'
                 + '<span class="offer-price">' + priceLabel + '</span></div>'
                 + (o.description ? '<p class="offer-desc">' + esc(o.description) + '</p>' : '')
                 + '<span class="offer-type">' + esc((o.offerType || '').replace(/_/g, ' ')) + '</span>'
+                + '<button class="buy-btn" id="' + esc(btnId) + '" data-idx="' + i + '">' + esc(btnLabel) + '</button>'
+                + '<div id="' + esc(msgId) + '"></div>'
                 + '</div>';
             });
             offersHtml += '</div>';
@@ -231,6 +350,16 @@
             + '<p class="creator-handle">@' + esc(handle) + '</p>'
             + (data.bio ? '<p class="creator-bio">' + esc(data.bio) + '</p>' : '')
             + '</div>' + offersHtml;
+
+          if (data.offers && data.offers.length) {
+            data.offers.forEach(function (o, i) {
+              var id = o.offerId || o.offer_id || i;
+              var btn = document.getElementById('buy-' + id);
+              if (btn) {
+                btn.addEventListener('click', function () { buyOffer({ offerId: o.offerId || o.offer_id, title: o.title, amountMinor: o.amountMinor }); });
+              }
+            });
+          }
         })
         .catch(function (err) {
           app.innerHTML = '<div class="error-state">'
