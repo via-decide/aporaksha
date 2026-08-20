@@ -2,6 +2,10 @@ import crypto from 'crypto';
 import * as membership from '../../lib/domain/membership.js';
 import * as subscriptions from '../../lib/domain/razorpaySubscriptions.js';
 import * as financialLedger from '../../lib/domain/financialLedger.js';
+import { requireAuth } from '../../lib/auth.js';
+import * as webhookDedup from '../../lib/webhookIdempotency.js';
+
+export const config = { api: { bodyParser: false } };
 
 const ALLOWED = [
   'https://aporaksha.com', 'https://www.aporaksha.com',
@@ -24,20 +28,21 @@ function route(req) {
   return url.slice(idx + base.length).split('?')[0].replace(/\/+$/, '');
 }
 
-function parseQuery(req) {
-  const url = req.url || '';
-  const q = url.indexOf('?');
-  if (q === -1) return {};
-  return Object.fromEntries(new URLSearchParams(url.slice(q + 1)));
+function readRawBody(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    req.on('data', chunk => chunks.push(chunk));
+    req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+    req.on('error', reject);
+  });
 }
 
 async function handleStatus(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
-  const query = parseQuery(req);
-  const email = query.email;
-  if (!email) return res.status(400).json({ error: 'email required' });
+  const identity = requireAuth(req);
+  if (!identity) return res.status(401).json({ error: 'authentication_required' });
 
-  const m = await membership.getMembership(email);
+  const m = await membership.getMembership(identity.email);
   if (!m) return res.json({ active: false, membership: null });
 
   const active = membership.isMembershipActive(m);
@@ -46,10 +51,10 @@ async function handleStatus(req, res) {
 
 async function handleSubscribe(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-  const { email } = req.body || {};
-  if (!email) return res.status(400).json({ error: 'email required' });
+  const identity = requireAuth(req);
+  if (!identity) return res.status(401).json({ error: 'authentication_required' });
 
-  const existing = await membership.getMembership(email);
+  const existing = await membership.getMembership(identity.email);
   if (existing && membership.isMembershipActive(existing)) {
     return res.json({
       already_active: true,
@@ -58,7 +63,7 @@ async function handleSubscribe(req, res) {
   }
 
   try {
-    const sub = await subscriptions.createSubscription(email);
+    const sub = await subscriptions.createSubscription(identity.email);
     return res.json({
       subscriptionId: sub.subscriptionId,
       shortUrl: sub.shortUrl,
@@ -74,10 +79,10 @@ async function handleSubscribe(req, res) {
 
 async function handleCancel(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-  const { email } = req.body || {};
-  if (!email) return res.status(400).json({ error: 'email required' });
+  const identity = requireAuth(req);
+  if (!identity) return res.status(401).json({ error: 'authentication_required' });
 
-  const m = await membership.getMembership(email);
+  const m = await membership.getMembership(identity.email);
   if (!m) return res.status(404).json({ error: 'no_membership' });
 
   if (m.razorpaySubscriptionId) {
@@ -88,19 +93,21 @@ async function handleCancel(req, res) {
     }
   }
 
-  await membership.cancelMembership(email);
-  return res.json({ status: 'cancelled' });
+  return res.json({
+    status: 'cancellation_requested',
+    paidThrough: m.paidThrough,
+    message: 'Membership remains active until paid-through date',
+  });
 }
 
 async function handleAccess(req, res, offerId) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
-  const query = parseQuery(req);
-  const email = query.email;
-  if (!email) return res.status(400).json({ error: 'email required' });
+  const identity = requireAuth(req);
+  if (!identity) return res.status(401).json({ error: 'authentication_required' });
 
-  const m = await membership.getMembership(email);
+  const m = await membership.getMembership(identity.email);
   const isMember = m ? membership.isMembershipActive(m) : false;
-  const hasPurchased = await membership.hasEntitlement(email, offerId);
+  const hasPurchased = await membership.hasEntitlement(identity.email, offerId);
 
   return res.json({
     isMember,
@@ -123,11 +130,16 @@ async function handleWebhook(req, res) {
   const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
   if (!webhookSecret) return res.status(500).json({ error: 'webhook_not_configured' });
 
-  const rawBody = JSON.stringify(req.body);
+  const rawBody = req.rawBody || '';
   const expectedHex = crypto.createHmac('sha256', webhookSecret).update(rawBody).digest('hex');
   if (typeof signature !== 'string' || signature.length !== expectedHex.length ||
       !crypto.timingSafeEqual(Buffer.from(expectedHex, 'utf8'), Buffer.from(signature, 'utf8'))) {
     return res.status(400).json({ error: 'invalid_signature' });
+  }
+
+  const eventId = req.headers['x-razorpay-event-id'];
+  if (await webhookDedup.isProcessed(eventId)) {
+    return res.status(200).json({ status: 'already_processed' });
   }
 
   const event = req.body;
@@ -151,11 +163,14 @@ async function handleWebhook(req, res) {
     }
 
     if (event.event === 'subscription.charged') {
+      const payment = event.payload?.payment?.entity;
+      const paymentId = payment?.id || sub.id;
+
       await financialLedger.recordMembership({
         buyerEmail,
         amountMinor: membership.PLAN_AMOUNT_MINOR,
         currency: membership.PLAN_CURRENCY,
-        providerTxnId: sub.id,
+        providerTxnId: paymentId,
         description: 'Monthly membership charge',
       });
     }
@@ -165,22 +180,26 @@ async function handleWebhook(req, res) {
     await membership.cancelMembership(buyerEmail);
   }
 
+  await webhookDedup.markProcessed(eventId, 'razorpay_membership');
   return res.status(200).json({ status: 'ok' });
 }
 
 async function handleEntitlements(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
-  const query = parseQuery(req);
-  const email = query.email;
-  if (!email) return res.status(400).json({ error: 'email required' });
+  const identity = requireAuth(req);
+  if (!identity) return res.status(401).json({ error: 'authentication_required' });
 
-  const entitlements = await membership.getBuyerEntitlements(email);
+  const entitlements = await membership.getBuyerEntitlements(identity.email);
   return res.json({ entitlements });
 }
 
 export default async function handler(req, res) {
   cors(req, res);
   if (req.method === 'OPTIONS') return res.status(204).end();
+
+  const rawBody = await readRawBody(req);
+  req.rawBody = rawBody;
+  try { req.body = rawBody ? JSON.parse(rawBody) : {}; } catch { req.body = {}; }
 
   try {
     const path = route(req);
