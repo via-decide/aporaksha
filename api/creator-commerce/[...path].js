@@ -357,8 +357,9 @@ async function handleFulfillment(req, res, orderId) {
 
 async function handleSeed(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-  const seeded = await store.seedAshokIfNeeded();
-  return res.json({ seeded });
+  const ashok = await store.seedAshokIfNeeded();
+  const priya = await store.seedPriyaIfNeeded();
+  return res.json({ seeded: { ashok, priya } });
 }
 
 // ── Router ───────────────────────────────────────────────────────────

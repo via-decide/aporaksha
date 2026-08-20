@@ -1,1 +1,2 @@
 api/entitlements.js
+api/internal/webhooks/replay/[id].js
