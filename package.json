@@ -6,6 +6,7 @@
     "validate": "node tests/validate_commerce_lifecycle.js",
     "validate:safe": "./scripts/backup-and-validate.sh",
     "test": "node tests/run-all.js && node --test tests/privacy.test.js",
+    "test:db": "node --test tests/db.test.js",
     "test:privacy": "node --test tests/privacy.test.js",
     "privacy:audit": "node scripts/privacy-audit.js",
     "privacy:retention:dry-run": "node scripts/privacy-retention.js",
