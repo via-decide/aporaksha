@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build-vercel-static.js",
+    "postbuild": "node scripts/verify-vercel-output.js",
     "validate": "node tests/validate_commerce_lifecycle.js",
     "validate:safe": "./scripts/backup-and-validate.sh"
   },
