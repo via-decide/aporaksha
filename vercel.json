@@ -35,6 +35,10 @@
       "destination": "/api/auth"
     },
     {
+      "source": "/api/subscriptions/check-access",
+      "destination": "/api/membership/legacy-check-access"
+    },
+    {
       "source": "/passport",
       "destination": "/passport/index.html"
     },

@@ -3,6 +3,8 @@ import Razorpay from 'razorpay';
 import * as store from '../../lib/domain/creatorStore.js';
 import { validateOrderInput, isValidHandle, isValidAmountMinor } from '../../lib/domain/types.js';
 import * as ledger from '../../lib/creatorLedger.js';
+import * as financialLedger from '../../lib/domain/financialLedger.js';
+import { grantEntitlement } from '../../lib/domain/membership.js';
 
 const ALLOWED = [
   'https://aporaksha.com', 'https://www.aporaksha.com',
@@ -224,8 +226,12 @@ async function handleVerify(req, res) {
   await ledger.ensureTables();
   const order = await ledger.getOrder(orderId);
   if (!order) return res.status(404).json({ error: 'order_not_found' });
-  if (order.status === 'paid') return res.status(200).json({ status: 'already_verified', orderId });
   if (order.razorpayOrderId !== razorpayOrderId) return res.status(400).json({ error: 'order_mismatch' });
+
+  if (order.status === 'paid') {
+    await recordPaidOrder(order, order.razorpayPaymentId || razorpayPaymentId);
+    return res.status(200).json({ status: 'already_verified', orderId });
+  }
 
   const secret = process.env.RAZORPAY_KEY_SECRET;
   if (!secret) return res.status(500).json({ error: 'payment_not_configured' });
@@ -242,6 +248,8 @@ async function handleVerify(req, res) {
   }
 
   await ledger.updateOrderStatus(orderId, 'paid', { razorpayPaymentId });
+
+  await recordPaidOrder(order, razorpayPaymentId);
 
   const existingBooking = await ledger.getBookingByOrderId(orderId);
   if (!existingBooking) {
@@ -260,6 +268,23 @@ async function handleVerify(req, res) {
   }
 
   return res.status(200).json({ status: 'verified', orderId });
+}
+
+async function recordPaidOrder(order, providerTxnId) {
+  await financialLedger.recordSale({
+    orderId: order.orderId,
+    creatorHandle: order.creatorSlug,
+    buyerEmail: order.buyerEmail,
+    amountMinor: order.amount,
+    currency: order.currency,
+    providerTxnId,
+  });
+  await grantEntitlement(
+    order.buyerEmail,
+    order.offerId,
+    order.creatorSlug,
+    order.orderId
+  );
 }
 
 async function handleWebhook(req, res) {
@@ -284,11 +309,16 @@ async function handleWebhook(req, res) {
     if (!payment) return res.status(200).json({ status: 'ignored' });
 
     const receipt = payment.notes?.receipt || payment.receipt;
-    if (receipt) {
+    if (receipt || payment.order_id) {
       await ledger.ensureTables();
-      const order = await ledger.getOrder(receipt);
-      if (order && order.status === 'created') {
-        await ledger.updateOrderStatus(order.orderId, 'paid', { razorpayPaymentId: payment.id });
+      const order = receipt
+        ? await ledger.getOrder(receipt)
+        : await ledger.getOrderByRazorpayOrderId(payment.order_id);
+      if (order && ['created', 'payment_failed', 'paid'].includes(order.status)) {
+        if (order.status !== 'paid') {
+          await ledger.updateOrderStatus(order.orderId, 'paid', { razorpayPaymentId: payment.id });
+        }
+        await recordPaidOrder(order, payment.id);
         const existingBooking = await ledger.getBookingByOrderId(order.orderId);
         if (!existingBooking) {
           await ledger.createBooking({
