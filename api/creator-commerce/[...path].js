@@ -359,7 +359,8 @@ async function handleSeed(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   const ashok = await store.seedAshokIfNeeded();
   const priya = await store.seedPriyaIfNeeded();
-  return res.json({ seeded: { ashok, priya } });
+  const daxini = await store.seedDaxiniIfNeeded();
+  return res.json({ seeded: { ashok, priya, daxini } });
 }
 
 // ── Router ───────────────────────────────────────────────────────────
