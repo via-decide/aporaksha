@@ -6,6 +6,7 @@ import { checkHealth as checkPassportHealth, getProductMetadata } from '../../li
 import { getDB } from '../../lib/db.js';
 import { initDB } from '../../lib/initDb.js';
 import { logWaitlist, WAITLIST_REASONS } from '../../lib/waitlist.js';
+import { verifyAccessSession } from '../../lib/privacy-auth.js';
 
 const ALLOWED = ['https://aporaksha.com', 'https://www.aporaksha.com', 'https://viadecide.com', 'https://www.viadecide.com'];
 
@@ -36,22 +37,6 @@ const PRODUCTS = {
   smarttag_lite_single: { amount: 39900, name: 'SmartTag Lite — Single',     currency: 'INR' },
   smarttag_lite_bulk:   { amount: 89900, name: 'SmartTag Lite — Bulk (5-pack)', currency: 'INR' },
 };
-
-const ACCESS_SECRET = process.env.SECRET_KEY || "zayvora_dev_access_secret";
-function verifyJWT(token) {
-  try {
-    const [header, body, sig] = (token || "").split(".");
-    if (!header || !body || !sig) return { valid: false };
-    const data = `${header}.${body}`;
-    const expected = crypto.createHmac("sha256", ACCESS_SECRET).update(data).digest("base64url");
-    if (expected !== sig) return { valid: false };
-    const payload = JSON.parse(Buffer.from(body, "base64url").toString("utf8"));
-    if (!payload.exp || Math.floor(Date.now() / 1000) > payload.exp) return { valid: false };
-    return { valid: true, payload };
-  } catch (e) {
-    return { valid: false };
-  }
-}
 
 async function handleConfig(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
@@ -90,7 +75,7 @@ async function handleCreateOrder(req, res) {
 
   const authHeader = req.headers.authorization || '';
   const token = authHeader.replace('Bearer ', '');
-  const verification = verifyJWT(token);
+  const verification = await verifyAccessSession(token);
 
   const userId = verification.valid ? verification.payload.userId : 'guest';
   const userEmail = verification.valid ? (email || verification.payload.email) : (email || null);
@@ -298,7 +283,7 @@ async function handleVerify(req, res) {
 
   const authHeader = req.headers.authorization || '';
   const token = authHeader.replace('Bearer ', '');
-  const verification = verifyJWT(token);
+  const verification = await verifyAccessSession(token);
 
   if (!verification.valid) {
     return res.status(401).json({ error: 'Unauthorized. Passport authentication required.' });

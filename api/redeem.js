@@ -1,24 +1,7 @@
-import crypto from 'crypto';
 import { getDB } from '../lib/db.js';
 import { initDB } from '../lib/initDb.js';
 import { createOrUpdatePassport } from '../lib/passportEngine.js';
-
-const ACCESS_SECRET = process.env.SECRET_KEY || "zayvora_dev_access_secret";
-
-function verifyJWT(token) {
-  try {
-    const [header, body, sig] = (token || "").split(".");
-    if (!header || !body || !sig) return { valid: false };
-    const data = `${header}.${body}`;
-    const expected = crypto.createHmac("sha256", ACCESS_SECRET).update(data).digest("base64url");
-    if (expected !== sig) return { valid: false };
-    const payload = JSON.parse(Buffer.from(body, "base64url").toString("utf8"));
-    if (!payload.exp || Math.floor(Date.now() / 1000) > payload.exp) return { valid: false };
-    return { valid: true, payload };
-  } catch (e) {
-    return { valid: false };
-  }
-}
+import { verifyAccessSession } from '../lib/privacy-auth.js';
 
 export default async function handler(req, res) {
   // CORS setup
@@ -44,7 +27,7 @@ export default async function handler(req, res) {
     // ── Auth Validation ───────────────────────────────────────────────────────
     const authHeader = req.headers.authorization || '';
     const token = authHeader.replace('Bearer ', '');
-    const verification = verifyJWT(token);
+    const verification = await verifyAccessSession(token);
 
     if (!verification.valid) {
       return res.status(401).json({ error: 'Unauthorized. Passport authentication required.' });
