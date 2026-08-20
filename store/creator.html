@@ -6,7 +6,7 @@
 <script>
 const esc=value=>String(value??'').replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
 const pendingPaidOrders=new WeakMap();
-function safeDownloadUrl(value){try{const url=new URL(value);return url.protocol==='https:'?url.href:null}catch{return null}}
+function safeDownloadUrl(value){try{const url=new URL(value,location.href);return url.protocol==='https:'?url.href:null}catch{return null}}
 const handle=new URLSearchParams(location.search).get('handle')||location.pathname.slice(2);let creator;
 function tokenProfile(){let session={};try{session=JSON.parse(localStorage.getItem('aporaksha_session')||'{}')}catch{}const token=localStorage.getItem('via_access_token')||localStorage.getItem('zayvora_token')||session.accessToken;if(!token)return{email:session.email||''};try{const p=JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));return{name:p.name||p.displayName||'',email:p.email||session.email||''}}catch{return{email:session.email||''}}}
 function loadRazorpay(){if(window.Razorpay)return Promise.resolve();return new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://checkout.razorpay.com/v1/checkout.js';script.onload=resolve;script.onerror=()=>reject(new Error('Could not load secure checkout'));document.body.appendChild(script)})}
