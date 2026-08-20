@@ -1,7 +1,7 @@
 {
   "version": 2,
   "cleanUrls": true,
-  "outputDirectory": ".",
+  "outputDirectory": "dist",
   "functions": {
     "api/auth.js": {
       "maxDuration": 10
@@ -9,8 +9,8 @@
     "api/payments/[...path].js": {
       "maxDuration": 15
     },
-    "api/webhooks/razorpay.js": {
-      "maxDuration": 10
+    "api/webhooks/[...path].js": {
+      "maxDuration": 60
     },
     "api/logs.js": {
       "maxDuration": 5
@@ -23,9 +23,16 @@
     },
     "api/membership/[...path].js": {
       "maxDuration": 15
+    },
+    "api/creator-commerce/[...path].js": {
+      "maxDuration": 30
     }
   },
   "rewrites": [
+    {
+      "source": "/api/internal/webhooks/replay/:id",
+      "destination": "/api/webhooks/replay/:id"
+    },
     {
       "source": "/api/razorpay-config",
       "destination": "/api/payments/config"

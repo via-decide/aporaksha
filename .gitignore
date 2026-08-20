@@ -16,6 +16,7 @@ backups/
 
 # Vercel
 .vercel/
+dist/
 
 # Invoices and Emails
 invoices/
