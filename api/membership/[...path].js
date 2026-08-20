@@ -83,8 +83,18 @@ async function handleCancel(req, res) {
   if (m.razorpaySubscriptionId) {
     try {
       await subscriptions.cancelSubscription(m.razorpaySubscriptionId);
-    } catch (_) {
-      // subscription may already be cancelled on Razorpay side
+    } catch (cancelError) {
+      // Only suppress a cancellation error when Razorpay confirms that no
+      // further charges can occur. Network/auth failures must keep local access.
+      let providerSubscription;
+      try {
+        providerSubscription = await subscriptions.fetchSubscription(m.razorpaySubscriptionId);
+      } catch (_) {
+        throw cancelError;
+      }
+      if (!['cancelled', 'completed'].includes(providerSubscription.status)) {
+        throw cancelError;
+      }
     }
   }
 
