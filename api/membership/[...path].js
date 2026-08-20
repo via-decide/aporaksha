@@ -30,6 +30,13 @@ function route(req) {
   return url.slice(idx + base.length).split('?')[0].replace(/\/+$/, '');
 }
 
+function parseQuery(req) {
+  const url = req.url || '';
+  const q = url.indexOf('?');
+  if (q === -1) return {};
+  return Object.fromEntries(new URLSearchParams(url.slice(q + 1)));
+}
+
 function readRawBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];

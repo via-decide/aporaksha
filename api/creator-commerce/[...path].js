@@ -4,7 +4,6 @@ import * as store from '../../lib/domain/creatorStore.js';
 import { validateOrderInput, isValidHandle, isValidAmountMinor } from '../../lib/domain/types.js';
 import * as ledger from '../../lib/creatorLedger.js';
 import * as financialLedger from '../../lib/domain/financialLedger.js';
-import { grantEntitlement } from '../../lib/domain/membership.js';
 import * as membership from '../../lib/domain/membership.js';
 import { requireIdentity, requireSameEmail } from '../../lib/authenticatedIdentity.js';
 import * as webhookDedup from '../../lib/webhookIdempotency.js';
@@ -328,7 +327,7 @@ async function recordPaidOrder(order, providerTxnId) {
     currency: order.currency,
     providerTxnId,
   });
-  await grantEntitlement(
+  await membership.grantEntitlement(
     order.buyerEmail,
     order.offerId,
     order.creatorSlug,
