@@ -95,8 +95,6 @@ async function handleCancel(req, res) {
     try {
       await subscriptions.cancelSubscription(m.razorpaySubscriptionId);
     } catch (cancelError) {
-      // Only suppress a cancellation error when Razorpay confirms that no
-      // further charges can occur. Network/auth failures must keep local access.
       let providerSubscription;
       try {
         providerSubscription = await subscriptions.fetchSubscription(m.razorpaySubscriptionId);
@@ -109,10 +107,11 @@ async function handleCancel(req, res) {
     }
   }
 
+  await membership.cancelMembership(email);
+
   return res.json({
-    status: 'cancellation_requested',
+    status: 'cancelled',
     paidThrough: m.paidThrough,
-    message: 'Membership remains active until paid-through date',
   });
 }
 
@@ -250,12 +249,12 @@ export default async function handler(req, res) {
   try {
     const path = route(req);
 
-    if (path === 'status') return handleStatus(req, res);
-    if (path === 'subscribe') return handleSubscribe(req, res);
-    if (path === 'cancel') return handleCancel(req, res);
-    if (path === 'legacy-check-access') return handleLegacyAccess(req, res);
-    if (path === 'entitlements') return handleEntitlements(req, res);
-    if (path === 'webhook') return handleWebhook(req, res);
+    if (path === 'status') return await handleStatus(req, res);
+    if (path === 'subscribe') return await handleSubscribe(req, res);
+    if (path === 'cancel') return await handleCancel(req, res);
+    if (path === 'legacy-check-access') return await handleLegacyAccess(req, res);
+    if (path === 'entitlements') return await handleEntitlements(req, res);
+    if (path === 'webhook') return await handleWebhook(req, res);
 
     const accessMatch = path.match(/^access\/([a-zA-Z0-9_-]+)$/);
     if (accessMatch) return await handleAccess(req, res, accessMatch[1]);

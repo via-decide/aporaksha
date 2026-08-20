@@ -260,7 +260,6 @@ async function handleVerify(req, res) {
   if (order.razorpayOrderId !== razorpayOrderId) return res.status(400).json({ error: 'order_mismatch' });
 
   if (order.status === 'paid') {
-    await recordPaidOrder(order, order.razorpayPaymentId || razorpayPaymentId);
     return res.status(200).json({ status: 'already_verified', orderId });
   }
 
@@ -278,15 +277,9 @@ async function handleVerify(req, res) {
     return res.status(400).json({ error: 'signature_invalid' });
   }
 
-  const wasPaid = order.status === 'paid';
   await completePaidOrder(order, razorpayPaymentId);
 
-  await recordPaidOrder(order, razorpayPaymentId);
-
-  await recordPaidOrder(order, razorpayPaymentId);
-
-  const existingBooking = await ledger.getBookingByOrderId(orderId);
-  return res.status(200).json({ status: wasPaid ? 'already_verified' : 'verified', orderId });
+  return res.status(200).json({ status: 'verified', orderId });
 }
 
 async function completePaidOrder(order, paymentId) {
@@ -320,40 +313,6 @@ async function completePaidOrder(order, paymentId) {
   }
 }
 
-async function recordPaidOrder(order, providerTxnId) {
-  await financialLedger.recordSale({
-    orderId: order.orderId,
-    creatorHandle: order.creatorSlug,
-    buyerEmail: order.buyerEmail,
-    amountMinor: order.amount,
-    currency: order.currency,
-    providerTxnId,
-  });
-  await membership.grantEntitlement(
-    order.buyerEmail,
-    order.offerId,
-    order.creatorSlug,
-    order.orderId
-  );
-}
-
-async function recordPaidOrder(order, providerTxnId) {
-  await financialLedger.recordSale({
-    orderId: order.orderId,
-    creatorHandle: order.creatorSlug,
-    buyerEmail: order.buyerEmail,
-    amountMinor: order.amount,
-    currency: order.currency,
-    providerTxnId,
-  });
-  await grantEntitlement(
-    order.buyerEmail,
-    order.offerId,
-    order.creatorSlug,
-    order.orderId
-  );
-}
-
 async function handleWebhook(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -383,36 +342,12 @@ async function handleWebhook(req, res) {
     await ledger.ensureTables();
     const receipt = payment.notes?.receipt || payment.receipt;
     if (receipt || payment.order_id) {
-      await ledger.ensureTables();
       const order = receipt
         ? await ledger.getOrder(receipt)
         : await ledger.getOrderByRazorpayOrderId(payment.order_id);
-      if (order && ['created', 'payment_failed', 'paid'].includes(order.status)) {
-        if (order.status !== 'paid') {
-          await ledger.updateOrderStatus(order.orderId, 'paid', { razorpayPaymentId: payment.id });
-        }
-        await recordPaidOrder(order, payment.id);
-        const existingBooking = await ledger.getBookingByOrderId(order.orderId);
-        if (!existingBooking) {
-          await ledger.createBooking({
-            bookingId: crypto.randomUUID(),
-            orderId: order.orderId,
-            creatorSlug: order.creatorSlug,
-            offerId: order.offerId,
-            offerTitle: order.offerTitle,
-            buyerName: order.buyerName,
-            buyerEmail: order.buyerEmail,
-            scheduledDate: order.selectedDate,
-            scheduledTime: order.selectedTime,
-            status: 'confirmed',
-          });
-        }
+      if (order && ['created', 'payment_failed'].includes(order.status)) {
+        await completePaidOrder(order, payment.id);
       }
-    const order = receipt
-      ? await ledger.getOrder(receipt)
-      : await ledger.getOrderByRazorpayOrderId(payment.order_id);
-    if (order && (order.status === 'created' || order.status === 'paid')) {
-      await completePaidOrder(order, payment.id);
     }
   }
 
