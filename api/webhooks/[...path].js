@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { getDB } from "../../lib/db.js";
 import { initDB } from "../../lib/initDb.js";
 import { enqueue, processWebhookEvent } from "../../lib/queue.js";
+import replayWebhook from "../../lib/internalWebhookReplay.js";
 
 export const config = { api: { bodyParser: false } };
 
@@ -42,7 +43,7 @@ function signatureMatches(expectedHex, receivedHex) {
  * The real fix for the timeout was keeping ingestion light, which is what the
  * enqueue-and-return structure below does.
  */
-export default async function handler(req, res) {
+async function razorpayHandler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
 
   let rawBody;
@@ -102,4 +103,19 @@ export default async function handler(req, res) {
     safeLog("ingestion_error", { error: error?.message || "unknown" });
     return res.status(500).json({ error: "Ingestion failed" });
   }
+}
+
+export default async function handler(req, res) {
+  const path = Array.isArray(req.query?.path)
+    ? req.query.path
+    : String(req.query?.path || '').split('/').filter(Boolean);
+
+  if (path[0] === 'replay' && path[1]) {
+    req.query.id = path[1];
+    return replayWebhook(req, res);
+  }
+  if (path.length === 1 && path[0] === 'razorpay') {
+    return razorpayHandler(req, res);
+  }
+  return res.status(404).json({ error: 'not_found' });
 }

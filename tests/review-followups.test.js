@@ -29,12 +29,12 @@ await fixture.close();
 const store = await import('../lib/domain/creatorStore.js');
 const { initDB } = await import('../lib/initDb.js');
 const { getDB } = await import('../lib/db.js');
-const { default: replayHandler } = await import('../api/internal/webhooks/replay/[id].js');
+const { default: webhookHandler } = await import('../api/webhooks/[...path].js');
 
 function request(id, authorization) {
   const req = {
     method: 'POST',
-    query: { id },
+    query: { path: ['replay', id] },
     headers: authorization ? { authorization } : {},
   };
   const res = {
@@ -62,15 +62,15 @@ test('webhook replay requires authorization and refuses processed events', async
   );
 
   let call = request('processed-event');
-  await replayHandler(call.req, call.res);
+  await webhookHandler(call.req, call.res);
   assert.equal(call.res.statusCode, 401);
 
   call = request('processed-event', 'Bearer wrong-secret');
-  await replayHandler(call.req, call.res);
+  await webhookHandler(call.req, call.res);
   assert.equal(call.res.statusCode, 401);
 
   call = request('processed-event', 'Bearer replay-test-secret');
-  await replayHandler(call.req, call.res);
+  await webhookHandler(call.req, call.res);
   assert.equal(call.res.statusCode, 409);
   assert.equal(call.res.body.error, 'event_not_replayable');
   assert.equal((await db.get("SELECT processing_state FROM webhook_events WHERE id = 'processed-event'")).processing_state, 'PROCESSED');
@@ -86,7 +86,7 @@ test('authorized replay completes a failed event before responding', async () =>
   );
 
   const call = request('failed-event', 'Bearer replay-test-secret');
-  await replayHandler(call.req, call.res);
+  await webhookHandler(call.req, call.res);
 
   assert.equal(call.res.statusCode, 200);
   assert.equal(call.res.body.replayed, 'failed-event');
