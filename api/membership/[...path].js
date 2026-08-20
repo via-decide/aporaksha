@@ -4,6 +4,7 @@ import * as subscriptions from '../../lib/domain/razorpaySubscriptions.js';
 import * as financialLedger from '../../lib/domain/financialLedger.js';
 import { getDB } from '../../lib/db.js';
 import { initDB } from '../../lib/initDb.js';
+import { requireIdentity } from '../../lib/authenticatedIdentity.js';
 
 const ALLOWED = [
   'https://aporaksha.com', 'https://www.aporaksha.com',
@@ -48,8 +49,7 @@ async function handleStatus(req, res) {
 
 async function handleSubscribe(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-  const { email } = req.body || {};
-  if (!email) return res.status(400).json({ error: 'email required' });
+  const email = requireIdentity(req).email;
 
   const existing = await membership.getMembership(email);
   if (existing && membership.isMembershipActive(existing)) {
@@ -76,8 +76,7 @@ async function handleSubscribe(req, res) {
 
 async function handleCancel(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-  const { email } = req.body || {};
-  if (!email) return res.status(400).json({ error: 'email required' });
+  const email = requireIdentity(req).email;
 
   const m = await membership.getMembership(email);
   if (!m) return res.status(404).json({ error: 'no_membership' });
@@ -196,11 +195,13 @@ async function handleWebhook(req, res) {
     }
 
     if (event.event === 'subscription.charged') {
+      const payment = event.payload?.payment?.entity;
+      if (!payment?.id) return res.status(200).json({ status: 'ignored_no_payment' });
       await financialLedger.recordMembership({
         buyerEmail,
         amountMinor: membership.PLAN_AMOUNT_MINOR,
         currency: membership.PLAN_CURRENCY,
-        providerTxnId: sub.id,
+        providerTxnId: payment.id,
         description: 'Monthly membership charge',
       });
     }
@@ -236,12 +237,18 @@ export default async function handler(req, res) {
     if (path === 'legacy-check-access') return handleLegacyAccess(req, res);
     if (path === 'entitlements') return handleEntitlements(req, res);
     if (path === 'webhook') return handleWebhook(req, res);
+    if (path === 'status') return await handleStatus(req, res);
+    if (path === 'subscribe') return await handleSubscribe(req, res);
+    if (path === 'cancel') return await handleCancel(req, res);
+    if (path === 'entitlements') return await handleEntitlements(req, res);
+    if (path === 'webhook') return await handleWebhook(req, res);
 
     const accessMatch = path.match(/^access\/([a-zA-Z0-9_-]+)$/);
-    if (accessMatch) return handleAccess(req, res, accessMatch[1]);
+    if (accessMatch) return await handleAccess(req, res, accessMatch[1]);
 
     return res.status(404).json({ error: 'not_found' });
   } catch (err) {
+    if (err.statusCode) return res.status(err.statusCode).json({ error: err.message });
     console.error('Membership API error:', err.message);
     return res.status(500).json({ error: 'internal_error' });
   }
