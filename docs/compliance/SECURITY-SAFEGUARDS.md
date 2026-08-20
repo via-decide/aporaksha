@@ -1,0 +1,3 @@
+# Security safeguards
+
+Privacy APIs derive an opaque subject from signed access tokens and durable, revocable sessions; destructive erasure requires a recent authentication timestamp, explicit phrase and single-use nonce. Curated reports exclude hashes, token values, NFC identifiers, internal fraud policy and other principals. Privacy audit records contain HMAC references, event type and opaque object IDs only. Gaps: default development signing/hash keys must never be used in production; MFA/passkey coverage, CSRF deployment behavior, centralized request-log redaction, Kafka/log retention and VIA service authentication are **INCOMPLETE**.

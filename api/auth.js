@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { getDB } from "../lib/db.js";
 import { initDB } from "../lib/initDb.js";
+import privacyHandler from "../lib/privacy-handler.js";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{12,}$/;
@@ -44,18 +45,22 @@ function verifyJWT(token, secret) {
 const ACCESS_SECRET = process.env.SECRET_KEY || "zayvora_dev_access_secret";
 const REFRESH_SECRET = process.env.REFRESH_SECRET_KEY || "zayvora_dev_refresh_secret";
 
-function issueTokens(user, deviceId) {
+async function issueTokens(user, deviceId) {
   const jti = crypto.randomBytes(16).toString("hex");
-  return {
-    accessToken: signJWT({
+  const authenticatedAt = new Date().toISOString();
+  const accessToken = signJWT({
       userId: user.passport_id, email: user.email, role: user.role || "user",
-      ecosystem_uid: user.email,
-      jti, type: "access", exp: Math.floor(Date.now() / 1000) + 900,
-    }, ACCESS_SECRET),
-    refreshToken: signJWT({
-      userId: user.passport_id, deviceId: deviceId || "unknown",
+      jti, type: "access", auth_time: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + 900,
+    }, ACCESS_SECRET);
+  const refreshToken = signJWT({
+      userId: user.passport_id, deviceId: deviceId || "unknown", jti,
       type: "refresh", exp: Math.floor(Date.now() / 1000) + 604800,
-    }, REFRESH_SECRET),
+    }, REFRESH_SECRET);
+  const db = await getDB();
+  await db.run("INSERT INTO auth_sessions(session_id,principal_identity_id,token_jti,device_id,authenticated_at,expires_at) VALUES(?,?,?,?,?,?)", [crypto.randomUUID(), user.passport_id, jti, deviceId || "unknown", authenticatedAt, new Date(Date.now() + 604800000).toISOString()]);
+  return {
+    accessToken,
+    refreshToken,
     userId: user.passport_id,
     expiresIn: 900,
   };
@@ -71,6 +76,11 @@ const ALLOWED_ORIGINS = [
 ];
 
 export default async function handler(req, res) {
+  // Consolidated dispatch keeps the deployment within Vercel function limits.
+  if (String(req.url || "").split("?")[0].startsWith("/api/privacy/") || req.query?.privacyPath) {
+    return privacyHandler(req, res);
+  }
+
   // Strict CORS Validation
   const origin = req.headers.origin;
   if (ALLOWED_ORIGINS.includes(origin)) {
@@ -84,7 +94,7 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { action, email, password, refreshToken, nfc_chip_id } = req.body || {};
+  const { action, email, password, refreshToken, nfc_chip_id, adultConfirmed } = req.body || {};
   const identity = (email || "").trim().toLowerCase();
 
   await initDB();
@@ -92,6 +102,8 @@ export default async function handler(req, res) {
 
   // SIGNUP
   if (action === "signup") {
+    if (adultConfirmed !== true)
+      return res.status(400).json({ error: "An adult/guardian flow is not currently supported." });
     if (!EMAIL_REGEX.test(identity) || !PASSWORD_REGEX.test(password || ""))
       return res.status(400).json({ error: "Email/password invalid. Password must be 12+ chars with upper, lower, digit, special." });
     
@@ -113,7 +125,7 @@ export default async function handler(req, res) {
       [newUser.passport_id, newUser.email, newUser.password_hash, newUser.role, newUser.nfc_chip_id]
     );
 
-    const tokens = issueTokens(newUser, req.headers["x-device-id"] || "web");
+    const tokens = await issueTokens(newUser, req.headers["x-device-id"] || "web");
     return res.status(201).json(tokens);
   }
 
@@ -126,7 +138,7 @@ export default async function handler(req, res) {
     if (!user)
       return res.status(401).json({ error: "No passport associated with this NFC Card." });
 
-    const tokens = issueTokens(user, req.headers["x-device-id"] || "web");
+    const tokens = await issueTokens(user, req.headers["x-device-id"] || "web");
     return res.json({ ...tokens, email: user.email });
   }
 
@@ -160,7 +172,7 @@ export default async function handler(req, res) {
     if (!user || !comparePassword(password, user.password_hash))
       return res.status(401).json({ error: "Invalid credentials" });
 
-    const tokens = issueTokens(user, req.headers["x-device-id"] || "web");
+    const tokens = await issueTokens(user, req.headers["x-device-id"] || "web");
     return res.json(tokens);
   }
 
@@ -175,7 +187,10 @@ export default async function handler(req, res) {
     const user = await db.get(`SELECT passport_id, email, password_hash, role, nfc_chip_id FROM passports WHERE passport_id = ?`, [v.payload.userId]);
     if (!user) return res.status(401).json({ error: "User not found" });
 
-    const tokens = issueTokens(user, v.payload.deviceId);
+    const session = await db.get("SELECT revoked_at,expires_at FROM auth_sessions WHERE principal_identity_id=? AND token_jti=?", [v.payload.userId, v.payload.jti]);
+    if (!session || session.revoked_at || Date.parse(session.expires_at) <= Date.now()) return res.status(401).json({ error: "Session revoked or expired" });
+    const tokens = await issueTokens(user, v.payload.deviceId);
+    await db.run("UPDATE auth_sessions SET revoked_at=CURRENT_TIMESTAMP WHERE principal_identity_id=? AND token_jti=?", [v.payload.userId, v.payload.jti]);
     return res.json(tokens);
   }
 
@@ -208,6 +223,9 @@ export default async function handler(req, res) {
 
   // LOGOUT
   if (action === "logout") {
+    const token = (req.headers.authorization || "").replace("Bearer ", "");
+    const v = verifyJWT(token, ACCESS_SECRET);
+    if (v.valid) await db.run("UPDATE auth_sessions SET revoked_at=CURRENT_TIMESTAMP WHERE principal_identity_id=? AND token_jti=?", [v.payload.userId, v.payload.jti]);
     return res.json({ success: true, message: "Logged out successfully" });
   }
 
