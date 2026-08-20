@@ -2,6 +2,8 @@ import crypto from 'crypto';
 import * as membership from '../../lib/domain/membership.js';
 import * as subscriptions from '../../lib/domain/razorpaySubscriptions.js';
 import * as financialLedger from '../../lib/domain/financialLedger.js';
+import { getDB } from '../../lib/db.js';
+import { initDB } from '../../lib/initDb.js';
 import { requireIdentity } from '../../lib/authenticatedIdentity.js';
 
 const ALLOWED = [
@@ -82,8 +84,18 @@ async function handleCancel(req, res) {
   if (m.razorpaySubscriptionId) {
     try {
       await subscriptions.cancelSubscription(m.razorpaySubscriptionId);
-    } catch (_) {
-      // subscription may already be cancelled on Razorpay side
+    } catch (cancelError) {
+      // Only suppress a cancellation error when Razorpay confirms that no
+      // further charges can occur. Network/auth failures must keep local access.
+      let providerSubscription;
+      try {
+        providerSubscription = await subscriptions.fetchSubscription(m.razorpaySubscriptionId);
+      } catch (_) {
+        throw cancelError;
+      }
+      if (!['cancelled', 'completed'].includes(providerSubscription.status)) {
+        throw cancelError;
+      }
     }
   }
 
@@ -110,6 +122,39 @@ async function handleAccess(req, res, offerId) {
       purchase_only: hasPurchased,
       membership_or_purchase: isMember || hasPurchased,
     },
+  });
+}
+
+// Keep the pre-membership access-check contract available without consuming a
+// separate Vercel Function. vercel.json rewrites the legacy public URL here.
+async function handleLegacyAccess(req, res) {
+  if (req.method !== 'GET') return res.status(405).end();
+  const { email, article_slug: articleSlug, newsletter_slug: newsletterSlug } = parseQuery(req);
+  if (!email) return res.status(400).json({ error: 'email required' });
+  if (!articleSlug && !newsletterSlug) {
+    return res.status(400).json({ error: 'article_slug or newsletter_slug required' });
+  }
+
+  await initDB();
+  const db = await getDB();
+  const contentColumn = articleSlug ? 'article_slug' : 'newsletter_slug';
+  const contentSlug = articleSlug || newsletterSlug;
+  const subscription = await db.get(
+    `SELECT * FROM orders
+     WHERE email = ? AND verified = 1
+       AND (expires_at IS NULL OR expires_at > datetime('now'))
+       AND ${contentColumn} = ?
+     LIMIT 1`,
+    [email, contentSlug]
+  );
+
+  if (!subscription) return res.status(200).json({ hasAccess: false });
+  return res.status(200).json({
+    hasAccess: true,
+    expiresAt: subscription.expires_at,
+    email: subscription.email,
+    article_slug: subscription.article_slug,
+    newsletter_slug: subscription.newsletter_slug,
   });
 }
 
@@ -186,6 +231,12 @@ export default async function handler(req, res) {
   try {
     const path = route(req);
 
+    if (path === 'status') return handleStatus(req, res);
+    if (path === 'subscribe') return handleSubscribe(req, res);
+    if (path === 'cancel') return handleCancel(req, res);
+    if (path === 'legacy-check-access') return handleLegacyAccess(req, res);
+    if (path === 'entitlements') return handleEntitlements(req, res);
+    if (path === 'webhook') return handleWebhook(req, res);
     if (path === 'status') return await handleStatus(req, res);
     if (path === 'subscribe') return await handleSubscribe(req, res);
     if (path === 'cancel') return await handleCancel(req, res);
