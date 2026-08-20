@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { getDB } from "../lib/db.js";
 import { initDB } from "../lib/initDb.js";
 import privacyHandler from "../lib/privacy-handler.js";
+import { verifyAccessSession } from "../lib/privacy-auth.js";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{12,}$/;
@@ -77,11 +78,6 @@ const ALLOWED_ORIGINS = [
 ];
 
 export default async function handler(req, res) {
-  // Consolidated dispatch keeps the deployment within Vercel function limits.
-  if (String(req.url || "").split("?")[0].startsWith("/api/privacy/") || req.query?.privacyPath) {
-    return privacyHandler(req, res);
-  }
-
   // Strict CORS Validation
   const origin = req.headers.origin;
   if (ALLOWED_ORIGINS.includes(origin)) {
@@ -90,9 +86,14 @@ export default async function handler(req, res) {
     // Default to the first allowed origin to prevent wildcard credential errors
     res.setHeader("Access-Control-Allow-Origin", ALLOWED_ORIGINS[0]);
   }
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   if (req.method === "OPTIONS") return res.status(200).end();
+
+  // Consolidated dispatch keeps the deployment within Vercel function limits.
+  if (String(req.url || "").split("?")[0].startsWith("/api/privacy/") || req.query?.privacyPath) {
+    return privacyHandler(req, res);
+  }
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   const { action, email, password, refreshToken, nfc_chip_id, adultConfirmed } = req.body || {};
@@ -202,7 +203,7 @@ export default async function handler(req, res) {
   // VERIFY (check if token is valid)
   if (action === "verify" || action === "validate") {
     const token = (req.headers.authorization || "").replace("Bearer ", "");
-    const v = verifyJWT(token, ACCESS_SECRET);
+    const v = await verifyAccessSession(token);
     if (!v.valid || v.payload?.type !== "access") {
       return res.status(401).json({ valid: false, error: "Invalid or expired token" });
     }
@@ -212,7 +213,7 @@ export default async function handler(req, res) {
   // INTROSPECT
   if (action === "introspect") {
     const token = (req.headers.authorization || "").replace("Bearer ", "");
-    const v = verifyJWT(token, ACCESS_SECRET);
+    const v = await verifyAccessSession(token);
     if (!v.valid || v.payload?.type !== "access") {
       return res.status(401).json({ active: false, error: "Invalid or expired token" });
     }

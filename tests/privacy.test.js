@@ -14,6 +14,7 @@ const { validatePrivacyConfig } = await import("../lib/privacy-config.js");
 const { default: authHandler } = await import("../api/auth.js");
 await initDB(); const db = await getDB();
 await db.run("INSERT INTO passports(passport_id,email,password_hash,customer_name) VALUES(?,?,?,?),(?,?,?,?)", ["alice","alice@test.invalid","secret-hash","Alice","bob","bob@test.invalid","other-hash","Bob"]);
+function mock(body, headers = {}) { const res={code:200,body:null,headers:{},setHeader(k,v){this.headers[k]=v;},status(c){this.code=c;return this;},json(v){this.body=v;return this;},end(){return this;}}; return [{method:"POST",body,headers},res]; }
 function mock(body, headers = {}) { const res={code:200,body:null,setHeader(){},status(c){this.code=c;return this;},json(v){this.body=v;return this;},end(){return this;}}; return [{method:"POST",body,headers},res]; }
 function tokenPayload(token) { return JSON.parse(Buffer.from(token.split(".")[1], "base64url").toString("utf8")); }
 
@@ -35,6 +36,38 @@ test("consolidated Vercel privacy dispatch remains fail-closed without authentic
   await authHandler(rewrittenReq,rewrittenRes); assert.equal(rewrittenRes.code,401); assert.equal(rewrittenRes.body.error,"Authentication required");
 });
 
+test("consolidated privacy dispatch handles CORS preflight before authentication", async () => {
+  const [req,res] = mock({}, { origin:"https://viadecide.com" });
+  req.method="OPTIONS"; req.url="/api/auth?privacyPath=me"; req.query={privacyPath:"me"};
+  await authHandler(req,res);
+  assert.equal(res.code,200); assert.equal(res.headers["Access-Control-Allow-Origin"],"https://viadecide.com");
+  assert.match(res.headers["Access-Control-Allow-Headers"],/Authorization/);
+});
+
+test("logout immediately invalidates verify and introspect", async () => {
+  let [req,res] = mock({action:"login",email:"adult@test.invalid",password:"StrongPassword!2"});
+  await authHandler(req,res); const token=res.body.accessToken;
+  [req,res] = mock({action:"verify"},{authorization:`Bearer ${token}`}); await authHandler(req,res); assert.equal(res.code,200);
+  [req,res] = mock({action:"logout"},{authorization:`Bearer ${token}`}); await authHandler(req,res); assert.equal(res.code,200);
+  for (const action of ["verify","introspect"]) {
+    [req,res] = mock({action},{authorization:`Bearer ${token}`}); await authHandler(req,res); assert.equal(res.code,401);
+  }
+});
+
+test("erasure atomically removes cleartext privacy data and records honest retention", async () => {
+  let [req,res] = mock({action:"login",email:"adult@test.invalid",password:"StrongPassword!2"});
+  await authHandler(req,res); const token=res.body.accessToken, adultId=res.body.userId;
+  await db.run("INSERT INTO privacy_requests(request_id,principal_identity_id,request_type,status,requested_at) VALUES(?,?,?,?,?)", ["old-correction",adultId,"CORRECTION","COMPLETED",new Date().toISOString()]);
+  await db.run("INSERT INTO privacy_corrections VALUES(?,?,?,?,?,?)", ["correction","old-correction","customer_name","Clear text","COMPLETED",new Date().toISOString()]);
+  await db.run("INSERT INTO privacy_grievances(grievance_id,principal_identity_id,subject,category,description,created_at,status,response_due_at) VALUES(?,?,?,?,?,?,?,?)", ["grievance",adultId,"Clear subject","privacy","Clear description",new Date().toISOString(),"OPEN",new Date().toISOString()]);
+  [req,res] = mock({confirm:"ERASE_MY_ACCOUNT",reauthenticationNonce:"one-use-proof"},{authorization:`Bearer ${token}`});
+  req.url="/api/privacy/erasure"; req.query={}; await authHandler(req,res);
+  assert.equal(res.code,202); assert.equal(res.body.status,"COMPLETED_WITH_RETENTION");
+  assert.equal((await db.get("SELECT COUNT(*) count FROM auth_sessions WHERE principal_identity_id=?",[adultId])).count,0);
+  assert.equal((await db.get("SELECT COUNT(*) count FROM privacy_corrections WHERE correction_id='correction'")).count,0);
+  assert.equal((await db.get("SELECT COUNT(*) count FROM privacy_grievances WHERE grievance_id='grievance'")).count,0);
+  const evidence=await db.get("SELECT * FROM privacy_erasure_evidence WHERE request_id=?",[res.body.requestId]);
+  assert.equal(evidence.status,"COMPLETED_WITH_RETENTION"); assert.match(evidence.categories_retained,/minimal_account_tombstone/);
 test("refresh preserves strong-authentication time and permits only one concurrent rotation", async () => {
   const [loginReq,loginRes] = mock({action:"login",email:"adult@test.invalid",password:"StrongPassword!2"});
   await authHandler(loginReq,loginRes); assert.equal(loginRes.code,200);
