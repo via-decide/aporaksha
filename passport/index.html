@@ -76,6 +76,8 @@
     input { width: 100%; background: #0b0c10; border: 1px solid var(--border); border-radius: var(--radius-btn); color: var(--text); font-family: inherit; font-size: 14.5px; padding: 12px 14px; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
     input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
     input::placeholder { color: #52525b; }
+    .affirmation { display: flex; align-items: flex-start; gap: 10px; color: var(--muted); font-size: 13px; line-height: 1.45; text-transform: none; letter-spacing: 0; }
+    .affirmation input { width: auto; margin: 3px 0 0; accent-color: var(--accent); }
 
     .btn-primary { width: 100%; margin-top: 8px; padding: 14px; font-size: 15px; }
 
@@ -131,7 +133,7 @@
 
       <div class="field">
         <label for="password">Password</label>
-        <input type="password" id="password" placeholder="Minimum 8 characters" />
+        <input type="password" id="password" placeholder="12+ characters with upper, lower, digit and special" />
       </div>
 
       <div class="field" id="nfc-field">
@@ -140,6 +142,13 @@
           <input type="text" id="nfc-input" placeholder="Tap card or type ID" autocomplete="off" />
           <button class="btn" id="nfc-scan-btn" type="button" style="padding: 12px; font-size: 14px; white-space: nowrap; border-color: var(--border);">Scan NFC</button>
         </div>
+      </div>
+
+      <div class="field" id="adult-field">
+        <label class="affirmation" for="adult-confirmed">
+          <input type="checkbox" id="adult-confirmed" />
+          <span>I confirm that I am an adult and can create this passport for myself.</span>
+        </label>
       </div>
 
       <button class="btn accent btn-primary" id="create-btn">Create Passport</button>
@@ -175,6 +184,7 @@
     const toggleLink = document.getElementById('toggle-mode');
     const nameField = document.getElementById('name-field');
     const nfcField = document.getElementById('nfc-field');
+    const adultField = document.getElementById('adult-field');
     const nfcLoginContainer = document.getElementById('nfc-login-container');
     const headerTitle = document.querySelector('h1');
     const headerSubtitle = document.querySelector('.subtitle');
@@ -185,6 +195,7 @@
       if (isLogin) {
         nameField.style.display = 'none';
         nfcField.style.display = 'none';
+        adultField.style.display = 'none';
         nfcLoginContainer.style.display = 'block';
         headerTitle.textContent = 'Log In';
         headerSubtitle.textContent = 'Access your sovereign identity and ecosystem assets.';
@@ -194,6 +205,7 @@
       } else {
         nameField.style.display = 'block';
         nfcField.style.display = 'block';
+        adultField.style.display = 'block';
         nfcLoginContainer.style.display = 'none';
         headerTitle.textContent = 'Create Passport';
         headerSubtitle.textContent = 'Your sovereign identity across the ecosystem. Skills, reputation, and assets follow you everywhere.';
@@ -208,6 +220,7 @@
       const email     = document.getElementById('email').value.trim();
       const password  = document.getElementById('password').value;
       const nfcChipId = document.getElementById('nfc-input').value.trim();
+      const adultConfirmed = document.getElementById('adult-confirmed').checked;
 
       if ((!isLogin && !name) || !email || !password) {
         setMsg('Please fill in all required fields.', 'error');
@@ -217,8 +230,12 @@
         setMsg('Enter a valid email address.', 'error');
         return;
       }
-      if (!isLogin && password.length < 8) {
-        setMsg('Password must be at least 8 characters.', 'error');
+      if (!isLogin && !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{12,}$/.test(password)) {
+        setMsg('Password must be 12+ characters with upper, lower, digit and special.', 'error');
+        return;
+      }
+      if (!isLogin && !adultConfirmed) {
+        setMsg('Confirm that you are an adult to create a passport.', 'error');
         return;
       }
 
@@ -228,7 +245,7 @@
       fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: isLogin ? 'login' : 'signup', name: name, email: email, password: password, nfc_chip_id: nfcChipId || null })
+        body: JSON.stringify({ action: isLogin ? 'login' : 'signup', name: name, email: email, password: password, nfc_chip_id: nfcChipId || null, adultConfirmed: !isLogin && adultConfirmed })
       })
         .then(async function (r) { 
           if (!r.ok) {

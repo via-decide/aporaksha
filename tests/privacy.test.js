@@ -15,6 +15,8 @@ const { default: authHandler } = await import("../api/auth.js");
 await initDB(); const db = await getDB();
 await db.run("INSERT INTO passports(passport_id,email,password_hash,customer_name) VALUES(?,?,?,?),(?,?,?,?)", ["alice","alice@test.invalid","secret-hash","Alice","bob","bob@test.invalid","other-hash","Bob"]);
 function mock(body, headers = {}) { const res={code:200,body:null,headers:{},setHeader(k,v){this.headers[k]=v;},status(c){this.code=c;return this;},json(v){this.body=v;return this;},end(){return this;}}; return [{method:"POST",body,headers},res]; }
+function mock(body, headers = {}) { const res={code:200,body:null,setHeader(){},status(c){this.code=c;return this;},json(v){this.body=v;return this;},end(){return this;}}; return [{method:"POST",body,headers},res]; }
+function tokenPayload(token) { return JSON.parse(Buffer.from(token.split(".")[1], "base64url").toString("utf8")); }
 
 test("signup-only adult gate creates no account, linkage, consent, subscription or DOB without affirmation", async () => {
   let [req,res] = mock({action:"signup",email:"child@test.invalid",password:"StrongPassword!2",adultConfirmed:false,dob:"2012-01-01"});
@@ -66,6 +68,21 @@ test("erasure atomically removes cleartext privacy data and records honest reten
   assert.equal((await db.get("SELECT COUNT(*) count FROM privacy_grievances WHERE grievance_id='grievance'")).count,0);
   const evidence=await db.get("SELECT * FROM privacy_erasure_evidence WHERE request_id=?",[res.body.requestId]);
   assert.equal(evidence.status,"COMPLETED_WITH_RETENTION"); assert.match(evidence.categories_retained,/minimal_account_tombstone/);
+test("refresh preserves strong-authentication time and permits only one concurrent rotation", async () => {
+  const [loginReq,loginRes] = mock({action:"login",email:"adult@test.invalid",password:"StrongPassword!2"});
+  await authHandler(loginReq,loginRes); assert.equal(loginRes.code,200);
+  const original = tokenPayload(loginRes.body.accessToken);
+  const authenticatedAt = "2026-01-02T03:04:05.000Z";
+  await db.run("UPDATE auth_sessions SET authenticated_at=? WHERE token_jti=?", [authenticatedAt, original.jti]);
+
+  const attempts = Array.from({length:2}, () => {
+    const [req,res] = mock({action:"refresh",refreshToken:loginRes.body.refreshToken});
+    return authHandler(req,res).then(() => res);
+  });
+  const responses = await Promise.all(attempts);
+  assert.deepEqual(responses.map(({code}) => code).sort(), [200,401]);
+  const replacement = responses.find(({code}) => code === 200);
+  assert.equal(tokenPayload(replacement.body.accessToken).auth_time, Date.parse(authenticatedAt) / 1000);
 });
 
 test("silence, page views, defaults and legacy accounts create no consent", async () => {

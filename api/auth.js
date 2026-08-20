@@ -46,12 +46,13 @@ function verifyJWT(token, secret) {
 const ACCESS_SECRET = process.env.SECRET_KEY || "zayvora_dev_access_secret";
 const REFRESH_SECRET = process.env.REFRESH_SECRET_KEY || "zayvora_dev_refresh_secret";
 
-async function issueTokens(user, deviceId) {
+async function issueTokens(user, deviceId, authenticatedAt = new Date().toISOString()) {
   const jti = crypto.randomBytes(16).toString("hex");
-  const authenticatedAt = new Date().toISOString();
+  const authTime = Math.floor(Date.parse(authenticatedAt) / 1000);
+  if (!Number.isFinite(authTime)) throw new Error("Invalid authentication time");
   const accessToken = signJWT({
       userId: user.passport_id, email: user.email, role: user.role || "user",
-      jti, type: "access", auth_time: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + 900,
+      jti, type: "access", auth_time: authTime, exp: Math.floor(Date.now() / 1000) + 900,
     }, ACCESS_SECRET);
   const refreshToken = signJWT({
       userId: user.passport_id, deviceId: deviceId || "unknown", jti,
@@ -188,10 +189,14 @@ export default async function handler(req, res) {
     const user = await db.get(`SELECT passport_id, email, password_hash, role, nfc_chip_id FROM passports WHERE passport_id = ?`, [v.payload.userId]);
     if (!user) return res.status(401).json({ error: "User not found" });
 
-    const session = await db.get("SELECT revoked_at,expires_at FROM auth_sessions WHERE principal_identity_id=? AND token_jti=?", [v.payload.userId, v.payload.jti]);
+    const session = await db.get("SELECT revoked_at,expires_at,authenticated_at FROM auth_sessions WHERE principal_identity_id=? AND token_jti=?", [v.payload.userId, v.payload.jti]);
     if (!session || session.revoked_at || Date.parse(session.expires_at) <= Date.now()) return res.status(401).json({ error: "Session revoked or expired" });
-    const tokens = await issueTokens(user, v.payload.deviceId);
-    await db.run("UPDATE auth_sessions SET revoked_at=CURRENT_TIMESTAMP WHERE principal_identity_id=? AND token_jti=?", [v.payload.userId, v.payload.jti]);
+    const rotation = await db.run(
+      "UPDATE auth_sessions SET revoked_at=CURRENT_TIMESTAMP WHERE principal_identity_id=? AND token_jti=? AND revoked_at IS NULL AND expires_at > CURRENT_TIMESTAMP",
+      [v.payload.userId, v.payload.jti]
+    );
+    if (rotation.changes !== 1) return res.status(401).json({ error: "Session revoked or expired" });
+    const tokens = await issueTokens(user, v.payload.deviceId, session.authenticated_at);
     return res.json(tokens);
   }
 
