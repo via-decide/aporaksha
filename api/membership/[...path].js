@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import * as membership from '../../lib/domain/membership.js';
 import * as subscriptions from '../../lib/domain/razorpaySubscriptions.js';
 import * as financialLedger from '../../lib/domain/financialLedger.js';
-import { requireAuth } from '../../lib/auth.js';
+import { requireIdentity } from '../../lib/authenticatedIdentity.js';
 import * as webhookDedup from '../../lib/webhookIdempotency.js';
 
 export const config = { api: { bodyParser: false } };
@@ -39,10 +39,9 @@ function readRawBody(req) {
 
 async function handleStatus(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
-  const identity = requireAuth(req);
-  if (!identity) return res.status(401).json({ error: 'authentication_required' });
+  const email = requireIdentity(req).email;
 
-  const m = await membership.getMembership(identity.email);
+  const m = await membership.getMembership(email);
   if (!m) return res.json({ active: false, membership: null });
 
   const active = membership.isMembershipActive(m);
@@ -51,10 +50,9 @@ async function handleStatus(req, res) {
 
 async function handleSubscribe(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-  const identity = requireAuth(req);
-  if (!identity) return res.status(401).json({ error: 'authentication_required' });
+  const email = requireIdentity(req).email;
 
-  const existing = await membership.getMembership(identity.email);
+  const existing = await membership.getMembership(email);
   if (existing && membership.isMembershipActive(existing)) {
     return res.json({
       already_active: true,
@@ -63,7 +61,7 @@ async function handleSubscribe(req, res) {
   }
 
   try {
-    const sub = await subscriptions.createSubscription(identity.email);
+    const sub = await subscriptions.createSubscription(email);
     return res.json({
       subscriptionId: sub.subscriptionId,
       shortUrl: sub.shortUrl,
@@ -79,10 +77,9 @@ async function handleSubscribe(req, res) {
 
 async function handleCancel(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-  const identity = requireAuth(req);
-  if (!identity) return res.status(401).json({ error: 'authentication_required' });
+  const email = requireIdentity(req).email;
 
-  const m = await membership.getMembership(identity.email);
+  const m = await membership.getMembership(email);
   if (!m) return res.status(404).json({ error: 'no_membership' });
 
   if (m.razorpaySubscriptionId) {
@@ -102,12 +99,11 @@ async function handleCancel(req, res) {
 
 async function handleAccess(req, res, offerId) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
-  const identity = requireAuth(req);
-  if (!identity) return res.status(401).json({ error: 'authentication_required' });
+  const email = requireIdentity(req).email;
 
-  const m = await membership.getMembership(identity.email);
+  const m = await membership.getMembership(email);
   const isMember = m ? membership.isMembershipActive(m) : false;
-  const hasPurchased = await membership.hasEntitlement(identity.email, offerId);
+  const hasPurchased = await membership.hasEntitlement(email, offerId);
 
   return res.json({
     isMember,
@@ -164,13 +160,12 @@ async function handleWebhook(req, res) {
 
     if (event.event === 'subscription.charged') {
       const payment = event.payload?.payment?.entity;
-      const paymentId = payment?.id || sub.id;
-
+      if (!payment?.id) return res.status(200).json({ status: 'ignored_no_payment' });
       await financialLedger.recordMembership({
         buyerEmail,
         amountMinor: membership.PLAN_AMOUNT_MINOR,
         currency: membership.PLAN_CURRENCY,
-        providerTxnId: paymentId,
+        providerTxnId: payment.id,
         description: 'Monthly membership charge',
       });
     }
@@ -186,10 +181,9 @@ async function handleWebhook(req, res) {
 
 async function handleEntitlements(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
-  const identity = requireAuth(req);
-  if (!identity) return res.status(401).json({ error: 'authentication_required' });
+  const email = requireIdentity(req).email;
 
-  const entitlements = await membership.getBuyerEntitlements(identity.email);
+  const entitlements = await membership.getBuyerEntitlements(email);
   return res.json({ entitlements });
 }
 
@@ -204,17 +198,18 @@ export default async function handler(req, res) {
   try {
     const path = route(req);
 
-    if (path === 'status') return handleStatus(req, res);
-    if (path === 'subscribe') return handleSubscribe(req, res);
-    if (path === 'cancel') return handleCancel(req, res);
-    if (path === 'entitlements') return handleEntitlements(req, res);
-    if (path === 'webhook') return handleWebhook(req, res);
+    if (path === 'status') return await handleStatus(req, res);
+    if (path === 'subscribe') return await handleSubscribe(req, res);
+    if (path === 'cancel') return await handleCancel(req, res);
+    if (path === 'entitlements') return await handleEntitlements(req, res);
+    if (path === 'webhook') return await handleWebhook(req, res);
 
     const accessMatch = path.match(/^access\/([a-zA-Z0-9_-]+)$/);
-    if (accessMatch) return handleAccess(req, res, accessMatch[1]);
+    if (accessMatch) return await handleAccess(req, res, accessMatch[1]);
 
     return res.status(404).json({ error: 'not_found' });
   } catch (err) {
+    if (err.statusCode) return res.status(err.statusCode).json({ error: err.message });
     console.error('Membership API error:', err.message);
     return res.status(500).json({ error: 'internal_error' });
   }

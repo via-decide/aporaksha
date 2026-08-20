@@ -1,11 +1,11 @@
 import crypto from 'crypto';
 import Razorpay from 'razorpay';
 import * as store from '../../lib/domain/creatorStore.js';
-import { validateOrderInput, isValidHandle } from '../../lib/domain/types.js';
+import { validateOrderInput, isValidHandle, isValidAmountMinor } from '../../lib/domain/types.js';
 import * as ledger from '../../lib/creatorLedger.js';
 import * as financialLedger from '../../lib/domain/financialLedger.js';
-import { grantEntitlement } from '../../lib/domain/membership.js';
-import { requireAuth } from '../../lib/auth.js';
+import * as membership from '../../lib/domain/membership.js';
+import { requireIdentity, requireSameEmail } from '../../lib/authenticatedIdentity.js';
 import * as webhookDedup from '../../lib/webhookIdempotency.js';
 
 export const config = { api: { bodyParser: false } };
@@ -31,13 +31,6 @@ function route(req) {
   return url.slice(idx + base.length).split('?')[0].replace(/\/+$/, '');
 }
 
-function parseQuery(req) {
-  const url = req.url || '';
-  const q = url.indexOf('?');
-  if (q === -1) return {};
-  return Object.fromEntries(new URLSearchParams(url.slice(q + 1)));
-}
-
 function readRawBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
@@ -47,34 +40,11 @@ function readRawBody(req) {
   });
 }
 
-async function verifyCreatorOwner(req, handle) {
-  const identity = requireAuth(req);
-  if (!identity) return false;
-  const creator = await store.getCreator(handle);
-  if (!creator || !creator.contactEmail) return false;
-  return creator.contactEmail.toLowerCase() === identity.email.toLowerCase();
-}
-
-async function fulfillAfterPayment(order, offer) {
-  if (offer.offerType === 'digital_file') {
-    await grantEntitlement(order.buyerEmail, order.offerId, order.creatorSlug, order.orderId);
-  } else {
-    const existingBooking = await ledger.getBookingByOrderId(order.orderId);
-    if (!existingBooking) {
-      await ledger.createBooking({
-        bookingId: crypto.randomUUID(),
-        orderId: order.orderId,
-        creatorSlug: order.creatorSlug,
-        offerId: order.offerId,
-        offerTitle: order.offerTitle,
-        buyerName: order.buyerName,
-        buyerEmail: order.buyerEmail,
-        scheduledDate: order.selectedDate || '',
-        scheduledTime: order.selectedTime || '',
-        status: 'confirmed',
-      });
-    }
-  }
+function parseQuery(req) {
+  const url = req.url || '';
+  const q = url.indexOf('?');
+  if (q === -1) return {};
+  return Object.fromEntries(new URLSearchParams(url.slice(q + 1)));
 }
 
 // ── Handlers ─────────────────────────────────────────────────────────
@@ -90,6 +60,7 @@ async function handleReserveHandle(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   const { handle, email } = req.body || {};
   if (!handle || !email) return res.status(400).json({ error: 'handle and email required' });
+  requireSameEmail(requireIdentity(req), email);
   const result = await store.reserveHandle(handle, email);
   if (!result.ok) return res.status(409).json({ error: result.error });
   return res.status(200).json(result);
@@ -97,12 +68,7 @@ async function handleReserveHandle(req, res) {
 
 async function handleCreators(req, res) {
   if (req.method === 'POST') {
-    const identity = requireAuth(req);
-    if (!identity) return res.status(401).json({ error: 'authentication_required' });
-    if (req.body.contactEmail && req.body.contactEmail.toLowerCase() !== identity.email.toLowerCase()) {
-      return res.status(403).json({ error: 'email_mismatch' });
-    }
-    req.body.contactEmail = identity.email;
+    requireSameEmail(requireIdentity(req), req.body?.contactEmail);
     const result = await store.createCreator(req.body);
     if (!result.ok) return res.status(400).json({ error: 'validation_error', details: result.errors });
     return res.status(201).json({ handle: result.handle });
@@ -134,8 +100,10 @@ async function handleCreatorProfile(req, res, handle) {
   }
 
   if (req.method === 'PUT') {
-    const isOwner = await verifyCreatorOwner(req, handle);
-    if (!isOwner) return res.status(403).json({ error: 'not_creator_owner' });
+    const identity = requireIdentity(req);
+    const creator = await store.getCreator(handle);
+    if (!creator) return res.status(404).json({ error: 'creator_not_found' });
+    requireSameEmail(identity, creator.contactEmail);
     const result = await store.updateCreator(handle, req.body);
     if (!result.ok) return res.status(400).json({ error: 'update_failed' });
     return res.json({ ok: true });
@@ -153,8 +121,10 @@ async function handleOffers(req, res, handle) {
     return res.json({ offers });
   }
   if (req.method === 'POST') {
-    const isOwner = await verifyCreatorOwner(req, handle);
-    if (!isOwner) return res.status(403).json({ error: 'not_creator_owner' });
+    const identity = requireIdentity(req);
+    const creator = await store.getCreator(handle);
+    if (!creator) return res.status(404).json({ error: 'creator_not_found' });
+    requireSameEmail(identity, creator.contactEmail);
     const result = await store.createOffer(handle, req.body);
     if (!result.ok) return res.status(400).json({ error: 'validation_error', details: result.errors });
     return res.status(201).json({ offerId: result.offerId });
@@ -169,15 +139,19 @@ async function handleOfferById(req, res, handle, offerId) {
     return res.json(offer);
   }
   if (req.method === 'PUT') {
-    const isOwner = await verifyCreatorOwner(req, handle);
-    if (!isOwner) return res.status(403).json({ error: 'not_creator_owner' });
+    const identity = requireIdentity(req);
+    const creator = await store.getCreator(handle);
+    if (!creator) return res.status(404).json({ error: 'creator_not_found' });
+    requireSameEmail(identity, creator.contactEmail);
     const result = await store.updateOffer(offerId, handle, req.body);
     if (!result.ok) return res.status(400).json({ error: 'update_failed', details: result.errors });
     return res.json({ ok: true });
   }
   if (req.method === 'DELETE') {
-    const isOwner = await verifyCreatorOwner(req, handle);
-    if (!isOwner) return res.status(403).json({ error: 'not_creator_owner' });
+    const identity = requireIdentity(req);
+    const creator = await store.getCreator(handle);
+    if (!creator) return res.status(404).json({ error: 'creator_not_found' });
+    requireSameEmail(identity, creator.contactEmail);
     await store.deleteOffer(offerId, handle);
     return res.json({ ok: true });
   }
@@ -248,9 +222,18 @@ async function handleOrders(req, res) {
   });
 
   if (isFree) {
-    const freeOrder = { orderId, creatorSlug: creatorHandle, offerId, offerTitle: offer.title,
-      buyerName, buyerEmail, selectedDate: selectedDate || '', selectedTime: selectedTime || '' };
-    await fulfillAfterPayment(freeOrder, offer);
+    await ledger.createBooking({
+      bookingId: crypto.randomUUID(),
+      orderId,
+      creatorSlug: creatorHandle,
+      offerId,
+      offerTitle: offer.title,
+      buyerName,
+      buyerEmail,
+      scheduledDate: selectedDate || '',
+      scheduledTime: selectedTime || '',
+      status: 'confirmed',
+    });
   }
 
   return res.status(201).json({
@@ -274,7 +257,6 @@ async function handleVerify(req, res) {
   await ledger.ensureTables();
   const order = await ledger.getOrder(orderId);
   if (!order) return res.status(404).json({ error: 'order_not_found' });
-  if (order.status === 'paid') return res.status(200).json({ status: 'already_verified', orderId });
   if (order.razorpayOrderId !== razorpayOrderId) return res.status(400).json({ error: 'order_mismatch' });
 
   const secret = process.env.RAZORPAY_KEY_SECRET;
@@ -291,23 +273,41 @@ async function handleVerify(req, res) {
     return res.status(400).json({ error: 'signature_invalid' });
   }
 
-  await ledger.updateOrderStatus(orderId, 'paid', { razorpayPaymentId });
+  const wasPaid = order.status === 'paid';
+  await completePaidOrder(order, razorpayPaymentId);
 
+  return res.status(200).json({ status: wasPaid ? 'already_verified' : 'verified', orderId });
+}
+
+async function completePaidOrder(order, paymentId) {
+  await ledger.updateOrderStatus(order.orderId, 'paid', { razorpayPaymentId: paymentId });
   await financialLedger.recordSale({
     orderId: order.orderId,
     creatorHandle: order.creatorSlug,
     buyerEmail: order.buyerEmail,
     amountMinor: order.amount,
     currency: order.currency,
-    providerTxnId: razorpayPaymentId,
+    providerTxnId: paymentId,
   });
+  await membership.grantEntitlement(
+    order.buyerEmail, order.offerId, order.creatorSlug, order.orderId
+  );
 
-  const offer = await store.getOffer(order.offerId);
-  if (offer) {
-    await fulfillAfterPayment(order, offer);
+  const existingBooking = await ledger.getBookingByOrderId(order.orderId);
+  if (!existingBooking) {
+    await ledger.createBooking({
+      bookingId: crypto.randomUUID(),
+      orderId: order.orderId,
+      creatorSlug: order.creatorSlug,
+      offerId: order.offerId,
+      offerTitle: order.offerTitle,
+      buyerName: order.buyerName,
+      buyerEmail: order.buyerEmail,
+      scheduledDate: order.selectedDate,
+      scheduledTime: order.selectedTime,
+      status: 'confirmed',
+    });
   }
-
-  return res.status(200).json({ status: 'verified', orderId });
 }
 
 async function handleWebhook(req, res) {
@@ -336,31 +336,17 @@ async function handleWebhook(req, res) {
     const payment = event.payload?.payment?.entity;
     if (!payment) return res.status(200).json({ status: 'ignored' });
 
+    await ledger.ensureTables();
     const receipt = payment.notes?.receipt || payment.receipt;
-    if (receipt) {
-      await ledger.ensureTables();
-      const order = await ledger.getOrder(receipt);
-      if (order && order.status === 'created') {
-        await ledger.updateOrderStatus(order.orderId, 'paid', { razorpayPaymentId: payment.id });
-
-        await financialLedger.recordSale({
-          orderId: order.orderId,
-          creatorHandle: order.creatorSlug,
-          buyerEmail: order.buyerEmail,
-          amountMinor: order.amount,
-          currency: order.currency,
-          providerTxnId: payment.id,
-        });
-
-        const offer = await store.getOffer(order.offerId);
-        if (offer) {
-          await fulfillAfterPayment(order, offer);
-        }
-      }
+    const order = receipt
+      ? await ledger.getOrder(receipt)
+      : await ledger.getOrderByRazorpayOrderId(payment.order_id);
+    if (order && (order.status === 'created' || order.status === 'paid')) {
+      await completePaidOrder(order, payment.id);
     }
   }
 
-  await webhookDedup.markProcessed(eventId, 'razorpay_creator');
+  await webhookDedup.markProcessed(eventId, 'razorpay_commerce');
   return res.status(200).json({ status: 'ok' });
 }
 
@@ -375,14 +361,12 @@ async function handleFulfillment(req, res, orderId) {
     return res.status(403).json({ error: 'payment_required' });
   }
 
-  const offer = await store.getOffer(order.offerId);
+  const offer = await store.getOfferForFulfillment(order.offerId);
   if (!offer) return res.status(404).json({ error: 'offer_not_found' });
 
   if (offer.offerType === 'digital_file') {
     if (!offer.fileUrl) return res.status(404).json({ error: 'file_not_uploaded' });
-    if (order.status !== 'fulfilled') {
-      await ledger.updateOrderStatus(orderId, 'fulfilled');
-    }
+    await ledger.updateOrderStatus(orderId, 'fulfilled');
     return res.json({
       type: 'digital_file',
       fileLabel: offer.fileLabel || offer.title,
@@ -412,9 +396,8 @@ async function handleFulfillment(req, res, orderId) {
 
 async function handleSeed(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-  if (process.env.NODE_ENV === 'production' && process.env.ALLOW_SEED !== 'true') {
-    return res.status(403).json({ error: 'seed_disabled_in_production' });
-  }
+  const identity = requireIdentity(req);
+  if (identity.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
   const ashok = await store.seedAshokIfNeeded();
   const priya = await store.seedPriyaIfNeeded();
   return res.json({ seeded: { ashok, priya } });
@@ -433,28 +416,29 @@ export default async function handler(req, res) {
   try {
     const path = route(req);
 
-    if (path === 'config') return handleConfig(req, res);
-    if (path === 'reserve-handle') return handleReserveHandle(req, res);
-    if (path === 'creators') return handleCreators(req, res);
-    if (path === 'orders') return handleOrders(req, res);
-    if (path === 'payments/verify') return handleVerify(req, res);
-    if (path === 'payments/webhook') return handleWebhook(req, res);
-    if (path === 'seed') return handleSeed(req, res);
+    if (path === 'config') return await handleConfig(req, res);
+    if (path === 'reserve-handle') return await handleReserveHandle(req, res);
+    if (path === 'creators') return await handleCreators(req, res);
+    if (path === 'orders') return await handleOrders(req, res);
+    if (path === 'payments/verify') return await handleVerify(req, res);
+    if (path === 'payments/webhook') return await handleWebhook(req, res);
+    if (path === 'seed') return await handleSeed(req, res);
 
     const fulfillMatch = path.match(/^fulfillment\/([a-zA-Z0-9-]+)$/);
-    if (fulfillMatch) return handleFulfillment(req, res, fulfillMatch[1]);
+    if (fulfillMatch) return await handleFulfillment(req, res, fulfillMatch[1]);
 
     const creatorMatch = path.match(/^creators\/([a-z][a-z0-9_-]+)$/);
-    if (creatorMatch) return handleCreatorProfile(req, res, creatorMatch[1]);
+    if (creatorMatch) return await handleCreatorProfile(req, res, creatorMatch[1]);
 
     const offersMatch = path.match(/^creators\/([a-z][a-z0-9_-]+)\/offers$/);
-    if (offersMatch) return handleOffers(req, res, offersMatch[1]);
+    if (offersMatch) return await handleOffers(req, res, offersMatch[1]);
 
     const offerByIdMatch = path.match(/^creators\/([a-z][a-z0-9_-]+)\/offers\/([a-zA-Z0-9_-]+)$/);
-    if (offerByIdMatch) return handleOfferById(req, res, offerByIdMatch[1], offerByIdMatch[2]);
+    if (offerByIdMatch) return await handleOfferById(req, res, offerByIdMatch[1], offerByIdMatch[2]);
 
     return res.status(404).json({ error: 'not_found' });
   } catch (err) {
+    if (err.statusCode) return res.status(err.statusCode).json({ error: err.message });
     console.error('Creator commerce error:', err.message);
     return res.status(500).json({ error: 'internal_error' });
   }
