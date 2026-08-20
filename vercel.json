@@ -20,6 +20,9 @@
     },
     "api/waitlist.js": {
       "maxDuration": 5
+    },
+    "api/membership/[...path].js": {
+      "maxDuration": 15
     }
   },
   "rewrites": [
