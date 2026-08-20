@@ -23,6 +23,12 @@
     },
     "api/membership/[...path].js": {
       "maxDuration": 15
+    },
+    "api/creator-commerce/[...path].js": {
+      "maxDuration": 30
+    },
+    "api/internal/webhooks/replay/[id].js": {
+      "maxDuration": 60
     }
   },
   "rewrites": [

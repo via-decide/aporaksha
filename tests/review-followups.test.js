@@ -76,4 +76,26 @@ test('webhook replay requires authorization and refuses processed events', async
   assert.equal((await db.get("SELECT processing_state FROM webhook_events WHERE id = 'processed-event'")).processing_state, 'PROCESSED');
 });
 
+test('authorized replay completes a failed event before responding', async () => {
+  await initDB();
+  const db = await getDB();
+  await db.run(
+    `INSERT INTO webhook_events
+       (id, event_type, payload_json, processing_state, last_error)
+     VALUES ('failed-event', 'test.noop', '{}', 'FAILED', 'transient failure')`
+  );
+
+  const call = request('failed-event', 'Bearer replay-test-secret');
+  await replayHandler(call.req, call.res);
+
+  assert.equal(call.res.statusCode, 200);
+  assert.equal(call.res.body.replayed, 'failed-event');
+  const event = await db.get(
+    "SELECT processing_state, processing_attempts, last_error FROM webhook_events WHERE id = 'failed-event'"
+  );
+  assert.equal(event.processing_state, 'PROCESSED');
+  assert.equal(event.processing_attempts, 1);
+  assert.equal(event.last_error, null);
+});
+
 test.after(() => fs.rmSync(dbPath, { force: true }));

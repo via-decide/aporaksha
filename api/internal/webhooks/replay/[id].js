@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { getDB } from "../../../../lib/db.js";
 import { initDB } from "../../../../lib/initDb.js";
-import { enqueue, processWebhookEvent } from "../../../../lib/queue.js";
+import { processWebhookEvent } from "../../../../lib/queue.js";
 
 function isAuthorized(req, secret) {
   const match = (req.headers?.authorization || "").match(/^Bearer\s+([^\s]+)$/i);
@@ -35,7 +35,10 @@ export default async function handler(req, res) {
     if (updated.changes !== 1) {
       return res.status(409).json({ error: "event_not_replayable", state: event.processing_state });
     }
-    enqueue(async () => processWebhookEvent(id));
+    // Do not leave this work on the in-memory queue after responding. Vercel
+    // may freeze a serverless invocation as soon as its response is sent,
+    // which would report a successful replay without processing the event.
+    await processWebhookEvent(id);
     return res.status(200).json({ ok: true, replayed: id });
   } catch (error) {
     console.error(JSON.stringify({ type: "replay_error", error: error?.message || "unknown" }));
