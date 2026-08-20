@@ -256,11 +256,6 @@ export default async function handler(req, res) {
     if (path === 'legacy-check-access') return handleLegacyAccess(req, res);
     if (path === 'entitlements') return handleEntitlements(req, res);
     if (path === 'webhook') return handleWebhook(req, res);
-    if (path === 'status') return await handleStatus(req, res);
-    if (path === 'subscribe') return await handleSubscribe(req, res);
-    if (path === 'cancel') return await handleCancel(req, res);
-    if (path === 'entitlements') return await handleEntitlements(req, res);
-    if (path === 'webhook') return await handleWebhook(req, res);
 
     const accessMatch = path.match(/^access\/([a-zA-Z0-9_-]+)$/);
     if (accessMatch) return await handleAccess(req, res, accessMatch[1]);
