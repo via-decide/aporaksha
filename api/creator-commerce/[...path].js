@@ -283,6 +283,8 @@ async function handleVerify(req, res) {
 
   await recordPaidOrder(order, razorpayPaymentId);
 
+  await recordPaidOrder(order, razorpayPaymentId);
+
   const existingBooking = await ledger.getBookingByOrderId(orderId);
   return res.status(200).json({ status: wasPaid ? 'already_verified' : 'verified', orderId });
 }
@@ -328,6 +330,23 @@ async function recordPaidOrder(order, providerTxnId) {
     providerTxnId,
   });
   await membership.grantEntitlement(
+    order.buyerEmail,
+    order.offerId,
+    order.creatorSlug,
+    order.orderId
+  );
+}
+
+async function recordPaidOrder(order, providerTxnId) {
+  await financialLedger.recordSale({
+    orderId: order.orderId,
+    creatorHandle: order.creatorSlug,
+    buyerEmail: order.buyerEmail,
+    amountMinor: order.amount,
+    currency: order.currency,
+    providerTxnId,
+  });
+  await grantEntitlement(
     order.buyerEmail,
     order.offerId,
     order.creatorSlug,
