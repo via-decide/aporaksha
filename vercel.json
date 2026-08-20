@@ -27,6 +27,10 @@
   },
   "rewrites": [
     {
+      "source": "/api/privacy/:path*",
+      "destination": "/api/auth?privacyPath=:path*"
+    },
+    {
       "source": "/api/razorpay-config",
       "destination": "/api/payments/config"
     },

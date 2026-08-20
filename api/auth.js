@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { getDB } from "../lib/db.js";
 import { initDB } from "../lib/initDb.js";
+import privacyHandler from "../lib/privacy-handler.js";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{12,}$/;
@@ -75,6 +76,11 @@ const ALLOWED_ORIGINS = [
 ];
 
 export default async function handler(req, res) {
+  // Consolidated dispatch keeps the deployment within Vercel function limits.
+  if (String(req.url || "").split("?")[0].startsWith("/api/privacy/") || req.query?.privacyPath) {
+    return privacyHandler(req, res);
+  }
+
   // Strict CORS Validation
   const origin = req.headers.origin;
   if (ALLOWED_ORIGINS.includes(origin)) {

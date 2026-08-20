@@ -27,6 +27,13 @@ test("signup-only adult gate creates no account, linkage, consent, subscription 
   [req,res] = mock({action:"login",email:"adult@test.invalid",password:"StrongPassword!2"}); await authHandler(req,res); assert.equal(res.code,200);
 });
 
+test("consolidated Vercel privacy dispatch remains fail-closed without authentication", async () => {
+  const [req,res] = mock({}); req.method="GET"; req.url="/api/privacy/me"; req.query={};
+  await authHandler(req,res); assert.equal(res.code,401); assert.equal(res.body.error,"Authentication required");
+  const [rewrittenReq,rewrittenRes] = mock({}); rewrittenReq.method="GET"; rewrittenReq.url="/api/auth?privacyPath=me"; rewrittenReq.query={privacyPath:"me"};
+  await authHandler(rewrittenReq,rewrittenRes); assert.equal(rewrittenRes.code,401); assert.equal(rewrittenRes.body.error,"Authentication required");
+});
+
 test("silence, page views, defaults and legacy accounts create no consent", async () => {
   assert.equal((await db.get("SELECT COUNT(*) count FROM consent_records")).count, 0);
   await assert.rejects(() => consent("alice", "MARKETING_EMAIL", "grant", { noticeVersion:"2025-01",sourceSurface:"settings" }));
