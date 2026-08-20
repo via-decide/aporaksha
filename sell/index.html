@@ -1,0 +1,676 @@
+<title>Sell on Aporaksha — Creator Onboarding</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@400;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #030508;
+    color: #f0f0f2;
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Nav ── */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(11,12,16,0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .nav-brand {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    color: #fff;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 800;
+  }
+  .nav-dot {
+    width: 8px;
+    height: 8px;
+    background: #ff671f;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #ff671f;
+    flex-shrink: 0;
+  }
+  .nav-links {
+    display: flex;
+    gap: 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+  }
+  .nav-links a {
+    color: rgba(240,240,242,0.5);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: rgba(240,240,242,0.8); }
+  .nav-links a.active {
+    color: #ff671f;
+    font-weight: 700;
+  }
+
+  /* ── Page wrapper ── */
+  .page {
+    display: flex;
+    justify-content: center;
+    padding: 48px 16px 80px;
+  }
+
+  /* ── Card ── */
+  .card {
+    width: 100%;
+    max-width: 520px;
+    background: rgba(10,13,18,0.95);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    padding: 36px 32px 40px;
+  }
+
+  /* ── Progress dots ── */
+  .progress {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+  .progress-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+  .progress-dot.active {
+    background: #ff671f;
+    box-shadow: 0 0 8px rgba(255,103,31,0.5);
+  }
+  .progress-dot.done {
+    background: #22c55e;
+    box-shadow: 0 0 8px rgba(34,197,94,0.4);
+  }
+
+  /* ── Step shared ── */
+  .step { display: none; }
+  .step.visible { display: block; }
+
+  .step-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #ff671f;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+
+  .step-heading {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 1.55rem;
+    line-height: 1.25;
+    color: #fff;
+    margin-bottom: 24px;
+  }
+
+  /* ── Form elements ── */
+  label.field-label {
+    display: block;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: rgba(240,240,242,0.55);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  textarea,
+  select {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    color: #f0f0f2;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    margin-bottom: 4px;
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: #ff671f;
+    box-shadow: 0 0 0 3px rgba(255,103,31,0.15);
+  }
+  textarea { resize: vertical; min-height: 80px; }
+  select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+  select option {
+    background: #0a0d12;
+    color: #f0f0f2;
+  }
+
+  .field-group { margin-bottom: 18px; }
+
+  .field-hint {
+    font-size: 0.78rem;
+    color: rgba(240,240,242,0.35);
+    margin-bottom: 14px;
+  }
+
+  .field-error {
+    font-size: 0.78rem;
+    color: #ef4444;
+    min-height: 18px;
+    margin-bottom: 10px;
+  }
+
+  /* ── Button ── */
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    margin-top: 8px;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary {
+    background: #ff671f;
+    color: #fff;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Completion state ── */
+  .completion {
+    text-align: center;
+  }
+  .completion-icon {
+    width: 56px;
+    height: 56px;
+    background: rgba(34,197,94,0.12);
+    border: 1px solid rgba(34,197,94,0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+  }
+  .completion-icon svg { width: 28px; height: 28px; }
+  .completion h2 {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 1.4rem;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .completion p {
+    color: rgba(240,240,242,0.55);
+    font-size: 0.92rem;
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+  .completion-links {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .completion-links a {
+    display: block;
+    padding: 13px 20px;
+    border-radius: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-decoration: none;
+    text-align: center;
+    transition: opacity 0.2s;
+  }
+  .completion-links a:hover { opacity: 0.85; }
+  .link-primary {
+    background: #ff671f;
+    color: #fff;
+  }
+  .link-secondary {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #f0f0f2;
+  }
+
+  /* ── Auth prompt ── */
+  .auth-prompt {
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.25);
+    border-radius: 10px;
+    padding: 16px 18px;
+    text-align: center;
+    display: none;
+  }
+  .auth-prompt.visible { display: block; }
+  .auth-prompt p {
+    color: rgba(240,240,242,0.7);
+    font-size: 0.9rem;
+    margin-bottom: 12px;
+  }
+  .auth-prompt a {
+    color: #ff671f;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .auth-prompt a:hover { text-decoration: underline; }
+
+  /* ── Responsive ── */
+  @media (max-width: 560px) {
+    .card { padding: 28px 20px 32px; }
+    .step-heading { font-size: 1.3rem; }
+    .nav { padding: 10px 16px; }
+    .nav-links { gap: 12px; font-size: 0.78rem; }
+    .nav-brand { font-size: 1.05rem; }
+  }
+</style>
+
+<nav class="nav">
+  <a href="/" class="nav-brand">
+    <span class="nav-dot"></span> Aporaksha
+  </a>
+  <div class="nav-links">
+    <a href="/store">Store</a>
+    <a href="/sell" class="active">Sell</a>
+    <a href="/membership">Membership</a>
+    <a href="/passport">Passport</a>
+  </div>
+</nav>
+
+<main class="page">
+  <div class="card">
+
+    <!-- Progress Dots -->
+    <div class="progress">
+      <div class="progress-dot active" id="dot-1"></div>
+      <div class="progress-dot" id="dot-2"></div>
+      <div class="progress-dot" id="dot-3"></div>
+    </div>
+
+    <!-- Step 1: Reserve Handle -->
+    <div class="step visible" id="step-1">
+      <div class="step-label">Creator Onboarding</div>
+      <h1 class="step-heading">Start Selling on Aporaksha</h1>
+
+      <div class="auth-prompt" id="auth-prompt">
+        <p>You need to sign in before reserving a handle.</p>
+        <a href="/passport">Sign in with Passport &rarr;</a>
+      </div>
+
+      <div id="step1-form">
+        <div class="field-group">
+          <label class="field-label" for="handle">Choose your handle</label>
+          <input type="text" id="handle" placeholder="@your-name" autocomplete="off" spellcheck="false" maxlength="30">
+          <div class="field-hint">Lowercase letters, numbers, and hyphens. 3 - 30 characters.</div>
+          <div class="field-error" id="handle-error"></div>
+        </div>
+        <button class="btn btn-primary" id="btn-reserve" type="button">Reserve Handle</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Set Profile -->
+    <div class="step" id="step-2">
+      <div class="step-label">Creator Onboarding</div>
+      <h1 class="step-heading">Your Creator Profile</h1>
+
+      <div class="field-group">
+        <label class="field-label" for="displayName">Display Name</label>
+        <input type="text" id="displayName" placeholder="Your name or brand" maxlength="80">
+        <div class="field-error" id="displayName-error"></div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="bio">Bio</label>
+        <textarea id="bio" placeholder="A short description about you and what you create" maxlength="300"></textarea>
+        <div class="field-error" id="bio-error"></div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="contactEmail">Contact Email</label>
+        <input type="email" id="contactEmail" placeholder="you@example.com">
+        <div class="field-error" id="contactEmail-error"></div>
+      </div>
+
+      <button class="btn btn-primary" id="btn-profile" type="button">Save Profile</button>
+    </div>
+
+    <!-- Step 3: Add First Offer -->
+    <div class="step" id="step-3">
+      <div class="step-label">Creator Onboarding</div>
+      <h1 class="step-heading">Create Your First Offer</h1>
+
+      <div class="field-group">
+        <label class="field-label" for="offerTitle">Title</label>
+        <input type="text" id="offerTitle" placeholder="e.g. 1-on-1 Design Review" maxlength="120">
+        <div class="field-error" id="offerTitle-error"></div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="offerDesc">Description</label>
+        <textarea id="offerDesc" placeholder="Describe what the buyer gets" maxlength="1000"></textarea>
+        <div class="field-error" id="offerDesc-error"></div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="offerType">Type</label>
+        <select id="offerType">
+          <option value="digital_file">Digital File</option>
+          <option value="session">Session</option>
+          <option value="service">Service</option>
+        </select>
+        <div class="field-error" id="offerType-error"></div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="offerPrice">Price (&#x20B9;)</label>
+        <input type="number" id="offerPrice" placeholder="499" min="1" step="1">
+        <div class="field-error" id="offerPrice-error"></div>
+      </div>
+
+      <button class="btn btn-primary" id="btn-offer" type="button">Create Offer</button>
+    </div>
+
+    <!-- Completion -->
+    <div class="step" id="step-done">
+      <div class="completion">
+        <div class="completion-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <h2>You're All Set</h2>
+        <p>Your creator storefront is live. Share your page, manage offers, and start earning.</p>
+        <div class="completion-links">
+          <a class="link-primary" id="link-storefront" href="#">View Your Storefront</a>
+          <a class="link-secondary" href="/sell/dashboard">Go to Dashboard</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  let currentStep = 1;
+  let reservedHandle = '';
+
+  const dots = [
+    document.getElementById('dot-1'),
+    document.getElementById('dot-2'),
+    document.getElementById('dot-3')
+  ];
+
+  function showStep(n) {
+    document.querySelectorAll('.step').forEach(function (el) {
+      el.classList.remove('visible');
+    });
+    var targetId = n <= 3 ? 'step-' + n : 'step-done';
+    document.getElementById(targetId).classList.add('visible');
+
+    dots.forEach(function (dot, i) {
+      dot.classList.remove('active', 'done');
+      if (i + 1 < n) dot.classList.add('done');
+      else if (i + 1 === n && n <= 3) dot.classList.add('active');
+      else if (n > 3) dot.classList.add('done');
+    });
+
+    currentStep = n;
+  }
+
+  function getToken() {
+    return localStorage.getItem('access_token') || '';
+  }
+
+  function clearErrors() {
+    document.querySelectorAll('.field-error').forEach(function (el) {
+      el.textContent = '';
+    });
+  }
+
+  function showError(id, msg) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = msg;
+  }
+
+  function setLoading(btn, loading) {
+    if (loading) {
+      btn.disabled = true;
+      btn.dataset.label = btn.textContent;
+      btn.innerHTML = '<span class="spinner"></span> Please wait...';
+    } else {
+      btn.disabled = false;
+      btn.textContent = btn.dataset.label || 'Submit';
+    }
+  }
+
+  async function apiFetch(url, options) {
+    var token = getToken();
+    if (!token) {
+      document.getElementById('auth-prompt').classList.add('visible');
+      document.getElementById('step1-form').style.display = 'none';
+      throw new Error('NO_AUTH');
+    }
+
+    var headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token
+    };
+
+    var res = await fetch(url, Object.assign({}, options, { headers: headers }));
+
+    if (!res.ok) {
+      var body;
+      try { body = await res.json(); } catch (_) { body = {}; }
+      var msg = (body && body.error) || (body && body.message) || ('Request failed (' + res.status + ')');
+      throw new Error(msg);
+    }
+
+    return res.json();
+  }
+
+  // ── Step 1: Reserve Handle ──
+  var btnReserve = document.getElementById('btn-reserve');
+  btnReserve.addEventListener('click', async function () {
+    clearErrors();
+    var raw = document.getElementById('handle').value.trim();
+
+    // Strip leading @
+    var handle = raw.replace(/^@/, '');
+
+    if (!handle) {
+      showError('handle-error', 'Handle is required.');
+      return;
+    }
+    if (handle.length < 3 || handle.length > 30) {
+      showError('handle-error', 'Handle must be 3 - 30 characters.');
+      return;
+    }
+    if (!/^[a-z0-9-]+$/.test(handle)) {
+      showError('handle-error', 'Only lowercase letters, numbers, and hyphens allowed.');
+      return;
+    }
+    if (handle.startsWith('-') || handle.endsWith('-')) {
+      showError('handle-error', 'Handle cannot start or end with a hyphen.');
+      return;
+    }
+
+    setLoading(btnReserve, true);
+    try {
+      await apiFetch('/api/creator-commerce/reserve-handle', {
+        method: 'POST',
+        body: JSON.stringify({ handle: handle })
+      });
+      reservedHandle = handle;
+      showStep(2);
+    } catch (err) {
+      if (err.message !== 'NO_AUTH') {
+        showError('handle-error', err.message);
+      }
+    } finally {
+      setLoading(btnReserve, false);
+    }
+  });
+
+  // ── Step 2: Save Profile ──
+  var btnProfile = document.getElementById('btn-profile');
+  btnProfile.addEventListener('click', async function () {
+    clearErrors();
+    var displayName = document.getElementById('displayName').value.trim();
+    var bio = document.getElementById('bio').value.trim();
+    var contactEmail = document.getElementById('contactEmail').value.trim();
+
+    var valid = true;
+
+    if (!displayName) {
+      showError('displayName-error', 'Display name is required.');
+      valid = false;
+    }
+    if (!contactEmail) {
+      showError('contactEmail-error', 'Contact email is required.');
+      valid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail)) {
+      showError('contactEmail-error', 'Enter a valid email address.');
+      valid = false;
+    }
+
+    if (!valid) return;
+
+    setLoading(btnProfile, true);
+    try {
+      await apiFetch('/api/creator-commerce/creators/' + encodeURIComponent(reservedHandle), {
+        method: 'PUT',
+        body: JSON.stringify({
+          displayName: displayName,
+          bio: bio,
+          contactEmail: contactEmail
+        })
+      });
+      showStep(3);
+    } catch (err) {
+      if (err.message !== 'NO_AUTH') {
+        showError('contactEmail-error', err.message);
+      }
+    } finally {
+      setLoading(btnProfile, false);
+    }
+  });
+
+  // ── Step 3: Create Offer ──
+  var btnOffer = document.getElementById('btn-offer');
+  btnOffer.addEventListener('click', async function () {
+    clearErrors();
+    var title = document.getElementById('offerTitle').value.trim();
+    var description = document.getElementById('offerDesc').value.trim();
+    var offerType = document.getElementById('offerType').value;
+    var priceRaw = document.getElementById('offerPrice').value;
+
+    var valid = true;
+
+    if (!title) {
+      showError('offerTitle-error', 'Title is required.');
+      valid = false;
+    }
+    if (!description) {
+      showError('offerDesc-error', 'Description is required.');
+      valid = false;
+    }
+    if (!priceRaw || Number(priceRaw) < 1) {
+      showError('offerPrice-error', 'Enter a price of at least 1.');
+      valid = false;
+    }
+
+    if (!valid) return;
+
+    var amountMinor = Math.round(Number(priceRaw) * 100);
+
+    setLoading(btnOffer, true);
+    try {
+      await apiFetch('/api/creator-commerce/creators/' + encodeURIComponent(reservedHandle) + '/offers', {
+        method: 'POST',
+        body: JSON.stringify({
+          title: title,
+          description: description,
+          offerType: offerType,
+          amountMinor: amountMinor,
+          currency: 'INR'
+        })
+      });
+
+      // Set storefront link
+      document.getElementById('link-storefront').href = '/@' + reservedHandle;
+
+      showStep(4);
+    } catch (err) {
+      if (err.message !== 'NO_AUTH') {
+        showError('offerPrice-error', err.message);
+      }
+    } finally {
+      setLoading(btnOffer, false);
+    }
+  });
+
+  // Check auth on load — if no token, show prompt right away
+  if (!getToken()) {
+    document.getElementById('auth-prompt').classList.add('visible');
+    document.getElementById('step1-form').style.display = 'none';
+  }
+})();
+</script>

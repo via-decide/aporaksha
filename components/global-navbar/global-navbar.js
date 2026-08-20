@@ -3,10 +3,11 @@
 
   var NAV_ITEMS = [
     { label: 'Dashboard', href: 'dashboard', key: 'dashboard' },
-    { label: 'Workspace', href: 'https://daxini.xyz', key: 'daxini_xyz' },
+    { label: 'Store', href: 'store', key: 'store' },
+    { label: 'Sell', href: 'sell', key: 'sell' },
+    { label: 'Membership', href: 'membership', key: 'membership' },
     { label: 'Build', href: 'https://logichub.app', key: 'logichub_app' },
     { label: 'Marketplace', href: 'https://daxini.space', key: 'daxini_space' },
-    { label: 'Security', href: 'https://hanuman.solutions', key: 'hanuman_solutions' },
     { label: 'Passport', href: 'passport', key: 'passport' }
   ];
 
@@ -62,6 +63,9 @@
 
     if (name === 'dashboard') return prefix + 'dashboard/';
     if (name === 'passport') return prefix + 'passport/';
+    if (name === 'store') return prefix + 'store/';
+    if (name === 'sell') return prefix + 'sell/';
+    if (name === 'membership') return prefix + 'membership/';
     return '#';
   }
 

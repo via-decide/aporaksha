@@ -23,6 +23,9 @@
     },
     "api/membership/[...path].js": {
       "maxDuration": 15
+    },
+    "api/creator-commerce/[...path].js": {
+      "maxDuration": 15
     }
   },
   "rewrites": [
@@ -51,8 +54,24 @@
       "destination": "/ecosystem/index.html"
     },
     {
+      "source": "/store",
+      "destination": "/store/index.html"
+    },
+    {
+      "source": "/sell",
+      "destination": "/sell/index.html"
+    },
+    {
+      "source": "/membership",
+      "destination": "/membership/index.html"
+    },
+    {
       "source": "/redeem",
       "destination": "/passport/redeem"
+    },
+    {
+      "source": "/@:handle",
+      "destination": "/store/creator.html"
     }
   ],
   "headers": [

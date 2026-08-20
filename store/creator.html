@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Creator — Aporaksha</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0c10;
+      --card-bg: rgba(14, 14, 20, 0.85);
+      --border: rgba(255, 255, 255, 0.06);
+      --border-hover: rgba(255, 255, 255, 0.16);
+      --text: #f0f0f2;
+      --text-muted: rgba(240, 240, 242, 0.5);
+      --accent: #ff671f;
+      --accent-dim: rgba(255, 103, 31, 0.12);
+      --green: #22c55e;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Outfit', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(11, 12, 16, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .brand {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.3rem; color: #fff; text-decoration: none;
+      display: flex; align-items: center; gap: 8px; font-weight: 800;
+    }
+    .brand-dot {
+      width: 8px; height: 8px; background: var(--accent);
+      border-radius: 50%; box-shadow: 0 0 10px var(--accent);
+    }
+    .nav-links {
+      display: flex; gap: 16px;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+    }
+    .nav-links a { color: var(--text-muted); text-decoration: none; transition: 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+    .container { max-width: 680px; margin: 0 auto; padding: 40px 20px 80px; }
+
+    .profile-header {
+      text-align: center; margin-bottom: 40px;
+    }
+    .avatar-large {
+      width: 96px; height: 96px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #6366f1);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Space Grotesk', sans-serif; font-size: 2.2rem;
+      font-weight: 700; color: #fff; margin: 0 auto 16px;
+      box-shadow: 0 8px 32px rgba(255, 103, 31, 0.2);
+    }
+    .avatar-large img {
+      width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
+    }
+    .creator-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.8rem; font-weight: 700; margin-bottom: 4px;
+    }
+    .creator-handle {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem; color: var(--accent); margin-bottom: 12px;
+    }
+    .creator-bio {
+      font-size: 1rem; color: var(--text-muted);
+      max-width: 480px; margin: 0 auto; line-height: 1.6;
+    }
+
+    .section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.2rem; font-weight: 700; margin-bottom: 16px;
+      padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    }
+    .offers-list { display: flex; flex-direction: column; gap: 14px; }
+    .offer-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 24px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .offer-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+    }
+    .offer-top {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; gap: 16px; margin-bottom: 8px;
+    }
+    .offer-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.1rem; font-weight: 600;
+    }
+    .offer-price {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1rem; font-weight: 500;
+      color: var(--green); white-space: nowrap;
+    }
+    .offer-desc {
+      font-size: 0.9rem; color: var(--text-muted);
+      line-height: 1.5; margin-bottom: 14px;
+    }
+    .offer-type {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem; color: var(--accent);
+      text-transform: uppercase; letter-spacing: 0.05em;
+      padding: 3px 10px; border-radius: 6px;
+      background: var(--accent-dim); display: inline-block;
+    }
+    .buy-btn {
+      margin-top: 14px; display: inline-block;
+      padding: 10px 24px; background: var(--accent);
+      color: #fff; font-family: 'Outfit', sans-serif;
+      font-size: 0.9rem; font-weight: 600;
+      border: none; border-radius: 8px; cursor: pointer;
+      transition: 0.2s;
+    }
+    .buy-btn:hover { background: #e05a18; transform: translateY(-1px); }
+    .buy-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .loading, .error-state, .empty-state {
+      text-align: center; padding: 80px 20px;
+    }
+    .spinner {
+      width: 32px; height: 32px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading p, .empty-state p { color: var(--text-muted); font-size: 0.95rem; }
+    .error-state p { color: #f87171; }
+    .back-link {
+      display: inline-block; margin-top: 20px;
+      color: var(--accent); text-decoration: none;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+    }
+
+    @media (max-width: 600px) {
+      .container { padding: 24px 16px 60px; }
+      .creator-name { font-size: 1.4rem; }
+      .nav-links { gap: 10px; font-size: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a href="/" class="brand"><span class="brand-dot"></span> Aporaksha</a>
+    <div class="nav-links">
+      <a href="/store">Store</a>
+      <a href="/sell">Sell</a>
+      <a href="/membership">Membership</a>
+      <a href="/passport">Passport</a>
+    </div>
+  </nav>
+
+  <div class="container" id="app">
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>Loading creator profile...</p>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var handle = window.location.pathname.replace(/^\/+|\/+$/g, '').replace(/^@/, '');
+      if (!handle) { window.location.href = '/store'; return; }
+
+      var app = document.getElementById('app');
+
+      function esc(s) {
+        var d = document.createElement('div');
+        d.textContent = s || '';
+        return d.innerHTML;
+      }
+
+      function formatPrice(minor, currency) {
+        var major = (minor / 100).toFixed(2);
+        return currency === 'INR' ? '₹' + major : major + ' ' + currency;
+      }
+
+      function initials(name) {
+        return (name || '?').split(/\s+/).map(function (w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
+      }
+
+      fetch('/api/creator-commerce/creators/' + encodeURIComponent(handle))
+        .then(function (r) {
+          if (!r.ok) throw new Error('Creator not found');
+          return r.json();
+        })
+        .then(function (data) {
+          document.title = (data.displayName || handle) + ' — Aporaksha';
+
+          var avatarHtml = data.avatarUrl
+            ? '<img src="' + esc(data.avatarUrl) + '" alt="">'
+            : esc(initials(data.displayName || handle));
+
+          var offersHtml = '';
+          if (data.offers && data.offers.length) {
+            offersHtml = '<h2 class="section-title">Offers</h2><div class="offers-list">';
+            data.offers.forEach(function (o) {
+              var priceLabel = o.amountMinor === 0 ? 'Free' : formatPrice(o.amountMinor, o.currency);
+              offersHtml += '<div class="offer-card">'
+                + '<div class="offer-top"><span class="offer-title">' + esc(o.title) + '</span>'
+                + '<span class="offer-price">' + priceLabel + '</span></div>'
+                + (o.description ? '<p class="offer-desc">' + esc(o.description) + '</p>' : '')
+                + '<span class="offer-type">' + esc((o.offerType || '').replace(/_/g, ' ')) + '</span>'
+                + '</div>';
+            });
+            offersHtml += '</div>';
+          } else {
+            offersHtml = '<div class="empty-state"><p>No offers listed yet.</p></div>';
+          }
+
+          app.innerHTML = '<div class="profile-header">'
+            + '<div class="avatar-large">' + avatarHtml + '</div>'
+            + '<h1 class="creator-name">' + esc(data.displayName || handle) + '</h1>'
+            + '<p class="creator-handle">@' + esc(handle) + '</p>'
+            + (data.bio ? '<p class="creator-bio">' + esc(data.bio) + '</p>' : '')
+            + '</div>' + offersHtml;
+        })
+        .catch(function (err) {
+          app.innerHTML = '<div class="error-state">'
+            + '<p>' + esc(err.message) + '</p>'
+            + '<a href="/store" class="back-link">&larr; Back to Store</a>'
+            + '</div>';
+        });
+    })();
+  </script>
+</body>
+</html>
