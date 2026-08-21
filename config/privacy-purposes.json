@@ -1,0 +1,14 @@
+{
+  "registryVersion": "via-3ce89a8-2025-final-rules",
+  "noticeVersions": ["2025-01"],
+  "purposes": [
+    {"code":"ACCOUNT_IDENTITY","basis":"LEGAL_REVIEW_REQUIRED"},{"code":"CREATOR_ACCOUNT","basis":"LEGAL_REVIEW_REQUIRED"},
+    {"code":"CREATOR_PUBLIC_PROFILE","basis":"CONSENT"},{"code":"BUYER_ORDER","basis":"LEGAL_REVIEW_REQUIRED"},
+    {"code":"PAYMENT_PROCESSING","basis":"LEGAL_REVIEW_REQUIRED"},{"code":"BUYER_MEMBERSHIP","basis":"LEGAL_REVIEW_REQUIRED"},
+    {"code":"DIGITAL_FULFILMENT","basis":"LEGAL_REVIEW_REQUIRED"},{"code":"SESSION_BOOKING","basis":"LEGAL_REVIEW_REQUIRED"},
+    {"code":"PAID_REQUEST","basis":"LEGAL_REVIEW_REQUIRED"},{"code":"CUSTOMER_SUPPORT","basis":"LEGAL_REVIEW_REQUIRED"},
+    {"code":"WAITLIST","basis":"CONSENT"},{"code":"PRODUCT_EMAIL","basis":"CONSENT"},{"code":"MARKETING_EMAIL","basis":"CONSENT"},
+    {"code":"SECURITY_LOGGING","basis":"LEGAL_REVIEW_REQUIRED"},{"code":"FRAUD_PREVENTION","basis":"LEGAL_REVIEW_REQUIRED"},
+    {"code":"LEGAL_RECORD_RETENTION","basis":"LEGAL_REVIEW_REQUIRED"}
+  ]
+}

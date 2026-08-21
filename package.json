@@ -4,7 +4,12 @@
   "type": "module",
   "scripts": {
     "validate": "node tests/validate_commerce_lifecycle.js",
-    "validate:safe": "./scripts/backup-and-validate.sh"
+    "validate:safe": "./scripts/backup-and-validate.sh",
+    "test": "node tests/run-all.js && node --test tests/privacy.test.js",
+    "test:privacy": "node --test tests/privacy.test.js",
+    "privacy:audit": "node scripts/privacy-audit.js",
+    "privacy:retention:dry-run": "node scripts/privacy-retention.js",
+    "privacy:retention:apply": "node scripts/privacy-retention.js --apply"
   },
   "dependencies": {
     "@aws-sdk/client-kms": "^3.1073.0",

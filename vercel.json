@@ -30,6 +30,22 @@
   },
   "rewrites": [
     {
+      "source": "/@:handle",
+      "destination": "/store/creator.html?handle=:handle"
+    },
+    {
+      "source": "/store",
+      "destination": "/store/index.html"
+    },
+    {
+      "source": "/membership",
+      "destination": "/membership/index.html"
+    },
+    {
+      "source": "/api/privacy/:path*",
+      "destination": "/api/auth?privacyPath=:path*"
+    },
+    {
       "source": "/api/razorpay-config",
       "destination": "/api/payments/config"
     },

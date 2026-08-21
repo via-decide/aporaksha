@@ -9,6 +9,6 @@ Deliverables: preserve raw request body (no pre-verification mutation), validate
 
 Move all business workflows to async worker (reconciliation, subscription/order/entitlement updates, downstream events) with retries, exponential backoff, DLQ, structured logging, and failure isolation so webhook ACK remains successful even when processing fails.
 
-Add internal queue (Redis/BullMQ/SQS/Postgres/Inngest/Trigger.dev), authenticated replay endpoint (`POST /internal/webhooks/replay/:eventId`), ingestion/processing metrics dashboards, and a scheduled Razorpay reconciliation job for drift detection and repair.
+Add internal queue (Redis/BullMQ/SQS/Postgres/Inngest/Trigger.dev), authenticated replay endpoint (`POST /api/webhooks/razorpay?replay=:eventId (folded into the main handler 2026-08-19, no longer its own function)`), ingestion/processing metrics dashboards, and a scheduled Razorpay reconciliation job for drift detection and repair.
 
 Add circuit breakers and Vercel stability controls (Prisma singleton, lightweight imports, timeout budget, lazy deps); enforce principle: transport delivery is never execution success, and this boundary becomes Hanuman orchestration substrate.

@@ -409,7 +409,8 @@ async function handleSeed(req, res) {
   if (identity.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
   const ashok = await store.seedAshokIfNeeded();
   const priya = await store.seedPriyaIfNeeded();
-  return res.json({ seeded: { ashok, priya } });
+  const daxini = await store.seedDaxiniIfNeeded();
+  return res.json({ seeded: { ashok, priya, daxini } });
 }
 
 // ── Router ───────────────────────────────────────────────────────────

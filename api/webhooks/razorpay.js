@@ -23,6 +23,41 @@ function signatureMatches(expectedHex, receivedHex) {
 }
 
 /**
+ * Manual re-processing of one already-recorded webhook event, e.g. after
+ * fixing whatever made processWebhookEvent() fail the first time. Folded in
+ * here (2026-08-19, was api/internal/webhooks/replay/[id].js) to bring this
+ * project back under Vercel Hobby's 12-serverless-functions-per-deployment
+ * cap -- was its own file/function, functionally unchanged otherwise.
+ *
+ * Dispatched via `?replay=<id>` BEFORE Razorpay signature verification below,
+ * since a replay trigger is never signed by Razorpay -- it would fail that
+ * check every time if it ran through the same path.
+ *
+ * SECURITY NOTE, carried over unchanged from the original file: this has no
+ * auth of its own. The two planning docs that describe this endpoint
+ * (docs/tasks/IMPLEMENT_WEBHOOK_PIPELINE_NOW.md,
+ * docs/tasks/implement-production-webhook-ingestion-pipeline.md) both
+ * describe it as "admin-only" / "authenticated" -- that was never actually
+ * built. Left as-is rather than silently adding a new auth requirement here,
+ * since something may already call this without one; worth fixing as its
+ * own deliberate change, not a side effect of a function-count consolidation.
+ */
+async function handleReplay(req, res, id) {
+  try {
+    await initDB();
+    const db = await getDB();
+    const event = await db.get("SELECT * FROM webhook_events WHERE id = ?", [id]);
+    if (!event) return res.status(404).json({ error: "not_found" });
+    await db.run("UPDATE webhook_events SET processing_state = 'PENDING', last_error = NULL WHERE id = ?", [id]);
+    enqueue(async () => processWebhookEvent(id));
+    return res.status(200).json({ ok: true, replayed: id });
+  } catch (error) {
+    safeLog("replay_error", { id, error: error?.message || "unknown" });
+    return res.status(500).json({ error: "replay_failed" });
+  }
+}
+
+/**
  * Razorpay webhook ingestion.
  *
  * STATUS CODES ARE LOAD-BEARING. Razorpay treats any 2xx as "delivered" and
@@ -44,6 +79,7 @@ function signatureMatches(expectedHex, receivedHex) {
  */
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
+  if (req.query.replay) return handleReplay(req, res, req.query.replay);
 
   let rawBody;
   try {
