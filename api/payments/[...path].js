@@ -7,7 +7,14 @@ import { getDB } from '../../lib/db.js';
 import { initDB } from '../../lib/initDb.js';
 import { logWaitlist, WAITLIST_REASONS } from '../../lib/waitlist.js';
 
-const ALLOWED = ['https://aporaksha.com', 'https://www.aporaksha.com', 'https://viadecide.com', 'https://www.viadecide.com'];
+const ALLOWED = [
+  'https://aporaksha.com', 'https://www.aporaksha.com',
+  'https://viadecide.com', 'https://www.viadecide.com',
+  'https://daxini.space', 'https://www.daxini.space',
+  'https://daxini.xyz', 'https://www.daxini.xyz',
+  'https://hanuman.solutions', 'https://www.hanuman.solutions',
+  'https://logichub.app', 'https://www.logichub.app',
+];
 
 function cors(req, res) {
   const origin = req.headers.origin || '';
@@ -37,9 +44,13 @@ const PRODUCTS = {
   smarttag_lite_bulk:   { amount: 89900, name: 'SmartTag Lite — Bulk (5-pack)', currency: 'INR' },
 };
 
-const ACCESS_SECRET = process.env.SECRET_KEY || "zayvora_dev_access_secret";
+const ACCESS_SECRET = process.env.SECRET_KEY;
+if (!ACCESS_SECRET) {
+  console.error('[FATAL] SECRET_KEY env var is not set. JWT verification will reject all tokens.');
+}
 function verifyJWT(token) {
   try {
+    if (!ACCESS_SECRET) return { valid: false };
     const [header, body, sig] = (token || "").split(".");
     if (!header || !body || !sig) return { valid: false };
     const data = `${header}.${body}`;
@@ -136,52 +147,11 @@ async function handleCreateOrder(req, res) {
   const region     = req.headers['x-pricing-region'] || 'GLOBAL';
 
   if (!KEY_ID || !KEY_SECRET) {
-    console.log('[Razorpay Sandbox] Missing API keys. Initializing simulated sandbox gateway.');
-    const db = await getDB();
-    if (region === 'IN') {
-      const subId = `sub_mock_${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
-      if (userEmail) {
-        await db.run(
-          `UPDATE passports SET razorpay_subscription_id = ?, billing_status = ? WHERE email = ?`,
-          [subId, 'PENDING', userEmail]
-        );
-      }
-      await db.run(
-        `INSERT INTO orders (id, amount, currency, status, email, user_id) VALUES (?, ?, ?, ?, ?, ?)`,
-        [subId, product.amount, 'INR', 'awaiting_payment', userEmail || '', userId]
-      );
-      return res.status(200).json({
-        type: 'subscription',
-        subscription_id: subId,
-        amount: product.amount,
-        currency: 'INR',
-        product_name: product.name,
-        key_id: 'rzp_test_mockkey123',
-        sandbox: true
-      });
-    } else {
-      const ordId = `order_mock_${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
-      if (userEmail) {
-        await db.run(
-          `UPDATE passports SET order_id = ?, billing_status = ? WHERE email = ?`,
-          [ordId, 'PENDING', userEmail]
-        );
-      }
-      const usdAmount = Math.round(product.amount / 83);
-      await db.run(
-        `INSERT INTO orders (id, amount, currency, status, email, user_id) VALUES (?, ?, ?, ?, ?, ?)`,
-        [ordId, usdAmount, 'USD', 'awaiting_payment', userEmail || '', userId]
-      );
-      return res.status(200).json({
-        type: 'order',
-        order_id: ordId,
-        amount: usdAmount,
-        currency: 'USD',
-        product_name: product.name,
-        key_id: 'rzp_test_mockkey123',
-        sandbox: true
-      });
-    }
+    console.error('[FATAL] RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET is not configured.');
+    return res.status(503).json({
+      error: 'Payment gateway is not configured. Contact support.',
+      code: 'GATEWAY_NOT_CONFIGURED'
+    });
   }
 
   try {
@@ -304,57 +274,6 @@ async function handleVerify(req, res) {
     return res.status(401).json({ error: 'Unauthorized. Passport authentication required.' });
   }
   const userId = verification.payload.userId;
-
-  const isMock = (razorpay_order_id && razorpay_order_id.startsWith('order_mock_')) ||
-                 (razorpay_subscription_id && razorpay_subscription_id.startsWith('sub_mock_'));
-
-  if (isMock && process.env.NODE_ENV === 'development') {
-    const id = razorpay_order_id || razorpay_subscription_id;
-    console.log('[Razorpay Sandbox] Verifying mock payment signature successfully');
-    try {
-      await initDB();
-      const db = await getDB();
-      await db.run(
-        `INSERT INTO orders (id, amount, currency, status, payment_id, verified, email, user_id)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [id, razorpay_subscription_id ? 9900 : 1200, razorpay_subscription_id ? 'INR' : 'USD', 'paid', razorpay_payment_id, 1, email || verification.payload.email, userId]
-      );
-
-      if (razorpay_subscription_id) {
-        await db.run(
-          `UPDATE passports SET billing_status = ? WHERE razorpay_subscription_id = ?`,
-          ['ACTIVE', razorpay_subscription_id]
-        );
-      } else {
-        await db.run(
-          `UPDATE passports SET billing_status = ? WHERE order_id = ?`,
-          ['ACTIVE', razorpay_order_id]
-        );
-      }
-
-      await db.run(
-        `INSERT INTO events (type, payload) VALUES (?, ?)`,
-        ['payment_completed', JSON.stringify({
-          razorpay_order_id: razorpay_order_id || null,
-          razorpay_subscription_id: razorpay_subscription_id || null,
-          razorpay_payment_id,
-          product_id,
-          user_id: userId
-        })]
-      );
-    } catch (dbErr) {
-      console.error("[Razorpay Sandbox] Failed to save order to DB:", dbErr);
-    }
-
-    return res.status(200).json({
-      success:    true,
-      payment_id: razorpay_payment_id,
-      order_id:   razorpay_order_id || null,
-      subscription_id: razorpay_subscription_id || null,
-      product_id,
-      message:    'Payment verified (Sandbox). Access provisioned successfully.',
-    });
-  }
 
   const KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
   if (!KEY_SECRET) {

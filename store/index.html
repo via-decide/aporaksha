@@ -1,6 +1,431 @@
-<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Creators — Aporaksha</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Space+Grotesk:wght@400;600&display=swap">
-<style>body{margin:0;background:#0b0c10;color:#f5f5f5;font:16px Outfit,sans-serif}.wrap{max-width:1050px;margin:auto;padding:64px 24px}h1{font:700 46px 'Space Grotesk';margin:0 0 10px}.accent{color:#ff671f}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin-top:42px}.card{padding:25px;border:1px solid #292b33;border-radius:16px;background:#121319}.card h2{margin:0 0 10px}.card p{color:#aaa;line-height:1.55;min-height:74px}.card a{display:inline-block;color:#fff;background:#ff671f;text-decoration:none;border-radius:8px;padding:10px 17px;font-weight:700}</style></head>
-<body><main class="wrap"><h1>Meet our <span class="accent">creators</span></h1><p>Research, expertise, and direct access from independent builders.</p><section class="grid" id="creators"></section></main>
-<script>const esc=value=>String(value??'').replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));fetch('/api/creator-commerce/creators').then(r=>r.json()).then(({creators})=>{document.querySelector('#creators').innerHTML=creators.map(c=>`<article class="card"><h2>${esc(c.displayName)}</h2><p>${esc(c.bio)}</p><a href="/@${encodeURIComponent(c.handle)}">View offers →</a></article>`).join('')})</script></body></html>
+<title>Store — Aporaksha</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;500;600&family=Space+Grotesk:wght@500;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #0b0c10;
+    --card-bg: rgba(14, 14, 20, 0.85);
+    --border: rgba(255, 255, 255, 0.06);
+    --accent: #ff671f;
+    --accent-glow: rgba(255, 103, 31, 0.25);
+    --text-primary: #f0f0f2;
+    --text-secondary: rgba(240, 240, 242, 0.5);
+    --text-tertiary: rgba(240, 240, 242, 0.3);
+    --font-body: 'Outfit', sans-serif;
+    --font-heading: 'Space Grotesk', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --radius: 12px;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Nav */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(11, 12, 16, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .nav-brand {
+    font-family: var(--font-heading);
+    font-size: 1.3rem;
+    color: #fff;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 800;
+  }
+
+  .nav-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--accent);
+    flex-shrink: 0;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 16px;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+  }
+
+  .nav-links a {
+    text-decoration: none;
+    color: var(--text-secondary);
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover {
+    color: var(--text-primary);
+  }
+
+  .nav-links a.active {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* Hero */
+  .hero {
+    text-align: center;
+    padding: 72px 24px 48px;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .hero h1 {
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, #fff 60%, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p {
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+
+  /* Grid */
+  .grid-container {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  .creators-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+
+  /* Card */
+  .creator-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    cursor: pointer;
+    transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .creator-card:hover {
+    border-color: rgba(255, 103, 31, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 103, 31, 0.1);
+  }
+
+  .avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--accent), #e04800);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #fff;
+  }
+
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .card-info {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .card-name {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 2px;
+    color: var(--text-primary);
+  }
+
+  .card-handle {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .card-bio {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* States */
+  .state-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 24px;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .state-text {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--text-tertiary);
+  }
+
+  .empty-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 2px dashed var(--text-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--text-tertiary);
+    margin-bottom: 4px;
+  }
+
+  .empty-heading {
+    font-family: var(--font-heading);
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .empty-sub {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+  }
+
+  .error-box {
+    background: rgba(255, 60, 60, 0.08);
+    border: 1px solid rgba(255, 60, 60, 0.2);
+    border-radius: var(--radius);
+    padding: 20px 28px;
+    max-width: 420px;
+  }
+
+  .error-title {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1rem;
+    color: #ff5c5c;
+    margin-bottom: 6px;
+  }
+
+  .error-msg {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  .retry-btn {
+    margin-top: 14px;
+    background: transparent;
+    border: 1px solid rgba(255, 92, 92, 0.3);
+    color: #ff5c5c;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    padding: 8px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .retry-btn:hover {
+    background: rgba(255, 60, 60, 0.1);
+  }
+
+  /* Mobile */
+  @media (max-width: 600px) {
+    .nav { padding: 10px 16px; }
+    .nav-links { gap: 12px; font-size: 0.78rem; }
+    .hero { padding: 48px 16px 32px; }
+    .grid-container { padding: 0 16px 60px; }
+    .creators-grid { grid-template-columns: 1fr; gap: 14px; }
+    .creator-card { padding: 18px; }
+  }
+</style>
+
+<nav class="nav">
+  <a href="/" class="nav-brand">
+    <span class="nav-dot"></span> Aporaksha
+  </a>
+  <div class="nav-links">
+    <a href="/store" class="active">Store</a>
+    <a href="/sell">Sell</a>
+    <a href="/membership">Membership</a>
+    <a href="/passport">Passport</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <h1>Creator Marketplace</h1>
+  <p>Browse creators and their offers on Aporaksha</p>
+</section>
+
+<div class="grid-container">
+  <div id="content"></div>
+</div>
+
+<script>
+  (function () {
+    var root = document.getElementById('content');
+
+    function getInitials(name) {
+      if (!name) return '?';
+      var parts = name.trim().split(/\s+/);
+      if (parts.length === 1) return parts[0][0].toUpperCase();
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+
+    function renderLoading() {
+      root.innerHTML =
+        '<div class="state-container">' +
+          '<div class="spinner"></div>' +
+          '<div class="state-text">Loading creators...</div>' +
+        '</div>';
+    }
+
+    function renderError(msg) {
+      root.innerHTML =
+        '<div class="state-container">' +
+          '<div class="error-box">' +
+            '<div class="error-title">Something went wrong</div>' +
+            '<div class="error-msg">' + escapeHtml(msg) + '</div>' +
+            '<button class="retry-btn" id="retry-btn">Try again</button>' +
+          '</div>' +
+        '</div>';
+      document.getElementById('retry-btn').addEventListener('click', loadCreators);
+    }
+
+    function renderEmpty() {
+      root.innerHTML =
+        '<div class="state-container">' +
+          '<div class="empty-icon">+</div>' +
+          '<div class="empty-heading">No creators yet</div>' +
+          '<div class="empty-sub">Be the first to sell!</div>' +
+        '</div>';
+    }
+
+    function renderCreators(creators) {
+      var html = '<div class="creators-grid">';
+      for (var i = 0; i < creators.length; i++) {
+        var c = creators[i];
+        var avatarContent;
+        if (c.avatarUrl) {
+          avatarContent = '<img src="' + escapeAttr(c.avatarUrl) + '" alt="' + escapeAttr(c.displayName) + '">';
+        } else {
+          avatarContent = getInitials(c.displayName);
+        }
+        html +=
+          '<a class="creator-card" href="/@' + escapeAttr(c.handle) + '">' +
+            '<div class="avatar">' + avatarContent + '</div>' +
+            '<div class="card-info">' +
+              '<div class="card-name">' + escapeHtml(c.displayName || c.handle) + '</div>' +
+              '<div class="card-handle">@' + escapeHtml(c.handle) + '</div>' +
+              (c.bio ? '<div class="card-bio">' + escapeHtml(c.bio) + '</div>' : '') +
+            '</div>' +
+          '</a>';
+      }
+      html += '</div>';
+      root.innerHTML = html;
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function escapeAttr(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function loadCreators() {
+      renderLoading();
+      fetch('/api/creator-commerce/creators')
+        .then(function (res) {
+          if (!res.ok) throw new Error('Server returned ' + res.status);
+          return res.json();
+        })
+        .then(function (data) {
+          var list = data.creators || [];
+          if (list.length === 0) {
+            renderEmpty();
+          } else {
+            renderCreators(list);
+          }
+        })
+        .catch(function (err) {
+          renderError(err.message || 'Failed to load creators');
+        });
+    }
+
+    loadCreators();
+  })();
+</script>

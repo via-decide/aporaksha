@@ -1,17 +1,373 @@
-<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Creator — Aporaksha</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Outfit:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap">
-<style>body{margin:0;background:#0b0c10;color:#f7f7f7;font:16px Outfit,sans-serif}.wrap{max-width:920px;margin:auto;padding:55px 22px}.back{color:#ff671f;text-decoration:none}.hero{padding:45px 0 30px;border-bottom:1px solid #292b33}.hero h1{font:700 48px 'Space Grotesk';margin:10px 0}.hero p,.desc{color:#aaa;line-height:1.6}.grid{display:grid;gap:16px;margin-top:30px}.offer{border:1px solid #292b33;background:#121319;border-radius:16px;padding:24px}.row{display:flex;gap:20px;align-items:start;justify-content:space-between}.offer h2{margin:0 0 8px}.price{color:#ff671f;font:600 17px 'JetBrains Mono';white-space:nowrap}.buy{border:0;border-radius:8px;background:#ff671f;color:white;padding:11px 20px;font:700 15px Outfit;cursor:pointer}.buyer{display:none;grid-template-columns:1fr 1fr auto;gap:10px;margin-top:18px}.buyer.open{display:grid}.buyer input{min-width:0;border:1px solid #393b45;background:#0b0c10;color:white;border-radius:8px;padding:11px}.confirmation{background:#102719;border:1px solid #238447;color:#9aefb2;border-radius:12px;padding:18px;margin:24px 0}.error{color:#ff9470;margin-top:12px}@media(max-width:620px){.buyer{grid-template-columns:1fr}.hero h1{font-size:38px}}</style></head>
-<body><main class="wrap"><a class="back" href="/store">← All creators</a><header class="hero" id="hero"></header><div id="notice"></div><section class="grid" id="offers"></section></main>
-<script>
-const esc=value=>String(value??'').replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
-const handle=new URLSearchParams(location.search).get('handle')||location.pathname.slice(2);let creator;
-function tokenProfile(){const token=localStorage.getItem('access_token');if(!token)return {};try{const p=JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));return{name:p.name||p.displayName||'',email:p.email||''}}catch{return {}}}
-function loadRazorpay(){if(window.Razorpay)return Promise.resolve();return new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://checkout.razorpay.com/v1/checkout.js';script.onload=resolve;script.onerror=reject;document.body.appendChild(script)})}
-function confirmed(title){document.querySelector('#notice').innerHTML=`<div class="confirmation"><strong>Confirmed!</strong> Your order for ${esc(title)} is complete. Check your email for details.</div>`;scrollTo({top:0,behavior:'smooth'})}
-async function purchase(offer,form){const name=form.querySelector('[name=name]').value.trim(),email=form.querySelector('[name=email]').value.trim();const button=form.querySelector('button');button.disabled=true;button.textContent='Please wait…';
- const order=await fetch('/api/creator-commerce/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({creatorHandle:creator.handle,offerId:offer.offerId,buyerName:name,buyerEmail:email,idempotencyKey:`${offer.offerId}-${Date.now()}`})}).then(r=>r.json());
- if(order.amountMinor===0){confirmed(offer.title);return}const config=await fetch('/api/creator-commerce/config').then(r=>r.json());await loadRazorpay();
- new Razorpay({key:config.razorpayKeyId,amount:order.amountMinor,currency:order.currency,order_id:order.razorpayOrderId,name:creator.displayName,description:offer.title,prefill:{name,email},handler:async response=>{await fetch('/api/creator-commerce/payments/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderId:order.orderId,razorpayOrderId:order.razorpayOrderId,razorpayPaymentId:response.razorpay_payment_id,razorpaySignature:response.razorpay_signature})});confirmed(offer.title)}}).open();button.disabled=false;button.textContent='Continue';}
-fetch(`/api/creator-commerce/creators/${encodeURIComponent(handle)}`).then(r=>r.json()).then(data=>{creator=data;document.title=`${data.displayName} — Aporaksha`;document.querySelector('#hero').innerHTML=`<h1>${esc(data.displayName)}</h1><p>${esc(data.bio)}</p>`;const profile=tokenProfile();document.querySelector('#offers').innerHTML=data.offers.map((o,i)=>`<article class="offer"><div class="row"><div><h2>${esc(o.title)}</h2><div class="desc">${esc(o.description)}</div></div><div class="price">${o.amountMinor===0?'Free':new Intl.NumberFormat('en-IN',{style:'currency',currency:o.currency,maximumFractionDigits:0}).format(o.amountMinor/100)}</div></div><button class="buy" data-buy="${i}">${o.amountMinor===0?'Book free':'Buy'}</button><form class="buyer" data-form="${i}"><input name="name" aria-label="Your name" placeholder="Your name" value="${esc(profile.name)}" required><input name="email" type="email" aria-label="Email address" placeholder="Email address" value="${esc(profile.email)}" required><button class="buy" type="submit">Continue</button></form></article>`).join('');document.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>document.querySelector(`[data-form="${b.dataset.buy}"]`).classList.toggle('open'));document.querySelectorAll('form').forEach(f=>f.onsubmit=e=>{e.preventDefault();purchase(data.offers[Number(f.dataset.form)],f)})});
-</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Creator — Aporaksha</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0c10;
+      --card-bg: rgba(14, 14, 20, 0.85);
+      --border: rgba(255, 255, 255, 0.06);
+      --border-hover: rgba(255, 255, 255, 0.16);
+      --text: #f0f0f2;
+      --text-muted: rgba(240, 240, 242, 0.5);
+      --accent: #ff671f;
+      --accent-dim: rgba(255, 103, 31, 0.12);
+      --green: #22c55e;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Outfit', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(11, 12, 16, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .brand {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.3rem; color: #fff; text-decoration: none;
+      display: flex; align-items: center; gap: 8px; font-weight: 800;
+    }
+    .brand-dot {
+      width: 8px; height: 8px; background: var(--accent);
+      border-radius: 50%; box-shadow: 0 0 10px var(--accent);
+    }
+    .nav-links {
+      display: flex; gap: 16px;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+    }
+    .nav-links a { color: var(--text-muted); text-decoration: none; transition: 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+    .container { max-width: 680px; margin: 0 auto; padding: 40px 20px 80px; }
+
+    .profile-header {
+      text-align: center; margin-bottom: 40px;
+    }
+    .avatar-large {
+      width: 96px; height: 96px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #6366f1);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Space Grotesk', sans-serif; font-size: 2.2rem;
+      font-weight: 700; color: #fff; margin: 0 auto 16px;
+      box-shadow: 0 8px 32px rgba(255, 103, 31, 0.2);
+    }
+    .avatar-large img {
+      width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
+    }
+    .creator-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.8rem; font-weight: 700; margin-bottom: 4px;
+    }
+    .creator-handle {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem; color: var(--accent); margin-bottom: 12px;
+    }
+    .creator-bio {
+      font-size: 1rem; color: var(--text-muted);
+      max-width: 480px; margin: 0 auto; line-height: 1.6;
+    }
+
+    .section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.2rem; font-weight: 700; margin-bottom: 16px;
+      padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    }
+    .offers-list { display: flex; flex-direction: column; gap: 14px; }
+    .offer-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 24px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .offer-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+    }
+    .offer-top {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; gap: 16px; margin-bottom: 8px;
+    }
+    .offer-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.1rem; font-weight: 600;
+    }
+    .offer-price {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1rem; font-weight: 500;
+      color: var(--green); white-space: nowrap;
+    }
+    .offer-desc {
+      font-size: 0.9rem; color: var(--text-muted);
+      line-height: 1.5; margin-bottom: 14px;
+    }
+    .offer-type {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem; color: var(--accent);
+      text-transform: uppercase; letter-spacing: 0.05em;
+      padding: 3px 10px; border-radius: 6px;
+      background: var(--accent-dim); display: inline-block;
+    }
+    .buy-btn {
+      margin-top: 14px; display: inline-block;
+      padding: 10px 24px; background: var(--accent);
+      color: #fff; font-family: 'Outfit', sans-serif;
+      font-size: 0.9rem; font-weight: 600;
+      border: none; border-radius: 8px; cursor: pointer;
+      transition: 0.2s;
+    }
+    .buy-btn:hover { background: #e05a18; transform: translateY(-1px); }
+    .buy-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .loading, .error-state, .empty-state {
+      text-align: center; padding: 80px 20px;
+    }
+    .spinner {
+      width: 32px; height: 32px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading p, .empty-state p { color: var(--text-muted); font-size: 0.95rem; }
+    .error-state p { color: #f87171; }
+    .back-link {
+      display: inline-block; margin-top: 20px;
+      color: var(--accent); text-decoration: none;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+    }
+
+    @media (max-width: 600px) {
+      .container { padding: 24px 16px 60px; }
+      .creator-name { font-size: 1.4rem; }
+      .nav-links { gap: 10px; font-size: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a href="/" class="brand"><span class="brand-dot"></span> Aporaksha</a>
+    <div class="nav-links">
+      <a href="/store">Store</a>
+      <a href="/sell">Sell</a>
+      <a href="/membership">Membership</a>
+      <a href="/passport">Passport</a>
+    </div>
+  </nav>
+
+  <div class="container" id="app">
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>Loading creator profile...</p>
+    </div>
+  </div>
+
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script>
+    (function () {
+      var handle = window.location.pathname.replace(/^\/+|\/+$/g, '').replace(/^@/, '');
+      if (!handle) { window.location.href = '/store'; return; }
+
+      var app = document.getElementById('app');
+      var rzpKeyId = '';
+      var creatorData = null;
+
+      function esc(s) {
+        var d = document.createElement('div');
+        d.textContent = s || '';
+        return d.innerHTML;
+      }
+
+      function formatPrice(minor, currency) {
+        var major = (minor / 100).toFixed(2);
+        return currency === 'INR' ? '₹' + major : major + ' ' + currency;
+      }
+
+      function initials(name) {
+        return (name || '?').split(/\s+/).map(function (w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
+      }
+
+      function getToken() {
+        return localStorage.getItem('access_token') || '';
+      }
+
+      function showMsg(id, text, isError) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.innerHTML = '<p style="color:' + (isError ? '#f87171' : 'var(--green)') + ';font-size:0.9rem;margin-top:8px;">' + esc(text) + '</p>';
+      }
+
+      function buyOffer(offer) {
+        var token = getToken();
+        if (!token) {
+          window.location.href = '/passport?redirect=' + encodeURIComponent(window.location.pathname);
+          return;
+        }
+
+        var btnId = 'buy-' + offer.offerId;
+        var msgId = 'msg-' + offer.offerId;
+        var btn = document.getElementById(btnId);
+        if (btn) btn.disabled = true;
+        showMsg(msgId, 'Creating order...', false);
+
+        var idempotencyKey = handle + '-' + offer.offerId + '-' + Date.now();
+
+        fetch('/api/creator-commerce/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({
+            creatorHandle: handle,
+            offerId: offer.offerId,
+            buyerName: '',
+            buyerEmail: '',
+            idempotencyKey: idempotencyKey
+          })
+        })
+        .then(function (r) {
+          if (!r.ok) return r.json().then(function (e) { throw new Error(e.error || 'Order failed'); });
+          return r.json();
+        })
+        .then(function (order) {
+          if (order.free || order.status === 'free_confirmed') {
+            showMsg(msgId, 'Confirmed! Redirecting...', false);
+            setTimeout(function () { window.location.reload(); }, 1500);
+            return;
+          }
+
+          if (!rzpKeyId) {
+            showMsg(msgId, 'Payment not configured. Contact creator.', true);
+            if (btn) btn.disabled = false;
+            return;
+          }
+
+          var options = {
+            key: rzpKeyId,
+            amount: order.amountMinor,
+            currency: order.currency,
+            name: creatorData ? (creatorData.displayName || handle) : handle,
+            description: offer.title,
+            order_id: order.razorpayOrderId,
+            handler: function (response) {
+              showMsg(msgId, 'Verifying payment...', false);
+              fetch('/api/creator-commerce/payments/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({
+                  orderId: order.orderId,
+                  razorpayOrderId: response.razorpay_order_id,
+                  razorpayPaymentId: response.razorpay_payment_id,
+                  razorpaySignature: response.razorpay_signature
+                })
+              })
+              .then(function (r) { return r.json(); })
+              .then(function (result) {
+                if (result.status === 'verified' || result.status === 'already_verified') {
+                  showMsg(msgId, 'Payment successful!', false);
+                } else {
+                  showMsg(msgId, 'Verification failed. Contact support.', true);
+                }
+                if (btn) btn.disabled = false;
+              })
+              .catch(function () {
+                showMsg(msgId, 'Verification error. Contact support.', true);
+                if (btn) btn.disabled = false;
+              });
+            },
+            modal: {
+              ondismiss: function () { if (btn) btn.disabled = false; showMsg(msgId, '', false); }
+            },
+            theme: { color: '#ff671f' }
+          };
+
+          var rzp = new Razorpay(options);
+          rzp.on('payment.failed', function (resp) {
+            showMsg(msgId, 'Payment failed: ' + (resp.error.description || 'Try again'), true);
+            if (btn) btn.disabled = false;
+          });
+          rzp.open();
+        })
+        .catch(function (err) {
+          showMsg(msgId, err.message || 'Order failed', true);
+          if (btn) btn.disabled = false;
+        });
+      }
+
+      fetch('/api/creator-commerce/config')
+        .then(function (r) { return r.ok ? r.json() : {}; })
+        .then(function (cfg) { rzpKeyId = cfg.razorpayKeyId || ''; })
+        .catch(function () {});
+
+      fetch('/api/creator-commerce/creators/' + encodeURIComponent(handle))
+        .then(function (r) {
+          if (!r.ok) throw new Error('Creator not found');
+          return r.json();
+        })
+        .then(function (data) {
+          creatorData = data;
+          document.title = (data.displayName || handle) + ' — Aporaksha';
+
+          var avatarHtml = data.avatarUrl
+            ? '<img src="' + esc(data.avatarUrl) + '" alt="">'
+            : esc(initials(data.displayName || handle));
+
+          var offersHtml = '';
+          if (data.offers && data.offers.length) {
+            offersHtml = '<h2 class="section-title">Offers</h2><div class="offers-list">';
+            data.offers.forEach(function (o, i) {
+              var priceLabel = o.amountMinor === 0 ? 'Free' : formatPrice(o.amountMinor, o.currency);
+              var btnLabel = o.amountMinor === 0 ? 'Get Free' : 'Buy — ' + priceLabel;
+              var btnId = 'buy-' + (o.offerId || o.offer_id || i);
+              var msgId = 'msg-' + (o.offerId || o.offer_id || i);
+              offersHtml += '<div class="offer-card">'
+                + '<div class="offer-top"><span class="offer-title">' + esc(o.title) + '</span>'
+                + '<span class="offer-price">' + priceLabel + '</span></div>'
+                + (o.description ? '<p class="offer-desc">' + esc(o.description) + '</p>' : '')
+                + '<span class="offer-type">' + esc((o.offerType || '').replace(/_/g, ' ')) + '</span>'
+                + '<button class="buy-btn" id="' + esc(btnId) + '" data-idx="' + i + '">' + esc(btnLabel) + '</button>'
+                + '<div id="' + esc(msgId) + '"></div>'
+                + '</div>';
+            });
+            offersHtml += '</div>';
+          } else {
+            offersHtml = '<div class="empty-state"><p>No offers listed yet.</p></div>';
+          }
+
+          app.innerHTML = '<div class="profile-header">'
+            + '<div class="avatar-large">' + avatarHtml + '</div>'
+            + '<h1 class="creator-name">' + esc(data.displayName || handle) + '</h1>'
+            + '<p class="creator-handle">@' + esc(handle) + '</p>'
+            + (data.bio ? '<p class="creator-bio">' + esc(data.bio) + '</p>' : '')
+            + '</div>' + offersHtml;
+
+          if (data.offers && data.offers.length) {
+            data.offers.forEach(function (o, i) {
+              var id = o.offerId || o.offer_id || i;
+              var btn = document.getElementById('buy-' + id);
+              if (btn) {
+                btn.addEventListener('click', function () { buyOffer({ offerId: o.offerId || o.offer_id, title: o.title, amountMinor: o.amountMinor }); });
+              }
+            });
+          }
+        })
+        .catch(function (err) {
+          app.innerHTML = '<div class="error-state">'
+            + '<p>' + esc(err.message) + '</p>'
+            + '<a href="/store" class="back-link">&larr; Back to Store</a>'
+            + '</div>';
+        });
+    })();
+  </script>
+</body>
+</html>

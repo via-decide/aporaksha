@@ -1,4 +1,423 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Membership — Aporaksha</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Space+Grotesk:wght@600;700&display=swap"><style>body{margin:0;background:#0b0c10;color:#fff;font:17px Outfit,sans-serif}.card{max-width:570px;margin:12vh auto;padding:44px;border:1px solid #30323a;border-radius:20px;background:#121319}h1{font:700 44px 'Space Grotesk';margin:0}.accent{color:#ff671f}p{color:#aaa;line-height:1.6}button{background:#ff671f;color:#fff;border:0;border-radius:9px;padding:13px 22px;font-weight:700;cursor:pointer}</style></head><body><main class="card"><h1>Become a <span class="accent">member</span></h1><p>Support independent intelligence and unlock the complete Aporaksha membership library.</p><button id="subscribe">Subscribe</button><p id="status"></p></main><script>
-const token=localStorage.getItem('access_token');function payload(){try{return JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')))}catch{return {}}}function loadRazorpay(){if(window.Razorpay)return Promise.resolve();return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://checkout.razorpay.com/v1/checkout.js';s.onload=resolve;s.onerror=reject;document.body.appendChild(s)})}
-document.querySelector('#subscribe').onclick=async()=>{const status=document.querySelector('#status');status.textContent='Opening secure checkout…';const data=await fetch('/api/membership/subscribe',{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({email:payload().email})}).then(r=>r.json());if(data.shortUrl){window.location.href=data.shortUrl;return}if(data.subscriptionId){const config=await fetch('/api/creator-commerce/config').then(r=>r.json());await loadRazorpay();new Razorpay({key:config.razorpayKeyId,subscription_id:data.subscriptionId,name:'Aporaksha Membership',handler:()=>location.reload()}).open()}};
-</script></body></html>
+<title>Membership — Aporaksha</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@400;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #030508;
+    color: #f0f0f2;
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .page-wrap {
+    max-width: 580px;
+    margin: 0 auto;
+    padding: 48px 20px 80px;
+  }
+
+  .card {
+    background: rgba(10, 13, 18, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    padding: 36px 32px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .card-heading {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+
+  .price {
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: #ff671f;
+    margin-bottom: 28px;
+    letter-spacing: -0.03em;
+  }
+
+  .price span {
+    font-size: 1rem;
+    font-weight: 600;
+    color: rgba(240, 240, 242, 0.5);
+  }
+
+  .benefits {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+
+  .benefits li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.95rem;
+    color: rgba(240, 240, 242, 0.85);
+    line-height: 1.4;
+  }
+
+  .benefits li .check {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: rgba(34, 197, 94, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .benefits li .check svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .btn-primary {
+    display: block;
+    width: 100%;
+    padding: 14px 24px;
+    background: #ff671f;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+
+  .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .btn-cancel {
+    display: block;
+    width: 100%;
+    padding: 12px 24px;
+    background: transparent;
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  .btn-cancel:hover { background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.4); }
+  .btn-cancel:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .badge-active {
+    background: rgba(34, 197, 94, 0.12);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.25);
+  }
+
+  .badge-cancelled {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+  }
+
+  .status-text {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+
+  .detail-row {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    color: rgba(240, 240, 242, 0.5);
+    margin-bottom: 8px;
+    line-height: 1.5;
+  }
+
+  .separator {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    margin: 24px 0;
+  }
+
+  .spinner-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 64px 0;
+  }
+
+  .spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #ff671f;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-msg {
+    text-align: center;
+    color: #ef4444;
+    font-size: 0.9rem;
+    padding: 12px 0;
+  }
+
+  .success-msg {
+    text-align: center;
+    color: #22c55e;
+    font-size: 0.9rem;
+    padding: 12px 0;
+  }
+
+  .nav-links a:hover { color: rgba(240, 240, 242, 0.8) !important; }
+  .nav-links a[href="/membership"]:hover { color: #ff671f !important; }
+
+  @media (max-width: 480px) {
+    .card { padding: 28px 20px; }
+    .card-heading { font-size: 1.35rem; }
+    .price { font-size: 2rem; }
+    .page-wrap { padding: 32px 16px 60px; }
+  }
+</style>
+
+<nav style="position:sticky;top:0;z-index:100;background:rgba(11,12,16,0.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.06);padding:12px 24px;display:flex;justify-content:space-between;align-items:center;">
+  <a href="/" style="font-family:'Syne',sans-serif;font-size:1.2rem;color:#fff;text-decoration:none;display:flex;align-items:center;gap:8px;font-weight:800;">
+    <span style="width:8px;height:8px;background:#ff671f;border-radius:50%;box-shadow:0 0 10px #ff671f;display:inline-block;"></span> Aporaksha
+  </a>
+  <div class="nav-links" style="display:flex;gap:16px;font-family:'DM Mono',monospace;font-size:0.85rem;">
+    <a href="/store" style="color:rgba(240,240,242,0.5);text-decoration:none;">Store</a>
+    <a href="/sell" style="color:rgba(240,240,242,0.5);text-decoration:none;">Sell</a>
+    <a href="/membership" style="color:#ff671f;font-weight:700;text-decoration:none;">Membership</a>
+    <a href="/passport" style="color:rgba(240,240,242,0.5);text-decoration:none;">Passport</a>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <div id="app"></div>
+</div>
+
+<script>
+(function() {
+  const app = document.getElementById('app');
+  const token = localStorage.getItem('access_token');
+
+  const checkSvg = '<svg viewBox="0 0 14 14" fill="none"><path d="M2.5 7.5L5.5 10.5L11.5 4" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  const benefits = [
+    'Access all digital creator content',
+    'Priority support from creators',
+    'Early access to new offers',
+    'Support the creator ecosystem'
+  ];
+
+  function benefitsList() {
+    return '<ul class="benefits">' +
+      benefits.map(function(b) {
+        return '<li><span class="check">' + checkSvg + '</span>' + escapeHtml(b) + '</li>';
+      }).join('') +
+      '</ul>';
+  }
+
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function showLoading() {
+    app.innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>';
+  }
+
+  function showError(msg) {
+    app.innerHTML = '<div class="card"><p class="error-msg">' + escapeHtml(msg) + '</p></div>';
+  }
+
+  function renderPitch(loggedIn) {
+    var btnHtml;
+    if (loggedIn) {
+      btnHtml = '<button class="btn-primary" id="subscribeBtn">Subscribe &mdash; &#8377;29/month</button>' +
+                '<div id="actionMsg"></div>';
+    } else {
+      btnHtml = '<a class="btn-primary" href="/passport">Sign in to Subscribe</a>';
+    }
+
+    app.innerHTML =
+      '<div class="card">' +
+        '<h1 class="card-heading">Aporaksha Membership</h1>' +
+        '<p class="price">&#8377;29<span>/month</span></p>' +
+        benefitsList() +
+        btnHtml +
+      '</div>';
+
+    if (loggedIn) {
+      document.getElementById('subscribeBtn').addEventListener('click', handleSubscribe);
+    }
+  }
+
+  function renderActive(data) {
+    app.innerHTML =
+      '<div class="card">' +
+        '<span class="badge badge-active">Active</span>' +
+        '<p class="status-text">Your membership is active</p>' +
+        '<p class="detail-row">Paid through: ' + escapeHtml(data.paidThrough || '---') + '</p>' +
+        '<p class="detail-row">Email: ' + escapeHtml(data.email || '---') + '</p>' +
+        '<hr class="separator">' +
+        '<button class="btn-cancel" id="cancelBtn">Cancel Membership</button>' +
+        '<div id="actionMsg"></div>' +
+      '</div>';
+
+    document.getElementById('cancelBtn').addEventListener('click', handleCancel);
+  }
+
+  function renderCancelled(data) {
+    app.innerHTML =
+      '<div class="card">' +
+        '<span class="badge badge-cancelled">Cancelled</span>' +
+        '<p class="status-text">Your membership has been cancelled</p>' +
+        '<p class="detail-row">Access until: ' + escapeHtml(data.paidThrough || '---') + '</p>' +
+        '<hr class="separator">' +
+        '<button class="btn-primary" id="resubBtn">Resubscribe</button>' +
+        '<div id="actionMsg"></div>' +
+      '</div>';
+
+    document.getElementById('resubBtn').addEventListener('click', handleSubscribe);
+  }
+
+  function handleSubscribe() {
+    var btn = document.getElementById('subscribeBtn') || document.getElementById('resubBtn');
+    var msgEl = document.getElementById('actionMsg');
+    if (btn) btn.disabled = true;
+    msgEl.innerHTML = '<p class="success-msg">Subscription starting...</p>';
+
+    fetch('/api/membership/subscribe', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(function(res) {
+      if (!res.ok) throw new Error('Subscription request failed');
+      return res.json();
+    })
+    .then(function(data) {
+      if (data.already_active) {
+        msgEl.innerHTML = '<p class="success-msg">Already active!</p>';
+        setTimeout(function() { window.location.reload(); }, 1000);
+        return;
+      }
+      if (data.shortUrl) {
+        msgEl.innerHTML = '<p class="success-msg">Redirecting to payment...</p>';
+        setTimeout(function() { window.location.href = data.shortUrl; }, 500);
+        return;
+      }
+      msgEl.innerHTML = '<p class="success-msg">Subscription created! Redirecting...</p>';
+      setTimeout(function() { window.location.reload(); }, 2000);
+    })
+    .catch(function(err) {
+      msgEl.innerHTML = '<p class="error-msg">' + escapeHtml(err.message || 'Something went wrong') + '</p>';
+      if (btn) btn.disabled = false;
+    });
+  }
+
+  function handleCancel() {
+    if (!confirm('Are you sure you want to cancel your membership? You will retain access until the end of your billing period.')) {
+      return;
+    }
+
+    var btn = document.getElementById('cancelBtn');
+    var msgEl = document.getElementById('actionMsg');
+    if (btn) btn.disabled = true;
+
+    fetch('/api/membership/cancel', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(function(res) {
+      if (!res.ok) throw new Error('Cancel request failed');
+      return res.json();
+    })
+    .then(function(data) {
+      msgEl.innerHTML = '<p class="success-msg">Membership cancelled.</p>';
+      setTimeout(function() { window.location.reload(); }, 1500);
+    })
+    .catch(function(err) {
+      msgEl.innerHTML = '<p class="error-msg">' + escapeHtml(err.message || 'Something went wrong') + '</p>';
+      if (btn) btn.disabled = false;
+    });
+  }
+
+  // --- Init ---
+
+  if (!token) {
+    renderPitch(false);
+    return;
+  }
+
+  showLoading();
+
+  fetch('/api/membership/status', {
+    method: 'GET',
+    headers: { 'Authorization': 'Bearer ' + token }
+  })
+  .then(function(res) {
+    if (!res.ok) throw new Error('Failed to load membership status');
+    return res.json();
+  })
+  .then(function(data) {
+    switch (data.status) {
+      case 'active':
+        renderActive(data);
+        break;
+      case 'cancelled':
+        renderCancelled(data);
+        break;
+      case 'none':
+      default:
+        renderPitch(true);
+        break;
+    }
+  })
+  .catch(function(err) {
+    showError(err.message || 'Unable to load membership status. Please try again.');
+  });
+
+})();
+</script>
