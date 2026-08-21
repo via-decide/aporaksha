@@ -13,6 +13,10 @@ export const config = { api: { bodyParser: false } };
 const ALLOWED = [
   'https://aporaksha.com', 'https://www.aporaksha.com',
   'https://viadecide.com', 'https://www.viadecide.com',
+  'https://daxini.space', 'https://www.daxini.space',
+  'https://daxini.xyz', 'https://www.daxini.xyz',
+  'https://hanuman.solutions', 'https://www.hanuman.solutions',
+  'https://logichub.app', 'https://www.logichub.app',
 ];
 
 function cors(req, res) {
